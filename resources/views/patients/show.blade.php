@@ -78,4 +78,44 @@
             @endif
         </div>
     </div>
+
+    {{-- Recent Prescriptions --}}
+    @if(auth()->user()->isDoctor())
+    <div class="mt-6 bg-white rounded-lg shadow p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">Ultimas recetas</h3>
+            <a href="{{ route('prescriptions.create', ['patient_id' => $patient->id]) }}" class="text-blue-600 hover:underline text-sm">+ Nueva receta</a>
+        </div>
+        @php
+            $prescriptions = $patient->prescriptions()
+                ->where('clinic_id', session('active_clinic_id'))
+                ->with('items')
+                ->orderByDesc('prescription_date')
+                ->limit(5)
+                ->get();
+        @endphp
+        @if($prescriptions->isEmpty())
+            <p class="text-gray-500 text-sm">Sin recetas registradas.</p>
+        @else
+            <div class="space-y-3">
+                @foreach($prescriptions as $rx)
+                <div class="flex justify-between items-center p-3 bg-gray-50 rounded">
+                    <div>
+                        <p class="text-sm font-medium text-gray-800">{{ $rx->prescription_number }}</p>
+                        <p class="text-xs text-gray-500">{{ $rx->prescription_date->format('d/m/Y') }} - {{ $rx->items->count() }} medicamento(s)</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        @php
+                            $statusColors = ['active'=>'bg-green-100 text-green-800','expired'=>'bg-yellow-100 text-yellow-800','cancelled'=>'bg-red-100 text-red-800'];
+                            $statusLabels = ['active'=>'Activa','expired'=>'Vencida','cancelled'=>'Cancelada'];
+                        @endphp
+                        <span class="text-xs px-2 py-1 rounded-full {{ $statusColors[$rx->status] }}">{{ $statusLabels[$rx->status] }}</span>
+                        <a href="{{ route('prescriptions.show', $rx) }}" class="text-blue-600 hover:underline text-xs">Ver</a>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        @endif
+    </div>
+    @endif
 </x-layouts.tenant>

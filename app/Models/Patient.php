@@ -37,6 +37,11 @@ class Patient extends Model
         return $this->hasMany(Appointment::class);
     }
 
+    public function prescriptions(): HasMany
+    {
+        return $this->hasMany(Prescription::class);
+    }
+
     public function registeredBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'registered_by');

@@ -22,9 +22,17 @@
                 @endif
             </p>
         </div>
-        <span style="background-color:#dcfce7;color:#166534;" class="px-3 py-1 text-sm font-semibold rounded-full">
-            {{ $consultation->status === 'signed' ? 'Firmada' : 'En progreso' }}
-        </span>
+        <div class="flex items-center gap-2">
+            <form action="{{ route('prescriptions.from-consultation', $consultation) }}" method="POST">
+                @csrf
+                <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700">
+                    + Receta
+                </button>
+            </form>
+            <span style="background-color:#dcfce7;color:#166534;" class="px-3 py-1 text-sm font-semibold rounded-full">
+                {{ $consultation->status === 'signed' ? 'Firmada' : 'En progreso' }}
+            </span>
+        </div>
     </div>
 
     <div class="space-y-6">

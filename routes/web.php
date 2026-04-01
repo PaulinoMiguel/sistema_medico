@@ -6,6 +6,7 @@ use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\ClinicController;
 use App\Http\Controllers\ConsultationController;
 use App\Http\Controllers\PatientController;
+use App\Http\Controllers\PrescriptionController;
 use App\Http\Controllers\SecretaryController;
 use Illuminate\Support\Facades\Route;
 
@@ -37,5 +38,12 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:doctor')->group(function () {
         Route::resource('consultations', ConsultationController::class)->except(['destroy']);
         Route::post('/appointments/{appointment}/consultation', [ConsultationController::class, 'createFromAppointment'])->name('consultations.from-appointment');
+    });
+
+    // Prescriptions (doctor only)
+    Route::middleware('role:doctor')->group(function () {
+        Route::resource('prescriptions', PrescriptionController::class);
+        Route::get('/prescriptions/{prescription}/pdf', [PrescriptionController::class, 'pdf'])->name('prescriptions.pdf');
+        Route::post('/consultations/{consultation}/prescription', [PrescriptionController::class, 'createFromConsultation'])->name('prescriptions.from-consultation');
     });
 });
