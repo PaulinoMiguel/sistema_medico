@@ -42,9 +42,8 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de documento</label>
                     <select name="document_type" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                        <option value="dni" {{ old('document_type') == 'dni' ? 'selected' : '' }}>DNI</option>
+                        <option value="cedula" {{ old('document_type', 'cedula') == 'cedula' ? 'selected' : '' }}>Cedula</option>
                         <option value="passport" {{ old('document_type') == 'passport' ? 'selected' : '' }}>Pasaporte</option>
-                        <option value="curp" {{ old('document_type') == 'curp' ? 'selected' : '' }}>CURP</option>
                         <option value="other" {{ old('document_type') == 'other' ? 'selected' : '' }}>Otro</option>
                     </select>
                 </div>
