@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 
 class AdminAuthController extends Controller
 {
@@ -33,6 +35,30 @@ class AdminAuthController extends Controller
         return back()->withErrors([
             'email' => 'Las credenciales no coinciden.',
         ])->onlyInput('email');
+    }
+
+    public function showProfile()
+    {
+        return view('admin.profile', ['admin' => Auth::guard('admin')->user()]);
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $validated = $request->validate([
+            'current_password' => 'required',
+            'password' => ['required', 'confirmed', Password::min(8)->mixedCase()->numbers()->symbols()],
+        ]);
+
+        $admin = Auth::guard('admin')->user();
+
+        if (! Hash::check($validated['current_password'], $admin->password)) {
+            return back()->withErrors(['current_password' => 'La contrasena actual no es correcta.']);
+        }
+
+        $admin->update(['password' => Hash::make($validated['password'])]);
+
+        return redirect()->route('admin.profile')
+            ->with('success', 'Contrasena actualizada exitosamente.');
     }
 
     public function logout(Request $request)

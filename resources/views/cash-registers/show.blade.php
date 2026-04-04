@@ -65,6 +65,7 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Recibo</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Paciente</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Concepto</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cobro por</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Monto</th>
                     </tr>
                 </thead>
@@ -75,6 +76,7 @@
                         <td class="px-6 py-4 text-sm font-mono text-gray-500">{{ $payment->receipt_number }}</td>
                         <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ $payment->patient->full_name }}</td>
                         <td class="px-6 py-4 text-sm text-gray-500">{{ $payment->concept }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-500">{{ $payment->receivedBy->name }}</td>
                         <td class="px-6 py-4 text-sm text-right font-mono font-semibold text-gray-900">${{ number_format($payment->amount, 2) }}</td>
                     </tr>
                     @endforeach

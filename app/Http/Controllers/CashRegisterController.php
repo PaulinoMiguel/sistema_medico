@@ -57,7 +57,7 @@ class CashRegisterController extends Controller
     {
         abort_if($cashRegister->clinic_id != session('active_clinic_id'), 403);
 
-        $cashRegister->load(['openedBy', 'closedBy', 'payments.patient', 'payments.service']);
+        $cashRegister->load(['openedBy', 'closedBy', 'payments.patient', 'payments.service', 'payments.receivedBy']);
 
         return view('cash-registers.show', compact('cashRegister'));
     }

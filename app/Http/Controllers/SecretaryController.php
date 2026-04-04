@@ -32,7 +32,7 @@ class SecretaryController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email',
-            'password' => ['required', 'confirmed', Password::min(8)],
+            'password' => ['required', 'confirmed', Password::min(8)->mixedCase()->numbers()->symbols()],
             'phone' => 'nullable|string|max:50',
             'clinic_ids' => 'required|array|min:1',
             'clinic_ids.*' => 'exists:clinics,id',
@@ -84,7 +84,7 @@ class SecretaryController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email,' . $secretary->id,
-            'password' => ['nullable', 'confirmed', Password::min(8)],
+            'password' => ['nullable', 'confirmed', Password::min(8)->mixedCase()->numbers()->symbols()],
             'phone' => 'nullable|string|max:50',
             'clinic_ids' => 'required|array|min:1',
             'clinic_ids.*' => 'exists:clinics,id',

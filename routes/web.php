@@ -29,6 +29,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
         Route::resource('doctors', AdminDoctorController::class)->except(['show', 'destroy']);
         Route::patch('/doctors/{doctor}/toggle', [AdminDoctorController::class, 'toggle'])->name('doctors.toggle');
+        Route::get('/profile', [AdminAuthController::class, 'showProfile'])->name('profile');
+        Route::put('/profile/password', [AdminAuthController::class, 'updatePassword'])->name('profile.password');
     });
 });
 

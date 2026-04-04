@@ -30,7 +30,7 @@ class AdminDoctorController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email',
-            'password' => ['required', 'confirmed', Password::min(8)],
+            'password' => ['required', 'confirmed', Password::min(8)->mixedCase()->numbers()->symbols()],
             'specialty' => 'required|string|max:255',
             'professional_license' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:50',
@@ -65,7 +65,7 @@ class AdminDoctorController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email,' . $doctor->id,
-            'password' => ['nullable', 'confirmed', Password::min(8)],
+            'password' => ['nullable', 'confirmed', Password::min(8)->mixedCase()->numbers()->symbols()],
             'specialty' => 'required|string|max:255',
             'professional_license' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:50',
