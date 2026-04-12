@@ -142,7 +142,7 @@
 
             function updateLink() {
                 if (select.value) {
-                    link.href = baseUrl + select.value;
+                    link.href = baseUrl + select.value + '/history';
                     link.classList.remove('hidden');
                 } else {
                     link.classList.add('hidden');
