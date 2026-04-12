@@ -20,8 +20,12 @@
             </div>
             <div class="p-6 space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Paciente *</label>
-                    <select name="patient_id" required
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block text-sm font-medium text-gray-700">Paciente *</label>
+                        <a href="#" id="view-patient-history" target="_blank"
+                           class="text-xs text-blue-600 hover:underline hidden">Ver historial del paciente</a>
+                    </div>
+                    <select name="patient_id" id="patient_select" required
                             class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
                         <option value="">Seleccionar paciente...</option>
                         @foreach($patients as $patient)
@@ -130,6 +134,25 @@
     </template>
 
     <script>
+        // Patient history link
+        (function () {
+            const select = document.getElementById('patient_select');
+            const link = document.getElementById('view-patient-history');
+            const baseUrl = '{{ url("patients") }}/';
+
+            function updateLink() {
+                if (select.value) {
+                    link.href = baseUrl + select.value;
+                    link.classList.remove('hidden');
+                } else {
+                    link.classList.add('hidden');
+                }
+            }
+
+            select.addEventListener('change', updateLink);
+            updateLink();
+        })();
+
         let medicationCount = 0;
 
         function addMedication() {

@@ -32,8 +32,6 @@
                             Consulta del {{ $prescription->consultation->consultation_date->format('d/m/Y') }}
                         </p>
                     @endif
-                    <a href="{{ route('patients.show', ['patient' => $prescription->patient, 'from' => 'prescription', 'prescription_id' => $prescription->id]) }}"
-                       class="text-blue-600 hover:underline text-xs mt-1 inline-block">Ver ficha del paciente</a>
                 </div>
                 <span style="{{ $statusColors[$prescription->status] }}" class="px-3 py-1 text-sm font-semibold rounded-full">
                     {{ $statusLabels[$prescription->status] }}
