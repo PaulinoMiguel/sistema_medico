@@ -181,8 +181,20 @@ class PatientController extends Controller
 
     public function history(Patient $patient)
     {
-        $patient->load(['medicalHistory', 'appointments.doctor', 'appointments.clinic']);
+        $patient->load(['medicalHistory']);
 
-        return view('patients.history', compact('patient'));
+        $consultations = \App\Models\Consultation::withoutGlobalScopes()
+            ->where('patient_id', $patient->id)
+            ->with('doctor')
+            ->orderByDesc('consultation_date')
+            ->get();
+
+        $prescriptions = \App\Models\Prescription::withoutGlobalScopes()
+            ->where('patient_id', $patient->id)
+            ->with('items')
+            ->orderByDesc('prescription_date')
+            ->get();
+
+        return view('patients.history', compact('patient', 'consultations', 'prescriptions'));
     }
 }
