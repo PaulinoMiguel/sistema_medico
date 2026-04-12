@@ -63,10 +63,31 @@
 
             <nav class="p-4 space-y-1 overflow-y-auto" style="max-height: calc(100vh - 180px);">
                 @php
+                    $u = auth()->user();
                     $activeClass = 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400';
                     $inactiveClass = 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700';
                     $groupSummaryClass = 'flex items-center justify-between px-3 py-2 text-sm font-medium rounded-md cursor-pointer text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700';
                     $childItemClass = 'flex items-center px-3 py-2 pl-10 text-sm rounded-md';
+
+                    // Per-permission visibility flags (driven by spatie permissions)
+                    $canConsultations = $u->can('consultations.view') || $u->can('consultations.create');
+                    $canPrescriptions = $u->can('prescriptions.view') || $u->can('prescriptions.create');
+                    $showClinical = $canConsultations || $canPrescriptions;
+
+                    $canPayments = $u->can('payments.view');
+                    $canServices = $u->can('services.manage') || $u->can('services.view');
+                    $showIngresos = $canPayments || $canServices;
+
+                    $canExpenses = $u->can('expenses.view');
+                    $canExpenseCategories = $u->can('expense-categories.manage');
+                    $canExpenseSummary = $u->can('expenses.view-summary');
+                    $showEgresos = $canExpenses || $canExpenseCategories || $canExpenseSummary;
+
+                    $canClinicsManage = $u->can('clinics.manage');
+                    $canStaffManage = $u->can('staff.manage');
+                    $showAdmin = $canClinicsManage || $canStaffManage;
+
+                    $canCashRegister = $u->can('cash-register.view');
 
                     // Detect which group should be auto-expanded based on current route
                     $clinicalOpen = request()->routeIs('consultations.*') || request()->routeIs('prescriptions.*');
@@ -81,19 +102,23 @@
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
                     Inicio
                 </a>
+                @can('patients.view')
                 <a href="{{ route('patients.index') }}"
                    class="flex items-center px-3 py-2 text-sm font-medium rounded-md {{ request()->routeIs('patients.*') ? $activeClass : $inactiveClass }}">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                     Pacientes
                 </a>
+                @endcan
+                @can('appointments.view')
                 <a href="{{ route('appointments.index') }}"
                    class="flex items-center px-3 py-2 text-sm font-medium rounded-md {{ request()->routeIs('appointments.*') ? $activeClass : $inactiveClass }}">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                     Turnos
                 </a>
+                @endcan
 
-                {{-- Clinico (doctor only) --}}
-                @if(auth()->user()->isDoctor())
+                {{-- Clinico --}}
+                @if($showClinical)
                     <details class="mt-2" {{ $clinicalOpen ? 'open' : '' }}>
                         <summary class="{{ $groupSummaryClass }}">
                             <span class="flex items-center">
@@ -103,26 +128,33 @@
                             <svg class="chevron w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                         </summary>
                         <div class="mt-1 space-y-1">
+                            @if($canConsultations)
                             <a href="{{ route('consultations.index') }}"
                                class="{{ $childItemClass }} {{ request()->routeIs('consultations.*') ? $activeClass : $inactiveClass }}">
                                 Consultas
                             </a>
+                            @endif
+                            @if($canPrescriptions)
                             <a href="{{ route('prescriptions.index') }}"
                                class="{{ $childItemClass }} {{ request()->routeIs('prescriptions.*') ? $activeClass : $inactiveClass }}">
                                 Recetas
                             </a>
+                            @endif
                         </div>
                     </details>
                 @endif
 
                 {{-- Corte de Caja (top-level: operacion diaria de cierre) --}}
+                @if($canCashRegister)
                 <a href="{{ route('cash-registers.index') }}"
                    class="flex items-center px-3 py-2 text-sm font-medium rounded-md {{ request()->routeIs('cash-registers.*') ? $activeClass : $inactiveClass }}">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
                     Corte de Caja
                 </a>
+                @endif
 
                 {{-- Ingresos --}}
+                @if($showIngresos)
                 <details class="mt-2" {{ $ingresosOpen ? 'open' : '' }}>
                     <summary class="{{ $groupSummaryClass }}">
                         <span class="flex items-center">
@@ -132,21 +164,24 @@
                         <svg class="chevron w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                     </summary>
                     <div class="mt-1 space-y-1">
+                        @if($canPayments)
                         <a href="{{ route('payments.index') }}"
                            class="{{ $childItemClass }} {{ request()->routeIs('payments.*') ? $activeClass : $inactiveClass }}">
                             Cobros
                         </a>
-                        @if(auth()->user()->isDoctor())
-                            <a href="{{ route('services.index') }}"
-                               class="{{ $childItemClass }} {{ request()->routeIs('services.*') ? $activeClass : $inactiveClass }}">
-                                Servicios
-                            </a>
+                        @endif
+                        @if($canServices)
+                        <a href="{{ route('services.index') }}"
+                           class="{{ $childItemClass }} {{ request()->routeIs('services.*') ? $activeClass : $inactiveClass }}">
+                            Servicios
+                        </a>
                         @endif
                     </div>
                 </details>
+                @endif
 
-                {{-- Egresos (doctor only) --}}
-                @if(auth()->user()->isDoctor())
+                {{-- Egresos --}}
+                @if($showEgresos)
                     <details class="mt-2" {{ $egresosOpen ? 'open' : '' }}>
                         <summary class="{{ $groupSummaryClass }}">
                             <span class="flex items-center">
@@ -156,24 +191,30 @@
                             <svg class="chevron w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                         </summary>
                         <div class="mt-1 space-y-1">
+                            @if($canExpenses)
                             <a href="{{ route('expenses.index') }}"
                                class="{{ $childItemClass }} {{ request()->routeIs('expenses.index') || request()->routeIs('expenses.create') || request()->routeIs('expenses.show') || request()->routeIs('expenses.edit') ? $activeClass : $inactiveClass }}">
                                 Gastos
                             </a>
+                            @endif
+                            @if($canExpenseCategories)
                             <a href="{{ route('expense-categories.index') }}"
                                class="{{ $childItemClass }} {{ request()->routeIs('expense-categories.*') ? $activeClass : $inactiveClass }}">
                                 Categorias
                             </a>
+                            @endif
+                            @if($canExpenseSummary)
                             <a href="{{ route('expenses.summary') }}"
                                class="{{ $childItemClass }} {{ request()->routeIs('expenses.summary') ? $activeClass : $inactiveClass }}">
                                 Resumen
                             </a>
+                            @endif
                         </div>
                     </details>
                 @endif
 
-                {{-- Administracion (doctor only) --}}
-                @if(auth()->user()->isDoctor())
+                {{-- Administracion --}}
+                @if($showAdmin)
                     <details class="mt-2" {{ $adminOpen ? 'open' : '' }}>
                         <summary class="{{ $groupSummaryClass }}">
                             <span class="flex items-center">
@@ -183,14 +224,18 @@
                             <svg class="chevron w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                         </summary>
                         <div class="mt-1 space-y-1">
+                            @if($canClinicsManage)
                             <a href="{{ route('clinics.index') }}"
                                class="{{ $childItemClass }} {{ request()->routeIs('clinics.*') ? $activeClass : $inactiveClass }}">
                                 Clinicas
                             </a>
+                            @endif
+                            @if($canStaffManage)
                             <a href="{{ route('secretaries.index') }}"
                                class="{{ $childItemClass }} {{ request()->routeIs('secretaries.*') ? $activeClass : $inactiveClass }}">
                                 Secretarias
                             </a>
+                            @endif
                         </div>
                     </details>
                 @endif
@@ -216,7 +261,7 @@
                         @endif
                         <div class="ml-2 min-w-0">
                             <p class="text-sm font-medium text-gray-700 dark:text-gray-200 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400">{{ auth()->user()->name }}</p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 capitalize">{{ auth()->user()->role }}</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ auth()->user()->role_label }}</p>
                         </div>
                     </a>
                     <div class="flex items-center gap-2">

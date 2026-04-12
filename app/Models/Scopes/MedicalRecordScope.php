@@ -12,12 +12,15 @@ use Illuminate\Support\Facades\DB;
  * Restricts visibility of medical records based on the authenticated user.
  *
  * - No authenticated user (CLI / queue / seeder): no filter applied.
- * - Admin role: no filter applied (full visibility).
- * - Doctor / associate doctor: only records they own (filtered by $doctorColumn).
- * - Any other role (secretary, nurse, researcher): records belonging to clinics
- *   the user is assigned to. For models that have clinic_id directly, that column
- *   is filtered. For Patient (which is many-to-many with clinics), the
+ * - Doctor (doctor_admin / doctor_associate): only records they own
+ *   (filtered by $doctorColumn).
+ * - Any other role (secretary, nurse, ...): records belonging to clinics
+ *   the user is assigned to. For models that have clinic_id directly, that
+ *   column is filtered. For Patient (many-to-many with clinics), the
  *   clinic_patient pivot is used via whereExists.
+ *
+ * Note: super admins live in the separate `admins` table (different guard),
+ * so they never reach this scope through the User model.
  *
  * This is the security boundary for record visibility — controllers must not
  * rely on session('active_clinic_id') alone.
@@ -34,10 +37,6 @@ class MedicalRecordScope implements Scope
         $user = Auth::user();
 
         if (!$user) {
-            return;
-        }
-
-        if ($user->role === 'admin') {
             return;
         }
 

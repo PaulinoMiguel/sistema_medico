@@ -11,10 +11,12 @@ use Illuminate\Validation\Rules\Password;
 
 class SecretaryController extends Controller
 {
+    private const SECRETARY_ROLES = ['secretary_full', 'secretary_limited'];
+
     public function index()
     {
-        $secretaries = User::where('role', 'secretary')
-            ->with('clinics')
+        $secretaries = User::role(self::SECRETARY_ROLES)
+            ->with('clinics', 'roles')
             ->get();
 
         return view('secretaries.index', compact('secretaries'));
@@ -43,9 +45,11 @@ class SecretaryController extends Controller
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'phone' => $validated['phone'] ?? null,
-            'role' => 'secretary',
-            'is_active' => true,
+            'status' => 'active',
         ]);
+        // Default to limited; the doctor admin can promote to full from the
+        // permissions UI in Fase 3.
+        $secretary->assignRole('secretary_limited');
 
         // Assign to selected clinics
         foreach ($validated['clinic_ids'] as $index => $clinicId) {
@@ -60,7 +64,7 @@ class SecretaryController extends Controller
 
     public function show(User $secretary)
     {
-        abort_if($secretary->role !== 'secretary', 404);
+        abort_if(!$secretary->hasAnyRole(self::SECRETARY_ROLES), 404);
 
         $secretary->load('clinics');
 
@@ -69,7 +73,7 @@ class SecretaryController extends Controller
 
     public function edit(User $secretary)
     {
-        abort_if($secretary->role !== 'secretary', 404);
+        abort_if(!$secretary->hasAnyRole(self::SECRETARY_ROLES), 404);
 
         $clinics = Clinic::where('is_active', true)->get();
         $assignedClinicIds = $secretary->clinics->pluck('id')->toArray();
@@ -79,7 +83,7 @@ class SecretaryController extends Controller
 
     public function update(Request $request, User $secretary)
     {
-        abort_if($secretary->role !== 'secretary', 404);
+        abort_if(!$secretary->hasAnyRole(self::SECRETARY_ROLES), 404);
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -113,9 +117,9 @@ class SecretaryController extends Controller
 
     public function destroy(User $secretary)
     {
-        abort_if($secretary->role !== 'secretary', 404);
+        abort_if(!$secretary->hasAnyRole(self::SECRETARY_ROLES), 404);
 
-        $secretary->update(['is_active' => false]);
+        $secretary->update(['status' => 'inactive']);
         $secretary->clinics()->detach();
 
         return redirect()->route('secretaries.index')
@@ -124,13 +128,16 @@ class SecretaryController extends Controller
 
     public function toggle(User $secretary)
     {
-        abort_if($secretary->role !== 'secretary', 404);
+        abort_if(!$secretary->hasAnyRole(self::SECRETARY_ROLES), 404);
 
-        $secretary->update(['is_active' => ! $secretary->is_active]);
+        // For secretaries only active <-> inactive applies (passive doesn't
+        // make sense for support staff, only for doctors).
+        $newStatus = $secretary->isActive() ? 'inactive' : 'active';
+        $secretary->update(['status' => $newStatus]);
 
-        $status = $secretary->is_active ? 'activada' : 'desactivada';
+        $msg = $secretary->isActive() ? 'activada' : 'desactivada';
 
         return redirect()->route('secretaries.index')
-            ->with('success', "Secretaria {$status}.");
+            ->with('success', "Secretaria {$msg}.");
     }
 }

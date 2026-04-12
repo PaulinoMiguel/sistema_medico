@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\MedicalRecordScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -19,6 +20,15 @@ class Payment extends Model
         ];
     }
 
+    protected static function booted(): void
+    {
+        // Doctor sees only own payments. Secretary sees clinic-based, but in
+        // practice the global payments index is gated off for secretaries
+        // (they only see their cash register session). Scope is a defense
+        // in depth.
+        static::addGlobalScope(new MedicalRecordScope());
+    }
+
     public function clinic(): BelongsTo
     {
         return $this->belongsTo(Clinic::class);
@@ -27,6 +37,11 @@ class Payment extends Model
     public function patient(): BelongsTo
     {
         return $this->belongsTo(Patient::class);
+    }
+
+    public function doctor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'doctor_id');
     }
 
     public function appointment(): BelongsTo

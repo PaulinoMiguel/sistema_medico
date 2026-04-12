@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Appointment;
 use App\Models\CashRegister;
 use App\Models\Patient;
 use App\Models\Payment;
 use App\Models\Service;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class PaymentController extends Controller
 {
@@ -54,6 +56,20 @@ class PaymentController extends Controller
             'notes' => 'nullable|string|max:500',
         ]);
 
+        // Resolve the doctor that owns this income. Priority:
+        //   1) Doctor from the linked appointment (most explicit)
+        //   2) Patient's primary doctor (fallback for cobros without turno)
+        //   3) Currently logged-in user, only if they themselves are a doctor
+        $doctorId = $this->resolveDoctorId($validated);
+
+        if (!$doctorId) {
+            throw ValidationException::withMessages([
+                'patient_id' => 'No se pudo determinar a que doctor pertenece este cobro. '
+                    . 'Vincule el cobro a un turno o asegurese de que el paciente '
+                    . 'tenga un doctor responsable asignado.',
+            ]);
+        }
+
         // Find open cash register
         $cashRegister = CashRegister::where('clinic_id', $clinicId)
             ->where('status', 'open')
@@ -62,6 +78,7 @@ class PaymentController extends Controller
         $payment = Payment::create([
             ...$validated,
             'clinic_id' => $clinicId,
+            'doctor_id' => $doctorId,
             'received_by' => auth()->id(),
             'cash_register_id' => $cashRegister?->id,
             'receipt_number' => $this->generateReceiptNumber($clinicId),
@@ -69,6 +86,32 @@ class PaymentController extends Controller
 
         return redirect()->route('payments.show', $payment)
             ->with('success', 'Cobro registrado exitosamente.');
+    }
+
+    /**
+     * Determine which doctor owns this payment based on available context.
+     * Returns null if no doctor can be resolved.
+     */
+    private function resolveDoctorId(array $validated): ?int
+    {
+        if (!empty($validated['appointment_id'])) {
+            $appointment = Appointment::withoutGlobalScopes()->find($validated['appointment_id']);
+            if ($appointment?->doctor_id) {
+                return $appointment->doctor_id;
+            }
+        }
+
+        $patient = Patient::withoutGlobalScopes()->find($validated['patient_id']);
+        if ($patient?->primary_doctor_id) {
+            return $patient->primary_doctor_id;
+        }
+
+        $user = auth()->user();
+        if ($user?->isDoctor()) {
+            return $user->id;
+        }
+
+        return null;
     }
 
     public function show(Payment $payment)

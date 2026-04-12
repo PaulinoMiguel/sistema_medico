@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, HasRoles, Notifiable;
 
     protected $guarded = ['id'];
 
@@ -21,8 +22,32 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'is_active' => 'boolean',
         ];
+    }
+
+    public function isActive(): bool
+    {
+        return $this->status === 'active';
+    }
+
+    public function isPassive(): bool
+    {
+        return $this->status === 'passive';
+    }
+
+    public function isInactive(): bool
+    {
+        return $this->status === 'inactive';
+    }
+
+    public function getStatusLabelAttribute(): string
+    {
+        return match ($this->status) {
+            'active' => 'Activo',
+            'passive' => 'Pasivo',
+            'inactive' => 'Inactivo',
+            default => 'Desconocido',
+        };
     }
 
     public function clinics(): BelongsToMany
@@ -37,14 +62,18 @@ class User extends Authenticatable
         return $this->hasMany(Patient::class, 'primary_doctor_id');
     }
 
+    /**
+     * Wrappers para mantener compatibilidad con el codigo existente.
+     * La fuente de verdad ahora son los roles de spatie.
+     */
     public function isDoctor(): bool
     {
-        return in_array($this->role, ['doctor', 'associate_doctor']);
+        return $this->hasAnyRole(['doctor_admin', 'doctor_associate']);
     }
 
     public function isSecretary(): bool
     {
-        return $this->role === 'secretary';
+        return $this->hasAnyRole(['secretary_full', 'secretary_limited']);
     }
 
     public function getFullNameAttribute(): string
@@ -59,5 +88,28 @@ class User extends Authenticatable
         }
 
         return null;
+    }
+
+    /**
+     * Etiqueta legible del rol principal del usuario, en espanol.
+     * Reemplaza el uso directo del enum `role` que ya no existe.
+     */
+    public function getRoleLabelAttribute(): string
+    {
+        $map = [
+            'doctor_admin' => 'Doctor administrador',
+            'doctor_associate' => 'Doctor asociado',
+            'secretary_full' => 'Secretaria',
+            'secretary_limited' => 'Secretaria',
+            'nurse' => 'Enfermera',
+        ];
+
+        $primary = $this->roles->first();
+
+        if (!$primary) {
+            return 'Sin rol';
+        }
+
+        return $map[$primary->name] ?? $primary->name;
     }
 }

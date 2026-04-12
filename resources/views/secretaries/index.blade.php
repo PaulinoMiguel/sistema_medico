@@ -26,7 +26,7 @@
                 </thead>
                 <tbody class="divide-y divide-gray-200">
                     @foreach($secretaries as $secretary)
-                    <tr class="hover:bg-gray-50 {{ !$secretary->is_active ? 'opacity-50' : '' }}">
+                    <tr class="hover:bg-gray-50 {{ !$secretary->isActive() ? 'opacity-50' : '' }}">
                         <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ $secretary->name }}</td>
                         <td class="px-6 py-4 text-sm text-gray-500">{{ $secretary->email }}</td>
                         <td class="px-6 py-4 text-sm text-gray-500">{{ $secretary->phone ?? '-' }}</td>
@@ -38,16 +38,16 @@
                             @endforeach
                         </td>
                         <td class="px-6 py-4">
-                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $secretary->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                {{ $secretary->is_active ? 'Activa' : 'Inactiva' }}
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $secretary->isActive() ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                {{ $secretary->isActive() ? 'Activa' : 'Inactiva' }}
                             </span>
                         </td>
                         <td class="px-6 py-4 text-sm space-x-2">
                             <a href="{{ route('secretaries.edit', $secretary) }}" class="text-blue-600 hover:underline">Editar</a>
                             <form action="{{ route('secretaries.toggle', $secretary) }}" method="POST" class="inline">
                                 @csrf @method('PATCH')
-                                <button class="{{ $secretary->is_active ? 'text-red-600' : 'text-green-600' }} hover:underline">
-                                    {{ $secretary->is_active ? 'Desactivar' : 'Activar' }}
+                                <button class="{{ $secretary->isActive() ? 'text-red-600' : 'text-green-600' }} hover:underline">
+                                    {{ $secretary->isActive() ? 'Desactivar' : 'Activar' }}
                                 </button>
                             </form>
                         </td>

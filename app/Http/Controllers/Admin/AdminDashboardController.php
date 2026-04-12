@@ -10,8 +10,9 @@ class AdminDashboardController extends Controller
 {
     public function index()
     {
-        $totalDoctors = User::where('role', 'doctor')->count();
-        $activeDoctors = User::where('role', 'doctor')->where('is_active', true)->count();
+        $doctorRoles = ['doctor_admin', 'doctor_associate'];
+        $totalDoctors = User::role($doctorRoles)->count();
+        $activeDoctors = User::role($doctorRoles)->where('status', 'active')->count();
         $totalClinics = Clinic::count();
 
         return view('admin.dashboard', compact('totalDoctors', 'activeDoctors', 'totalClinics'));

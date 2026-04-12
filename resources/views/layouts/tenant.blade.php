@@ -71,7 +71,7 @@
                         @endif
                         <div class="ml-2 min-w-0">
                             <p class="text-sm font-medium text-gray-700 truncate group-hover:text-blue-600">{{ auth()->user()->name }}</p>
-                            <p class="text-xs text-gray-500 capitalize">{{ auth()->user()->role }}</p>
+                            <p class="text-xs text-gray-500">{{ auth()->user()->role_label }}</p>
                         </div>
                     </a>
                     <form action="{{ route('logout') }}" method="POST">

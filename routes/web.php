@@ -52,48 +52,85 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile/photo', [ProfileController::class, 'deletePhoto'])->name('profile.photo.delete');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
 
-    // Doctor-only (admin)
-    Route::middleware('role:doctor')->group(function () {
+    // Clinics management
+    Route::middleware('permission:clinics.manage')->group(function () {
         Route::resource('clinics', ClinicController::class)->except(['show']);
+    });
+
+    // Staff (secretaries, nurses) management — explicitly NOT for managing
+    // doctors, which is exclusive to the super admin via /admin.
+    Route::middleware('permission:staff.manage')->group(function () {
         Route::resource('secretaries', SecretaryController::class);
         Route::patch('/secretaries/{secretary}/toggle', [SecretaryController::class, 'toggle'])->name('secretaries.toggle');
     });
 
-    // Patients & Appointments (doctor + secretary)
-    Route::resource('patients', PatientController::class);
-    Route::get('/patients/{patient}/history', [PatientController::class, 'history'])->name('patients.history');
-    Route::resource('appointments', AppointmentController::class);
-    Route::patch('/appointments/{appointment}/status', [AppointmentController::class, 'updateStatus'])->name('appointments.status');
+    // Patients (gated by patients.view; finer permissions enforced in controller)
+    Route::middleware('permission:patients.view')->group(function () {
+        Route::resource('patients', PatientController::class);
+        Route::get('/patients/{patient}/history', [PatientController::class, 'history'])->name('patients.history');
+    });
 
-    // Financial - Services & Expense Categories (doctor only)
-    Route::middleware('role:doctor')->group(function () {
+    // Appointments (gated by appointments.view)
+    Route::middleware('permission:appointments.view')->group(function () {
+        Route::resource('appointments', AppointmentController::class);
+        Route::patch('/appointments/{appointment}/status', [AppointmentController::class, 'updateStatus'])->name('appointments.status');
+    });
+
+    // Services catalog (income side)
+    Route::middleware('permission:services.manage')->group(function () {
         Route::resource('services', ServiceController::class)->except(['show', 'destroy']);
         Route::patch('/services/{service}/toggle', [ServiceController::class, 'toggle'])->name('services.toggle');
+    });
+
+    // Expense categories
+    Route::middleware('permission:expense-categories.manage')->group(function () {
         Route::resource('expense-categories', ExpenseCategoryController::class)->only(['index', 'store', 'update']);
         Route::patch('/expense-categories/{expenseCategory}/toggle', [ExpenseCategoryController::class, 'toggle'])->name('expense-categories.toggle');
     });
 
-    // Financial - Expenses (doctor only)
-    Route::middleware('role:doctor')->group(function () {
+    // Expenses
+    Route::middleware('permission:expenses.view')->group(function () {
         Route::resource('expenses', ExpenseController::class)->except(['show']);
+    });
+    Route::middleware('permission:expenses.view-summary')->group(function () {
         Route::get('/financial-summary', [ExpenseController::class, 'summary'])->name('expenses.summary');
     });
 
-    // Financial - Payments & Cash Register (doctor + secretary)
-    Route::resource('payments', PaymentController::class)->only(['index', 'create', 'store', 'show']);
-    Route::get('/cash-registers', [CashRegisterController::class, 'index'])->name('cash-registers.index');
-    Route::post('/cash-registers/open', [CashRegisterController::class, 'open'])->name('cash-registers.open');
-    Route::get('/cash-registers/{cashRegister}', [CashRegisterController::class, 'show'])->name('cash-registers.show');
-    Route::post('/cash-registers/{cashRegister}/close', [CashRegisterController::class, 'close'])->name('cash-registers.close');
+    // Payments — view and create are gated independently:
+    //   secretaries can register cobros (create/store) via the cash register
+    //   flow, but cannot navigate to the global payments index (which would
+    //   expose income from outside the office, e.g. surgeries).
+    // IMPORTANT: /payments/create must be declared BEFORE /payments/{payment}
+    // so the literal "create" segment is not captured as a payment id.
+    Route::get('/payments/create', [PaymentController::class, 'create'])
+        ->middleware('permission:payments.create')->name('payments.create');
+    Route::post('/payments', [PaymentController::class, 'store'])
+        ->middleware('permission:payments.create')->name('payments.store');
+    Route::get('/payments', [PaymentController::class, 'index'])
+        ->middleware('permission:payments.view')->name('payments.index');
+    Route::get('/payments/{payment}', [PaymentController::class, 'show'])
+        ->middleware('permission:payments.view')->name('payments.show');
 
-    // Consultations (doctor only)
-    Route::middleware('role:doctor')->group(function () {
+    // Cash register
+    Route::middleware('permission:cash-register.view')->group(function () {
+        Route::get('/cash-registers', [CashRegisterController::class, 'index'])->name('cash-registers.index');
+        Route::get('/cash-registers/{cashRegister}', [CashRegisterController::class, 'show'])->name('cash-registers.show');
+    });
+    Route::middleware('permission:cash-register.open')->group(function () {
+        Route::post('/cash-registers/open', [CashRegisterController::class, 'open'])->name('cash-registers.open');
+    });
+    Route::middleware('permission:cash-register.close')->group(function () {
+        Route::post('/cash-registers/{cashRegister}/close', [CashRegisterController::class, 'close'])->name('cash-registers.close');
+    });
+
+    // Consultations (write access requires consultations.create)
+    Route::middleware('permission:consultations.create')->group(function () {
         Route::resource('consultations', ConsultationController::class)->except(['destroy']);
         Route::post('/appointments/{appointment}/consultation', [ConsultationController::class, 'createFromAppointment'])->name('consultations.from-appointment');
     });
 
-    // Prescriptions (doctor only)
-    Route::middleware('role:doctor')->group(function () {
+    // Prescriptions (write access requires prescriptions.create)
+    Route::middleware('permission:prescriptions.create')->group(function () {
         Route::resource('prescriptions', PrescriptionController::class);
         Route::get('/prescriptions/{prescription}/pdf', [PrescriptionController::class, 'pdf'])->name('prescriptions.pdf');
         Route::post('/consultations/{consultation}/prescription', [PrescriptionController::class, 'createFromConsultation'])->name('prescriptions.from-consultation');

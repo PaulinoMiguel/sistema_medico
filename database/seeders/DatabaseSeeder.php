@@ -13,7 +13,10 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // Super Admin
+        // Roles y permisos primero (los usuarios de abajo dependen de ellos)
+        $this->call(RolesAndPermissionsSeeder::class);
+
+        // Super Admin (panel /admin, separado del sistema de roles spatie)
         Admin::firstOrCreate(
             ['email' => 'admin@mediapp.local'],
             [
@@ -37,12 +40,12 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Dra. Maria Lopez',
                 'password' => Hash::make('password'),
-                'role' => 'doctor',
                 'specialty' => 'Urologia',
                 'professional_license' => 'MED-001',
-                'is_active' => true,
+                'status' => 'active',
             ]
         );
+        $urologist->syncRoles(['doctor_admin']);
 
         $clinicA = Clinic::firstOrCreate(
             ['name' => 'Consultorio Centro'],
@@ -64,10 +67,10 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Ana Perez',
                 'password' => Hash::make('password'),
-                'role' => 'secretary',
-                'is_active' => true,
+                'status' => 'active',
             ]
         );
+        $secretaryA->syncRoles(['secretary_limited']);
         $secretaryA->clinics()->syncWithoutDetaching([$clinicA->id => ['is_primary' => true]]);
 
         $secretaryB = User::firstOrCreate(
@@ -75,10 +78,10 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Lucia Gomez',
                 'password' => Hash::make('password'),
-                'role' => 'secretary',
-                'is_active' => true,
+                'status' => 'active',
             ]
         );
+        $secretaryB->syncRoles(['secretary_limited']);
         $secretaryB->clinics()->syncWithoutDetaching([$clinicB->id => ['is_primary' => true]]);
 
         // One patient in each clinic, both owned by the urologist
@@ -139,12 +142,15 @@ class DatabaseSeeder extends Seeder
                 [
                     'name' => $data['name'],
                     'password' => Hash::make('password'),
-                    'role' => 'doctor',
                     'specialty' => $data['specialty'],
                     'professional_license' => 'MED-MULTI-' . ($i + 1),
-                    'is_active' => true,
+                    'status' => 'active',
                 ]
             );
+            // El primer doctor del policlinico es el admin (configura el sistema);
+            // los otros dos son associates con permisos clinicos y financieros completos
+            // pero sin acceso a configuracion global.
+            $doctor->syncRoles([$i === 0 ? 'doctor_admin' : 'doctor_associate']);
             $doctor->clinics()->syncWithoutDetaching([$clinic->id => ['is_primary' => true]]);
             $doctors[] = $doctor;
         }
@@ -154,10 +160,10 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Rosa Martinez',
                 'password' => Hash::make('password'),
-                'role' => 'secretary',
-                'is_active' => true,
+                'status' => 'active',
             ]
         );
+        $secretary->syncRoles(['secretary_full']);
         $secretary->clinics()->syncWithoutDetaching([$clinic->id => ['is_primary' => true]]);
 
         // One patient per doctor

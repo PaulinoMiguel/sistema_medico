@@ -10,10 +10,12 @@ use Illuminate\Validation\Rules\Password;
 
 class AdminDoctorController extends Controller
 {
+    private const DOCTOR_ROLES = ['doctor_admin', 'doctor_associate'];
+
     public function index()
     {
-        $doctors = User::where('role', 'doctor')
-            ->with('clinics')
+        $doctors = User::role(self::DOCTOR_ROLES)
+            ->with('clinics', 'roles')
             ->latest()
             ->get();
 
@@ -36,16 +38,18 @@ class AdminDoctorController extends Controller
             'phone' => 'nullable|string|max:50',
         ]);
 
-        User::create([
+        $doctor = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
-            'role' => 'doctor',
             'specialty' => $validated['specialty'],
             'professional_license' => $validated['professional_license'] ?? null,
             'phone' => $validated['phone'] ?? null,
-            'is_active' => true,
+            'status' => 'active',
         ]);
+        // Doctors created from the super admin panel are admins of their
+        // own install by default.
+        $doctor->assignRole('doctor_admin');
 
         return redirect()->route('admin.doctors.index')
             ->with('success', 'Doctor creado exitosamente.');
@@ -53,14 +57,14 @@ class AdminDoctorController extends Controller
 
     public function edit(User $doctor)
     {
-        abort_if($doctor->role !== 'doctor', 404);
+        abort_if(!$doctor->hasAnyRole(self::DOCTOR_ROLES), 404);
 
         return view('admin.doctors.edit', compact('doctor'));
     }
 
     public function update(Request $request, User $doctor)
     {
-        abort_if($doctor->role !== 'doctor', 404);
+        abort_if(!$doctor->hasAnyRole(self::DOCTOR_ROLES), 404);
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -89,13 +93,17 @@ class AdminDoctorController extends Controller
 
     public function toggle(User $doctor)
     {
-        abort_if($doctor->role !== 'doctor', 404);
+        abort_if(!$doctor->hasAnyRole(self::DOCTOR_ROLES), 404);
 
-        $doctor->update(['is_active' => ! $doctor->is_active]);
+        // Toggle only switches between active and inactive. Setting a doctor
+        // to "passive" requires the dedicated UI (Fase 7) since it has
+        // accounting implications (still counts in expense splits).
+        $newStatus = $doctor->isActive() ? 'inactive' : 'active';
+        $doctor->update(['status' => $newStatus]);
 
-        $status = $doctor->is_active ? 'activado' : 'desactivado';
+        $msg = $doctor->isActive() ? 'activado' : 'desactivado';
 
         return redirect()->route('admin.doctors.index')
-            ->with('success', "Doctor {$status}.");
+            ->with('success', "Doctor {$msg}.");
     }
 }

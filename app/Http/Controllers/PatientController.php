@@ -47,8 +47,8 @@ class PatientController extends Controller
         // the new patient. Doctors get auto-assigned to themselves.
         if (!$user->isDoctor()) {
             $clinicIds = $user->clinics()->pluck('clinics.id');
-            $doctors = User::whereIn('role', ['doctor', 'associate_doctor'])
-                ->where('is_active', true)
+            $doctors = User::role(['doctor_admin', 'doctor_associate'])
+                ->where('status', 'active')
                 ->whereHas('clinics', fn ($q) => $q->whereIn('clinics.id', $clinicIds))
                 ->orderBy('name')
                 ->get();

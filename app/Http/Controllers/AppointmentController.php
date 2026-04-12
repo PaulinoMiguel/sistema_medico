@@ -60,9 +60,9 @@ class AppointmentController extends Controller
             ->orderBy('last_name')
             ->get();
 
-        $doctors = User::whereIn('role', ['doctor', 'associate_doctor'])
+        $doctors = User::role(['doctor_admin', 'doctor_associate'])
             ->whereHas('clinics', fn ($q) => $q->where('clinics.id', $clinicId))
-            ->where('is_active', true)
+            ->where('status', 'active')
             ->get();
 
         return view('appointments.create', compact('patients', 'doctors'));
@@ -116,9 +116,9 @@ class AppointmentController extends Controller
             ->orderBy('last_name')
             ->get();
 
-        $doctors = User::whereIn('role', ['doctor', 'associate_doctor'])
+        $doctors = User::role(['doctor_admin', 'doctor_associate'])
             ->whereHas('clinics', fn ($q) => $q->where('clinics.id', $clinicId))
-            ->where('is_active', true)
+            ->where('status', 'active')
             ->get();
 
         return view('appointments.edit', compact('appointment', 'patients', 'doctors'));

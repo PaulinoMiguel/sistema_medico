@@ -26,7 +26,14 @@
                 </thead>
                 <tbody class="divide-y divide-gray-700">
                     @foreach($doctors as $doctor)
-                    <tr class="hover:bg-gray-750 {{ !$doctor->is_active ? 'opacity-50' : '' }}">
+                    @php
+                        $statusClasses = match ($doctor->status) {
+                            'active' => 'bg-green-900/50 text-green-300',
+                            'passive' => 'bg-yellow-900/50 text-yellow-300',
+                            'inactive' => 'bg-red-900/50 text-red-300',
+                        };
+                    @endphp
+                    <tr class="hover:bg-gray-750 {{ !$doctor->isActive() ? 'opacity-50' : '' }}">
                         <td class="px-6 py-4 text-sm font-medium text-white">{{ $doctor->name }}</td>
                         <td class="px-6 py-4 text-sm text-gray-300">{{ $doctor->email }}</td>
                         <td class="px-6 py-4 text-sm text-gray-300">{{ $doctor->specialty ?? '-' }}</td>
@@ -40,16 +47,16 @@
                             @endforelse
                         </td>
                         <td class="px-6 py-4">
-                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $doctor->is_active ? 'bg-green-900/50 text-green-300' : 'bg-red-900/50 text-red-300' }}">
-                                {{ $doctor->is_active ? 'Activo' : 'Inactivo' }}
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $statusClasses }}">
+                                {{ $doctor->status_label }}
                             </span>
                         </td>
                         <td class="px-6 py-4 text-sm space-x-2">
                             <a href="{{ route('admin.doctors.edit', $doctor) }}" class="text-blue-400 hover:underline">Editar</a>
                             <form action="{{ route('admin.doctors.toggle', $doctor) }}" method="POST" class="inline">
                                 @csrf @method('PATCH')
-                                <button class="{{ $doctor->is_active ? 'text-red-400' : 'text-green-400' }} hover:underline">
-                                    {{ $doctor->is_active ? 'Desactivar' : 'Activar' }}
+                                <button class="{{ $doctor->isActive() ? 'text-red-400' : 'text-green-400' }} hover:underline">
+                                    {{ $doctor->isActive() ? 'Desactivar' : 'Activar' }}
                                 </button>
                             </form>
                         </td>

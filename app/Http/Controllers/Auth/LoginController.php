@@ -27,9 +27,14 @@ class LoginController extends Controller
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $user = Auth::user();
 
-            if (! $user->is_active) {
+            if (! $user->isActive()) {
                 Auth::logout();
-                return back()->withErrors(['email' => 'Tu cuenta esta desactivada.']);
+                $message = match ($user->status) {
+                    'passive' => 'Tu cuenta es de socio pasivo y no tiene acceso al sistema.',
+                    'inactive' => 'Tu cuenta esta desactivada.',
+                    default => 'Tu cuenta no tiene acceso al sistema.',
+                };
+                return back()->withErrors(['email' => $message]);
             }
 
             $request->session()->regenerate();

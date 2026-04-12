@@ -20,7 +20,7 @@
                 </div>
 
                 <h3 class="text-lg font-semibold text-gray-800">{{ $user->name }}</h3>
-                <p class="text-sm text-gray-500 capitalize">{{ $user->specialty ?? $user->role }}</p>
+                <p class="text-sm text-gray-500">{{ $user->specialty ?? $user->role_label }}</p>
 
                 <form method="POST" action="{{ route('profile.photo') }}" enctype="multipart/form-data" class="mt-4">
                     @csrf
