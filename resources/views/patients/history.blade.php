@@ -26,7 +26,7 @@
                         <div>
                             <p class="text-sm font-semibold text-gray-800 dark:text-gray-200">
                                 {{ $consultation->consultation_date->format('d/m/Y') }}
-                                — Dr. {{ $consultation->doctor->name }}
+                                — {{ $consultation->doctor->name }}
                             </p>
                             <span class="inline-flex px-2 py-0.5 text-xs rounded-full {{ $consultation->status === 'signed' ? 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300' : 'bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300' }}">
                                 {{ $consultation->status === 'signed' ? 'Firmada' : 'En progreso' }}
@@ -41,14 +41,26 @@
                         </div>
                     @endif
 
-                    @php $dx = $consultation->diagnoses; @endphp
-                    @if(!empty($dx))
+                    @php
+                        $dx = collect((array)($consultation->diagnoses ?? []))->filter(function ($d) {
+                            if (is_array($d)) {
+                                return !empty($d['description']) || !empty($d['code']);
+                            }
+                            return !empty($d);
+                        });
+                    @endphp
+                    @if($dx->isNotEmpty())
                         <div class="mb-2">
                             <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Diagnosticos:</span>
                             <div class="flex flex-wrap gap-1 mt-1">
-                                @foreach((array)$dx as $d)
+                                @foreach($dx as $d)
+                                    @php
+                                        $label = is_array($d)
+                                            ? trim(($d['description'] ?? '') . ($d['code'] ? ' ('.$d['code'].')' : ''))
+                                            : $d;
+                                    @endphp
                                     <span class="inline-block px-2 py-0.5 text-xs bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded">
-                                        {{ is_array($d) ? ($d['description'] ?? ($d['code'] ?? json_encode($d))) : $d }}
+                                        {{ $label }}
                                     </span>
                                 @endforeach
                             </div>
