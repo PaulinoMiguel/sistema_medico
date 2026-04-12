@@ -7,6 +7,25 @@
     <form method="POST" action="{{ route('patients.store') }}">
         @csrf
 
+        @if($doctors->isNotEmpty())
+            <div class="bg-white rounded-lg shadow p-6 mb-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Doctor responsable</h3>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Doctor *</label>
+                    <select name="primary_doctor_id" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">Seleccionar doctor...</option>
+                        @foreach($doctors as $doctor)
+                            <option value="{{ $doctor->id }}" {{ old('primary_doctor_id') == $doctor->id ? 'selected' : '' }}>
+                                {{ $doctor->name }}@if($doctor->specialty) — {{ $doctor->specialty }}@endif
+                            </option>
+                        @endforeach
+                    </select>
+                    <p class="text-xs text-gray-500 mt-1">El paciente quedara asignado a este doctor.</p>
+                </div>
+            </div>
+        @endif
+
         <div class="bg-white rounded-lg shadow p-6 mb-6">
             <h3 class="text-lg font-semibold text-gray-800 mb-4">Datos personales</h3>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">

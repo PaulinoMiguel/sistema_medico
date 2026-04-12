@@ -73,11 +73,21 @@ class AppointmentController extends Controller
         $validated = $request->validate([
             'patient_id' => 'required|exists:patients,id',
             'doctor_id' => 'required|exists:users,id',
-            'scheduled_at' => 'required|date|after:now',
+            'scheduled_at' => 'required|date|after_or_equal:today',
             'duration_minutes' => 'nullable|integer|min:15|max:180',
             'type' => 'required|in:first_visit,follow_up,pre_operative,post_operative,urodynamic_study,procedure,emergency,surgical',
             'reason' => 'nullable|string',
             'notes' => 'nullable|string',
+        ], [
+            'patient_id.required' => 'Debes seleccionar un paciente.',
+            'patient_id.exists' => 'El paciente seleccionado no existe.',
+            'doctor_id.required' => 'Debes seleccionar un doctor.',
+            'doctor_id.exists' => 'El doctor seleccionado no existe.',
+            'scheduled_at.required' => 'La fecha y hora son obligatorias.',
+            'scheduled_at.date' => 'La fecha y hora no son validas.',
+            'scheduled_at.after_or_equal' => 'La fecha del turno no puede ser anterior a hoy.',
+            'type.required' => 'Debes seleccionar un tipo de turno.',
+            'type.in' => 'El tipo de turno seleccionado no es valido.',
         ]);
 
         $validated['clinic_id'] = session('active_clinic_id');
@@ -124,6 +134,12 @@ class AppointmentController extends Controller
             'type' => 'required|in:first_visit,follow_up,pre_operative,post_operative,urodynamic_study,procedure,emergency,surgical',
             'reason' => 'nullable|string',
             'notes' => 'nullable|string',
+        ], [
+            'patient_id.required' => 'Debes seleccionar un paciente.',
+            'doctor_id.required' => 'Debes seleccionar un doctor.',
+            'scheduled_at.required' => 'La fecha y hora son obligatorias.',
+            'scheduled_at.date' => 'La fecha y hora no son validas.',
+            'type.required' => 'Debes seleccionar un tipo de turno.',
         ]);
 
         $appointment->update($validated);

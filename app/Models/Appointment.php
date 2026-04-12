@@ -2,12 +2,18 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\MedicalRecordScope;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Appointment extends Model
 {
     protected $guarded = ['id'];
+
+    protected static function booted(): void
+    {
+        static::addGlobalScope(new MedicalRecordScope());
+    }
 
     protected function casts(): array
     {

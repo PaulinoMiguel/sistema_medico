@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -29,6 +30,11 @@ class User extends Authenticatable
         return $this->belongsToMany(Clinic::class, 'clinic_user')
             ->withPivot('is_primary')
             ->withTimestamps();
+    }
+
+    public function patients(): HasMany
+    {
+        return $this->hasMany(Patient::class, 'primary_doctor_id');
     }
 
     public function isDoctor(): bool

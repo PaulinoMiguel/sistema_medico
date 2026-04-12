@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\MedicalRecordScope;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -47,6 +48,11 @@ class Patient extends Model
         return $this->belongsTo(User::class, 'registered_by');
     }
 
+    public function primaryDoctor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'primary_doctor_id');
+    }
+
     public function getFullNameAttribute(): string
     {
         $name = "{$this->first_name} {$this->last_name}";
@@ -63,10 +69,15 @@ class Patient extends Model
 
     protected static function booted(): void
     {
+        static::addGlobalScope(new MedicalRecordScope(
+            useClinicPivot: true,
+            doctorColumn: 'primary_doctor_id',
+        ));
+
         static::creating(function (Patient $patient) {
             if (empty($patient->medical_record_number)) {
                 $patient->medical_record_number = 'MRN-' . date('Ymd') . '-' . str_pad(
-                    (string) (static::count() + 1), 4, '0', STR_PAD_LEFT
+                    (string) (static::withoutGlobalScopes()->count() + 1), 4, '0', STR_PAD_LEFT
                 );
             }
         });

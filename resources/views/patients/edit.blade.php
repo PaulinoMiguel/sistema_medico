@@ -40,24 +40,108 @@
                     </select>
                 </div>
                 <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de documento</label>
+                    <select name="document_type" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        <option value="cedula" {{ old('document_type', $patient->document_type) == 'cedula' ? 'selected' : '' }}>Cedula</option>
+                        <option value="passport" {{ old('document_type', $patient->document_type) == 'passport' ? 'selected' : '' }}>Pasaporte</option>
+                        <option value="other" {{ old('document_type', $patient->document_type) == 'other' ? 'selected' : '' }}>Otro</option>
+                    </select>
+                </div>
+                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Numero de documento</label>
                     <input type="text" name="document_number" value="{{ old('document_number', $patient->document_number) }}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                 </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de sangre</label>
+                    <select name="blood_type" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">Desconocido</option>
+                        @foreach(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] as $bt)
+                            <option value="{{ $bt }}" {{ old('blood_type', $patient->blood_type) == $bt ? 'selected' : '' }}>{{ $bt }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Contacto</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Telefono</label>
                     <input type="tel" name="phone" value="{{ old('phone', $patient->phone) }}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Telefono secundario</label>
+                    <input type="tel" name="secondary_phone" value="{{ old('secondary_phone', $patient->secondary_phone) }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Correo electronico</label>
                     <input type="email" name="email" value="{{ old('email', $patient->email) }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div class="md:col-span-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Direccion</label>
+                    <input type="text" name="address" value="{{ old('address', $patient->address) }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Ciudad</label>
+                    <input type="text" name="city" value="{{ old('city', $patient->city) }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Estado/Provincia</label>
+                    <input type="text" name="state" value="{{ old('state', $patient->state) }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Codigo postal</label>
+                    <input type="text" name="zip_code" value="{{ old('zip_code', $patient->zip_code) }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Informacion adicional</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Contacto de emergencia</label>
+                    <input type="text" name="emergency_contact_name" value="{{ old('emergency_contact_name', $patient->emergency_contact_name) }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tel. emergencia</label>
+                    <input type="tel" name="emergency_contact_phone" value="{{ old('emergency_contact_phone', $patient->emergency_contact_phone) }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Ocupacion</label>
+                    <input type="text" name="occupation" value="{{ old('occupation', $patient->occupation) }}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Aseguradora</label>
                     <input type="text" name="insurance_provider" value="{{ old('insurance_provider', $patient->insurance_provider) }}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">No. poliza</label>
+                    <input type="text" name="insurance_policy_number" value="{{ old('insurance_policy_number', $patient->insurance_policy_number) }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Referido por</label>
+                    <input type="text" name="referred_by" value="{{ old('referred_by', $patient->referred_by) }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div class="md:col-span-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Notas</label>
+                    <textarea name="notes" rows="3"
+                              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">{{ old('notes', $patient->notes) }}</textarea>
                 </div>
             </div>
         </div>
