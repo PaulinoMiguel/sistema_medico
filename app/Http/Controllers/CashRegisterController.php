@@ -18,6 +18,7 @@ class CashRegisterController extends Controller
 
         $openRegister = CashRegister::where('clinic_id', $clinicId)
             ->where('status', 'open')
+            ->with(['openedBy', 'payments.patient', 'payments.receivedBy'])
             ->first();
 
         return view('cash-registers.index', compact('registers', 'openRegister'));

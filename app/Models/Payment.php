@@ -63,4 +63,14 @@ class Payment extends Model
     {
         return $this->belongsTo(User::class, 'received_by');
     }
+
+    public function scopeChannel($query, string $channel)
+    {
+        return $query->where('channel', $channel);
+    }
+
+    public function isDoctorDirect(): bool
+    {
+        return $this->channel === 'doctor_direct';
+    }
 }

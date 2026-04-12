@@ -15,37 +15,63 @@ class PaymentController extends Controller
     public function index(Request $request)
     {
         $clinicId = session('active_clinic_id');
+        $channel = $request->query('channel');
+        $user = $request->user();
 
-        $payments = Payment::where('clinic_id', $clinicId)
-            ->with(['patient', 'service', 'receivedBy'])
-            ->latest()
-            ->paginate(20);
+        $query = Payment::where('clinic_id', $clinicId)
+            ->with(['patient', 'service', 'receivedBy']);
 
-        return view('payments.index', compact('payments'));
+        if ($channel === 'doctor_direct') {
+            // "Mis cobros" — only doctor's own direct payments
+            abort_unless($user->isDoctor(), 403);
+            $query->where('channel', 'doctor_direct')
+                  ->where('doctor_id', $user->id);
+        } else {
+            // Cobros de caja — secretaries should never see doctor_direct
+            if (!$user->isDoctor()) {
+                $query->where('channel', 'cash_register');
+            }
+        }
+
+        $payments = $query->latest()->paginate(20);
+
+        return view('payments.index', compact('payments', 'channel'));
     }
 
     public function create(Request $request)
     {
         $clinicId = session('active_clinic_id');
+        $channel = $request->query('channel', 'cash_register');
+        $user = $request->user();
+
+        if ($channel === 'doctor_direct') {
+            abort_unless($user->isDoctor(), 403);
+        }
 
         $patients = Patient::whereHas('clinics', function ($q) use ($clinicId) {
             $q->where('clinics.id', $clinicId);
         })->orderBy('first_name')->get();
 
-        $services = Service::where('clinic_id', $clinicId)
-            ->where('is_active', true)
+        $services = Service::where('is_active', true)
+            ->whereHas('doctor', fn ($q) => $q->where('status', 'active'))
             ->orderBy('name')
             ->get();
 
         $selectedPatientId = $request->query('patient_id');
         $selectedAppointmentId = $request->query('appointment_id');
 
-        return view('payments.create', compact('patients', 'services', 'selectedPatientId', 'selectedAppointmentId'));
+        return view('payments.create', compact('patients', 'services', 'selectedPatientId', 'selectedAppointmentId', 'channel'));
     }
 
     public function store(Request $request)
     {
         $clinicId = session('active_clinic_id');
+        $user = $request->user();
+        $channel = $request->input('channel', 'cash_register');
+
+        if ($channel === 'doctor_direct') {
+            abort_unless($user->isDoctor(), 403);
+        }
 
         $validated = $request->validate([
             'patient_id' => 'required|exists:patients,id',
@@ -56,36 +82,45 @@ class PaymentController extends Controller
             'notes' => 'nullable|string|max:500',
         ]);
 
-        // Resolve the doctor that owns this income. Priority:
-        //   1) Doctor from the linked appointment (most explicit)
-        //   2) Patient's primary doctor (fallback for cobros without turno)
-        //   3) Currently logged-in user, only if they themselves are a doctor
-        $doctorId = $this->resolveDoctorId($validated);
+        if ($channel === 'doctor_direct') {
+            // Doctor personal payment — no cash register, doctor owns it
+            $doctorId = $user->id;
+            $cashRegisterId = null;
+        } else {
+            // Cash register payment — resolve doctor from context
+            $doctorId = $this->resolveDoctorId($validated);
 
-        if (!$doctorId) {
-            throw ValidationException::withMessages([
-                'patient_id' => 'No se pudo determinar a que doctor pertenece este cobro. '
-                    . 'Vincule el cobro a un turno o asegurese de que el paciente '
-                    . 'tenga un doctor responsable asignado.',
-            ]);
+            if (!$doctorId) {
+                throw ValidationException::withMessages([
+                    'patient_id' => 'No se pudo determinar a que doctor pertenece este cobro. '
+                        . 'Vincule el cobro a un turno o asegurese de que el paciente '
+                        . 'tenga un doctor responsable asignado.',
+                ]);
+            }
+
+            $cashRegisterId = CashRegister::where('clinic_id', $clinicId)
+                ->where('status', 'open')
+                ->value('id');
         }
-
-        // Find open cash register
-        $cashRegister = CashRegister::where('clinic_id', $clinicId)
-            ->where('status', 'open')
-            ->first();
 
         $payment = Payment::create([
             ...$validated,
             'clinic_id' => $clinicId,
             'doctor_id' => $doctorId,
+            'channel' => $channel,
             'received_by' => auth()->id(),
-            'cash_register_id' => $cashRegister?->id,
+            'cash_register_id' => $cashRegisterId,
             'receipt_number' => $this->generateReceiptNumber($clinicId),
         ]);
 
-        return redirect()->route('payments.show', $payment)
-            ->with('success', 'Cobro registrado exitosamente.');
+        if ($channel === 'doctor_direct') {
+            return redirect()->route('payments.index', ['channel' => 'doctor_direct'])
+                ->with('success', 'Cobro personal registrado exitosamente.');
+        }
+
+        // Cash register payments always return to the cash register panel
+        return redirect()->route('cash-registers.index')
+            ->with('success', "Cobro registrado exitosamente. Recibo: {$payment->receipt_number}");
     }
 
     /**

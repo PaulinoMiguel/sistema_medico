@@ -49,7 +49,7 @@
                                 {{ $patient->full_name }}
                             </a>
                         </td>
-                        <td class="px-6 py-4 text-sm text-gray-500">{{ $patient->age }} anios</td>
+                        <td class="px-6 py-4 text-sm text-gray-500">{{ $patient->age }} años</td>
                         <td class="px-6 py-4 text-sm text-gray-500">{{ $patient->phone ?? '-' }}</td>
                         <td class="px-6 py-4 text-sm text-gray-500">{{ $patient->insurance_provider ?? 'Particular' }}</td>
                         <td class="px-6 py-4 text-sm space-x-2">

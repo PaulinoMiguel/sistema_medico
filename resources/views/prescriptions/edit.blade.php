@@ -20,12 +20,6 @@
                     <p class="text-sm text-gray-800 py-2">{{ $prescription->patient->full_name }}</p>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Diagnostico</label>
-                    <input type="text" name="diagnosis" value="{{ old('diagnosis', $prescription->diagnosis) }}"
-                           class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"
-                           placeholder="Diagnostico principal">
-                </div>
-                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
                     <select name="status"
                             class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">

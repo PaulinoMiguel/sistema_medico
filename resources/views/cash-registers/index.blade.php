@@ -1,47 +1,98 @@
-<x-layouts.tenant :title="'Corte de Caja'">
+<x-layouts.tenant :title="'Caja'">
     <div class="flex justify-between items-center mb-6">
         <div>
-            <h2 class="text-2xl font-bold text-gray-800">Corte de Caja</h2>
-            <p class="text-gray-500 text-sm">Apertura y cierre de caja diario.</p>
+            <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200">Caja</h2>
+            <p class="text-gray-500 dark:text-gray-400 text-sm">Apertura, cobros y cierre de caja diario.</p>
         </div>
     </div>
 
     {{-- Open/Close Register Card --}}
     @if($openRegister)
-        <div class="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
+        <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-6 mb-6">
             <div class="flex items-center justify-between">
                 <div>
                     <div class="flex items-center">
                         <span class="w-3 h-3 bg-green-500 rounded-full animate-pulse mr-2"></span>
-                        <h3 class="text-lg font-semibold text-green-800">Caja abierta</h3>
+                        <h3 class="text-lg font-semibold text-green-800 dark:text-green-300">Caja abierta</h3>
                     </div>
-                    <p class="text-sm text-green-700 mt-1">
+                    <p class="text-sm text-green-700 dark:text-green-400 mt-1">
                         Abierta por {{ $openRegister->openedBy->name }} el {{ $openRegister->opened_at->format('d/m/Y H:i') }}
                     </p>
                     <div class="flex gap-6 mt-3">
                         <div>
-                            <p class="text-xs text-green-600">Monto inicial</p>
-                            <p class="text-lg font-mono font-bold text-green-800">${{ number_format($openRegister->opening_amount, 2) }}</p>
+                            <p class="text-xs text-green-600 dark:text-green-400">Monto inicial</p>
+                            <p class="text-lg font-mono font-bold text-green-800 dark:text-green-300">${{ number_format($openRegister->opening_amount, 2) }}</p>
                         </div>
                         <div>
-                            <p class="text-xs text-green-600">Cobros del dia</p>
-                            <p class="text-lg font-mono font-bold text-green-800">${{ number_format($openRegister->total_collected, 2) }}</p>
+                            <p class="text-xs text-green-600 dark:text-green-400">Cobros del dia</p>
+                            <p class="text-lg font-mono font-bold text-green-800 dark:text-green-300">${{ number_format($openRegister->total_collected, 2) }}</p>
                         </div>
                         <div>
-                            <p class="text-xs text-green-600">Total esperado</p>
-                            <p class="text-lg font-mono font-bold text-green-800">${{ number_format($openRegister->opening_amount + $openRegister->total_collected, 2) }}</p>
+                            <p class="text-xs text-green-600 dark:text-green-400">Total esperado</p>
+                            <p class="text-lg font-mono font-bold text-green-800 dark:text-green-300">${{ number_format($openRegister->opening_amount + $openRegister->total_collected, 2) }}</p>
                         </div>
                     </div>
                 </div>
-                <div class="text-right">
-                    <a href="{{ route('cash-registers.show', $openRegister) }}" class="text-green-700 hover:underline text-sm block mb-2">Ver detalle</a>
-                    <button onclick="document.getElementById('close-modal').classList.remove('hidden')"
-                            class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm font-medium">
-                        Cerrar caja
-                    </button>
-                </div>
             </div>
         </div>
+
+        {{-- Payments detail (inline) --}}
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden mb-6">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Cobros del dia</h3>
+                @can('payments.create')
+                    <a href="{{ route('payments.create') }}" class="bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 text-sm font-medium">
+                        + Registrar cobro
+                    </a>
+                @endcan
+            </div>
+            @if($openRegister->payments->isEmpty())
+                <div class="p-8 text-center text-gray-500 dark:text-gray-400">
+                    No se han registrado cobros en esta caja.
+                </div>
+            @else
+                <table class="w-full">
+                    <thead class="bg-gray-50 dark:bg-gray-700">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Hora</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Recibo</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Paciente</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Concepto</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Cobro por</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Monto</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                        @foreach($openRegister->payments as $payment)
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                            <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{{ $payment->created_at->format('H:i') }}</td>
+                            <td class="px-6 py-4 text-sm font-mono text-gray-500 dark:text-gray-400">{{ $payment->receipt_number }}</td>
+                            <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-gray-100">{{ $payment->patient->full_name }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{{ $payment->concept }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{{ $payment->receivedBy->name }}</td>
+                            <td class="px-6 py-4 text-sm text-right font-mono font-semibold text-gray-900 dark:text-gray-100">${{ number_format($payment->amount, 2) }}</td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                    <tfoot class="bg-gray-50 dark:bg-gray-700">
+                        <tr>
+                            <td colspan="5" class="px-6 py-3 text-sm font-bold text-gray-800 dark:text-gray-200 text-right">Total cobrado:</td>
+                            <td class="px-6 py-3 text-right font-mono font-bold text-lg text-green-700 dark:text-green-400">${{ number_format($openRegister->total_collected, 2) }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            @endif
+        </div>
+
+        {{-- Close button separated --}}
+        @can('cash-register.close')
+        <div class="flex justify-end mb-6">
+            <button onclick="document.getElementById('close-modal').classList.remove('hidden')"
+                    class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm font-medium">
+                Cerrar caja
+            </button>
+        </div>
+        @endcan
 
         {{-- Close Modal --}}
         <div id="close-modal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">

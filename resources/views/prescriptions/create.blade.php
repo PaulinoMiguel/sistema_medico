@@ -1,6 +1,10 @@
 <x-layouts.tenant title="Nueva Receta">
     <div class="mb-6">
-        <a href="{{ route('prescriptions.index') }}" class="text-blue-600 hover:underline text-sm">&larr; Volver a recetas</a>
+        @if(isset($consultationId) && $consultationId)
+            <a href="{{ route('consultations.edit', $consultationId) }}" class="text-blue-600 hover:underline text-sm">&larr; Volver a la consulta</a>
+        @else
+            <a href="{{ route('prescriptions.index') }}" class="text-blue-600 hover:underline text-sm">&larr; Volver a recetas</a>
+        @endif
     </div>
 
     <h2 class="text-2xl font-bold text-gray-800 mb-6">Nueva Receta</h2>
@@ -26,12 +30,6 @@
                             </option>
                         @endforeach
                     </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Diagnostico</label>
-                    <input type="text" name="diagnosis" value="{{ old('diagnosis') }}"
-                           class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"
-                           placeholder="Diagnostico principal">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Notas generales</label>

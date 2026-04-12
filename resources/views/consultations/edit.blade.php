@@ -15,7 +15,7 @@
             <p class="text-gray-500 text-sm">
                 {{ $typeLabels[$consultation->type] ?? $consultation->type }} |
                 Expediente: {{ $consultation->patient->medical_record_number }} |
-                {{ $consultation->patient->age }} anios |
+                {{ $consultation->patient->age }} años |
                 {{ $consultation->consultation_date->format('d/m/Y H:i') }}
             </p>
         </div>
@@ -293,6 +293,13 @@
                 <div class="flex justify-between items-center">
                     <a href="{{ route('consultations.index') }}" class="text-gray-500 hover:underline text-sm">Cancelar</a>
                     <div class="flex gap-3">
+                        @can('prescriptions.create')
+                        <a href="{{ route('prescriptions.create', ['patient_id' => $consultation->patient_id, 'consultation_id' => $consultation->id]) }}"
+                           style="background-color:#9333ea;color:#fff;" class="px-6 py-2 rounded-md text-sm font-medium inline-flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            Crear receta
+                        </a>
+                        @endcan
                         <button type="submit" name="action" value="save" style="background-color:#2563eb;color:#fff;" class="px-6 py-2 rounded-md text-sm font-medium">
                             Guardar borrador
                         </button>
@@ -311,7 +318,7 @@
                     <h4 class="font-semibold text-gray-800 mb-3">Paciente</h4>
                     <dl class="space-y-2 text-sm">
                         <div><dt class="text-gray-500">Nombre</dt><dd class="font-medium">{{ $consultation->patient->full_name }}</dd></div>
-                        <div><dt class="text-gray-500">Edad</dt><dd>{{ $consultation->patient->age }} anios</dd></div>
+                        <div><dt class="text-gray-500">Edad</dt><dd>{{ $consultation->patient->age }} años</dd></div>
                         <div><dt class="text-gray-500">Genero</dt><dd>{{ $consultation->patient->gender === 'male' ? 'Masculino' : ($consultation->patient->gender === 'female' ? 'Femenino' : 'Otro') }}</dd></div>
                         @if($consultation->patient->blood_type)
                             <div><dt class="text-gray-500">Sangre</dt><dd>{{ $consultation->patient->blood_type }}</dd></div>
@@ -320,7 +327,7 @@
                             <div><dt class="text-gray-500">Tel</dt><dd>{{ $consultation->patient->phone }}</dd></div>
                         @endif
                     </dl>
-                    <a href="{{ route('patients.show', $consultation->patient) }}" class="block mt-3 text-xs text-blue-600 hover:underline">Ver ficha completa</a>
+                    <a href="{{ route('patients.show', ['patient' => $consultation->patient, 'from' => 'consultation', 'consultation_id' => $consultation->id]) }}" class="block mt-3 text-xs text-blue-600 hover:underline">Ver ficha completa</a>
                 </div>
 
                 {{-- Medical history summary --}}

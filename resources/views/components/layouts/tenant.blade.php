@@ -64,6 +64,7 @@
             <nav class="p-4 space-y-1 overflow-y-auto" style="max-height: calc(100vh - 180px);">
                 @php
                     $u = auth()->user();
+                    $hasClinic = $userClinics->isNotEmpty();
                     $activeClass = 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400';
                     $inactiveClass = 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700';
                     $groupSummaryClass = 'flex items-center justify-between px-3 py-2 text-sm font-medium rounded-md cursor-pointer text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700';
@@ -75,8 +76,9 @@
                     $showClinical = $canConsultations || $canPrescriptions;
 
                     $canPayments = $u->can('payments.view');
+                    $canPaymentsCreate = $u->can('payments.create');
                     $canServices = $u->can('services.manage') || $u->can('services.view');
-                    $showIngresos = $canPayments || $canServices;
+                    $showIngresos = $canPayments || ($canPaymentsCreate && $u->isDoctor()) || $canServices;
 
                     $canExpenses = $u->can('expenses.view');
                     $canExpenseCategories = $u->can('expense-categories.manage');
@@ -85,23 +87,30 @@
 
                     $canClinicsManage = $u->can('clinics.manage');
                     $canStaffManage = $u->can('staff.manage');
-                    $showAdmin = $canClinicsManage || $canStaffManage;
+                    $canRolesManage = $u->can('roles.manage');
+                    $showAdmin = $canClinicsManage || $canStaffManage || $canRolesManage;
 
                     $canCashRegister = $u->can('cash-register.view');
 
                     // Detect which group should be auto-expanded based on current route
                     $clinicalOpen = request()->routeIs('consultations.*') || request()->routeIs('prescriptions.*');
                     $ingresosOpen = request()->routeIs('payments.*') || request()->routeIs('services.*');
+                    $isDirectChannel = request()->query('channel') === 'doctor_direct';
                     $egresosOpen = request()->routeIs('expenses.*') || request()->routeIs('expense-categories.*');
-                    $adminOpen = request()->routeIs('clinics.*') || request()->routeIs('secretaries.*');
+                    $adminOpen = request()->routeIs('clinics.*') || request()->routeIs('secretaries.*') || request()->routeIs('roles.*');
                 @endphp
 
-                {{-- Top-level shortcuts (always visible) --}}
+                {{-- Always visible --}}
                 <a href="{{ route('dashboard') }}"
                    class="flex items-center px-3 py-2 text-sm font-medium rounded-md {{ request()->routeIs('dashboard') ? $activeClass : $inactiveClass }}">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
                     Inicio
                 </a>
+
+                {{-- Operational items — hidden until at least one clinic exists.
+                     This prevents the user from accidentally navigating to features
+                     that require a clinic context before having one. --}}
+                @if($hasClinic)
                 @can('patients.view')
                 <a href="{{ route('patients.index') }}"
                    class="flex items-center px-3 py-2 text-sm font-medium rounded-md {{ request()->routeIs('patients.*') ? $activeClass : $inactiveClass }}">
@@ -149,7 +158,7 @@
                 <a href="{{ route('cash-registers.index') }}"
                    class="flex items-center px-3 py-2 text-sm font-medium rounded-md {{ request()->routeIs('cash-registers.*') ? $activeClass : $inactiveClass }}">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-                    Corte de Caja
+                    Caja
                 </a>
                 @endif
 
@@ -164,9 +173,15 @@
                         <svg class="chevron w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                     </summary>
                     <div class="mt-1 space-y-1">
+                        @if($u->isDoctor() && $canPaymentsCreate)
+                        <a href="{{ route('payments.index', ['channel' => 'doctor_direct']) }}"
+                           class="{{ $childItemClass }} {{ request()->routeIs('payments.*') && $isDirectChannel ? $activeClass : $inactiveClass }}">
+                            Mis cobros
+                        </a>
+                        @endif
                         @if($canPayments)
                         <a href="{{ route('payments.index') }}"
-                           class="{{ $childItemClass }} {{ request()->routeIs('payments.*') ? $activeClass : $inactiveClass }}">
+                           class="{{ $childItemClass }} {{ request()->routeIs('payments.*') && !$isDirectChannel ? $activeClass : $inactiveClass }}">
                             Cobros
                         </a>
                         @endif
@@ -213,7 +228,10 @@
                     </details>
                 @endif
 
-                {{-- Administracion --}}
+                @endif {{-- end hasClinic --}}
+
+                {{-- Administracion — always visible so the doctor can create
+                     their first clinic even from a state of zero. --}}
                 @if($showAdmin)
                     <details class="mt-2" {{ $adminOpen ? 'open' : '' }}>
                         <summary class="{{ $groupSummaryClass }}">
@@ -234,6 +252,12 @@
                             <a href="{{ route('secretaries.index') }}"
                                class="{{ $childItemClass }} {{ request()->routeIs('secretaries.*') ? $activeClass : $inactiveClass }}">
                                 Secretarias
+                            </a>
+                            @endif
+                            @if($canRolesManage)
+                            <a href="{{ route('roles.index') }}"
+                               class="{{ $childItemClass }} {{ request()->routeIs('roles.*') ? $activeClass : $inactiveClass }}">
+                                Roles y permisos
                             </a>
                             @endif
                         </div>

@@ -1,6 +1,12 @@
 <x-layouts.tenant :title="$patient->full_name">
     <div class="mb-6">
-        <a href="{{ route('patients.index') }}" class="text-blue-600 hover:underline text-sm">&larr; Volver a pacientes</a>
+        @if(request('from') === 'consultation' && request('consultation_id'))
+            <a href="{{ route('consultations.edit', request('consultation_id')) }}" class="text-blue-600 hover:underline text-sm">&larr; Volver a la consulta</a>
+        @elseif(request('from') === 'prescription' && request('prescription_id'))
+            <a href="{{ route('prescriptions.show', request('prescription_id')) }}" class="text-blue-600 hover:underline text-sm">&larr; Volver a la receta</a>
+        @else
+            <a href="{{ route('patients.index') }}" class="text-blue-600 hover:underline text-sm">&larr; Volver a pacientes</a>
+        @endif
     </div>
 
     {{-- Patient Header --}}
@@ -10,7 +16,7 @@
                 <h2 class="text-2xl font-bold text-gray-800">{{ $patient->full_name }}</h2>
                 <p class="text-gray-500">Expediente: {{ $patient->medical_record_number }}</p>
                 <div class="mt-2 flex gap-4 text-sm text-gray-600">
-                    <span>{{ $patient->age }} anios</span>
+                    <span>{{ $patient->age }} años</span>
                     <span>{{ $patient->gender == 'male' ? 'Masculino' : ($patient->gender == 'female' ? 'Femenino' : 'Otro') }}</span>
                     @if($patient->blood_type)
                         <span>Sangre: {{ $patient->blood_type }}</span>

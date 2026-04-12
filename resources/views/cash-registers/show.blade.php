@@ -1,6 +1,6 @@
 <x-layouts.tenant :title="'Detalle de Caja'">
     <div class="mb-6">
-        <a href="{{ route('cash-registers.index') }}" class="text-blue-600 hover:underline text-sm">&larr; Volver a corte de caja</a>
+        <a href="{{ route('cash-registers.index') }}" class="text-blue-600 hover:underline text-sm">&larr; Volver a caja</a>
         <h2 class="text-2xl font-bold text-gray-800 mt-2">Detalle de Caja</h2>
     </div>
 

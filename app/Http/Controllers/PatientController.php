@@ -61,6 +61,18 @@ class PatientController extends Controller
     {
         $user = $request->user();
 
+        // Defense in depth: even though clinic.required middleware blocks
+        // doctors without clinics, this guard prevents creating orphan
+        // patients in any other code path.
+        $clinicId = session('active_clinic_id');
+        if (!$clinicId) {
+            return redirect()->route('clinics.create')
+                ->with('warning', 'Necesitas crear una clinica antes de registrar pacientes.');
+        }
+
+        $isAdult = $request->date_of_birth
+            && now()->diffInYears($request->date_of_birth) >= 18;
+
         $rules = [
             'first_name' => 'required|string|max:100',
             'last_name' => 'required|string|max:100',
@@ -68,7 +80,7 @@ class PatientController extends Controller
             'date_of_birth' => 'required|date|before_or_equal:today',
             'gender' => 'required|in:male,female,other',
             'document_type' => 'nullable|string',
-            'document_number' => 'nullable|string|max:50',
+            'document_number' => $isAdult ? 'required|string|max:50' : 'nullable|string|max:50',
             'blood_type' => 'nullable|string|max:5',
             'phone' => 'nullable|string|max:50',
             'secondary_phone' => 'nullable|string|max:50',
@@ -99,11 +111,8 @@ class PatientController extends Controller
 
         $patient = Patient::create($validated);
 
-        // Attach to current clinic
-        $clinicId = session('active_clinic_id');
-        if ($clinicId) {
-            $patient->clinics()->attach($clinicId);
-        }
+        // Attach to current clinic (guaranteed not null by the guard above)
+        $patient->clinics()->attach($clinicId);
 
         // Create empty medical history
         $patient->medicalHistory()->create();
@@ -128,6 +137,9 @@ class PatientController extends Controller
 
     public function update(Request $request, Patient $patient)
     {
+        $isAdult = $request->date_of_birth
+            && now()->diffInYears($request->date_of_birth) >= 18;
+
         $validated = $request->validate([
             'first_name' => 'required|string|max:100',
             'last_name' => 'required|string|max:100',
@@ -135,7 +147,7 @@ class PatientController extends Controller
             'date_of_birth' => 'required|date|before_or_equal:today',
             'gender' => 'required|in:male,female,other',
             'document_type' => 'nullable|string',
-            'document_number' => 'nullable|string|max:50',
+            'document_number' => $isAdult ? 'required|string|max:50' : 'nullable|string|max:50',
             'blood_type' => 'nullable|string|max:5',
             'phone' => 'nullable|string|max:50',
             'secondary_phone' => 'nullable|string|max:50',

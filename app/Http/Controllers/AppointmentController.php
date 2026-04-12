@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use App\Models\Patient;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class AppointmentController extends Controller
 {
@@ -54,31 +56,47 @@ class AppointmentController extends Controller
     public function create(Request $request)
     {
         $clinicId = session('active_clinic_id');
+        $user = $request->user();
 
         $patients = Patient::whereHas('clinics', fn ($q) => $q->where('clinics.id', $clinicId))
             ->where('is_active', true)
             ->orderBy('last_name')
             ->get();
 
-        $doctors = User::role(['doctor_admin', 'doctor_associate'])
-            ->whereHas('clinics', fn ($q) => $q->where('clinics.id', $clinicId))
-            ->where('status', 'active')
-            ->get();
+        // Doctors create appointments only for themselves — the doctor field
+        // is hidden in the view and auto-filled in store(). Secretaries see
+        // a dropdown filtered to active doctors of the current clinic.
+        $showDoctorSelect = !$user->isDoctor();
+        $doctors = $showDoctorSelect
+            ? User::role(['doctor_admin', 'doctor_associate'])
+                ->whereHas('clinics', fn ($q) => $q->where('clinics.id', $clinicId))
+                ->where('status', 'active')
+                ->get()
+            : collect();
 
-        return view('appointments.create', compact('patients', 'doctors'));
+        return view('appointments.create', compact('patients', 'doctors', 'showDoctorSelect'));
     }
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $user = $request->user();
+
+        $rules = [
             'patient_id' => 'required|exists:patients,id',
-            'doctor_id' => 'required|exists:users,id',
             'scheduled_at' => 'required|date|after_or_equal:today',
             'duration_minutes' => 'nullable|integer|min:15|max:180',
             'type' => 'required|in:first_visit,follow_up,pre_operative,post_operative,urodynamic_study,procedure,emergency,surgical',
             'reason' => 'nullable|string',
             'notes' => 'nullable|string',
-        ], [
+        ];
+
+        // Doctors auto-assign themselves; only secretaries (and other staff)
+        // need to pick a doctor explicitly.
+        if (!$user->isDoctor()) {
+            $rules['doctor_id'] = 'required|exists:users,id';
+        }
+
+        $validated = $request->validate($rules, [
             'patient_id.required' => 'Debes seleccionar un paciente.',
             'patient_id.exists' => 'El paciente seleccionado no existe.',
             'doctor_id.required' => 'Debes seleccionar un doctor.',
@@ -90,8 +108,14 @@ class AppointmentController extends Controller
             'type.in' => 'El tipo de turno seleccionado no es valido.',
         ]);
 
+        if ($user->isDoctor()) {
+            $validated['doctor_id'] = $user->id;
+        }
+
+        $this->checkOverlap($validated['doctor_id'], $validated['scheduled_at'], $validated['duration_minutes'] ?? 30);
+
         $validated['clinic_id'] = session('active_clinic_id');
-        $validated['created_by'] = $request->user()->id;
+        $validated['created_by'] = $user->id;
         $validated['status'] = 'scheduled';
 
         $appointment = Appointment::create($validated);
@@ -107,40 +131,57 @@ class AppointmentController extends Controller
         return view('appointments.show', compact('appointment'));
     }
 
-    public function edit(Appointment $appointment)
+    public function edit(Request $request, Appointment $appointment)
     {
         $clinicId = session('active_clinic_id');
+        $user = $request->user();
 
         $patients = Patient::whereHas('clinics', fn ($q) => $q->where('clinics.id', $clinicId))
             ->where('is_active', true)
             ->orderBy('last_name')
             ->get();
 
-        $doctors = User::role(['doctor_admin', 'doctor_associate'])
-            ->whereHas('clinics', fn ($q) => $q->where('clinics.id', $clinicId))
-            ->where('status', 'active')
-            ->get();
+        $showDoctorSelect = !$user->isDoctor();
+        $doctors = $showDoctorSelect
+            ? User::role(['doctor_admin', 'doctor_associate'])
+                ->whereHas('clinics', fn ($q) => $q->where('clinics.id', $clinicId))
+                ->where('status', 'active')
+                ->get()
+            : collect();
 
-        return view('appointments.edit', compact('appointment', 'patients', 'doctors'));
+        return view('appointments.edit', compact('appointment', 'patients', 'doctors', 'showDoctorSelect'));
     }
 
     public function update(Request $request, Appointment $appointment)
     {
-        $validated = $request->validate([
+        $user = $request->user();
+
+        $rules = [
             'patient_id' => 'required|exists:patients,id',
-            'doctor_id' => 'required|exists:users,id',
             'scheduled_at' => 'required|date',
             'duration_minutes' => 'nullable|integer|min:15|max:180',
             'type' => 'required|in:first_visit,follow_up,pre_operative,post_operative,urodynamic_study,procedure,emergency,surgical',
             'reason' => 'nullable|string',
             'notes' => 'nullable|string',
-        ], [
+        ];
+
+        if (!$user->isDoctor()) {
+            $rules['doctor_id'] = 'required|exists:users,id';
+        }
+
+        $validated = $request->validate($rules, [
             'patient_id.required' => 'Debes seleccionar un paciente.',
             'doctor_id.required' => 'Debes seleccionar un doctor.',
             'scheduled_at.required' => 'La fecha y hora son obligatorias.',
             'scheduled_at.date' => 'La fecha y hora no son validas.',
             'type.required' => 'Debes seleccionar un tipo de turno.',
         ]);
+
+        if ($user->isDoctor()) {
+            $validated['doctor_id'] = $user->id;
+        }
+
+        $this->checkOverlap($validated['doctor_id'], $validated['scheduled_at'], $validated['duration_minutes'] ?? $appointment->duration_minutes ?? 30, $appointment->id);
 
         $appointment->update($validated);
 
@@ -176,5 +217,34 @@ class AppointmentController extends Controller
         $appointment->save();
 
         return redirect()->back()->with('success', 'Estado del turno actualizado.');
+    }
+
+    private function checkOverlap(int $doctorId, string $scheduledAt, int $durationMinutes, ?int $excludeId = null): void
+    {
+        $start = Carbon::parse($scheduledAt);
+        $end = $start->copy()->addMinutes($durationMinutes);
+
+        $overlap = Appointment::withoutGlobalScopes()
+            ->where('doctor_id', $doctorId)
+            ->whereNotIn('status', ['cancelled', 'no_show'])
+            ->when($excludeId, fn ($q) => $q->where('id', '!=', $excludeId))
+            ->where(function ($q) use ($start, $end, $durationMinutes) {
+                $q->where(function ($q) use ($start, $end, $durationMinutes) {
+                    // El turno existente empieza antes de que termine el nuevo
+                    // Y el turno existente termina después de que empiece el nuevo
+                    $q->where('scheduled_at', '<', $end)
+                       ->whereRaw(
+                           'DATE_ADD(scheduled_at, INTERVAL COALESCE(duration_minutes, 30) MINUTE) > ?',
+                           [$start]
+                       );
+                });
+            })
+            ->exists();
+
+        if ($overlap) {
+            throw ValidationException::withMessages([
+                'scheduled_at' => 'Ya existe un turno programado para este doctor en ese horario.',
+            ]);
+        }
     }
 }

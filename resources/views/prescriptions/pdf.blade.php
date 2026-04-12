@@ -25,8 +25,6 @@
         .medication .details span { margin-right: 15px; }
         .medication .instructions { font-size: 11px; color: #666; font-style: italic; margin-top: 4px; }
 
-        .diagnosis { margin-bottom: 15px; padding: 8px 12px; background-color: #eff6ff; border-radius: 4px; }
-        .diagnosis .label { font-weight: bold; font-size: 11px; color: #555; }
 
         .notes { margin-bottom: 20px; padding: 8px 12px; background-color: #fefce8; border-radius: 4px; font-size: 11px; }
 
@@ -68,11 +66,6 @@
         </table>
     </div>
 
-    @if($prescription->diagnosis)
-        <div class="diagnosis">
-            <span class="label">Diagnostico:</span> {{ $prescription->diagnosis }}
-        </div>
-    @endif
 
     <div class="rx-symbol">Rx</div>
 
