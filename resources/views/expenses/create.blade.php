@@ -4,10 +4,9 @@
         <h2 class="text-2xl font-bold text-gray-800 mt-2">Registrar Gasto</h2>
     </div>
 
-    @if($categories->isEmpty())
+    @if($categories->isEmpty() && !auth()->user()->can('expense-categories.manage'))
         <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
-            <p class="text-yellow-800 mb-3">Necesitas crear al menos una categoria de gastos primero.</p>
-            <a href="{{ route('expense-categories.index') }}" class="text-blue-600 hover:underline font-medium">Ir a categorias</a>
+            <p class="text-yellow-800 mb-3">No hay categorias de gasto configuradas. Pidele al administrador del consultorio que cree las categorias necesarias.</p>
         </div>
     @else
         <form method="POST" action="{{ route('expenses.store') }}">
@@ -16,8 +15,16 @@
                 <div class="space-y-4">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Categoria *</label>
-                            <select name="expense_category_id" required
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="block text-sm font-medium text-gray-700">Categoria *</label>
+                                @can('expense-categories.manage')
+                                    <button type="button" id="open_quick_category"
+                                            class="text-xs text-blue-600 hover:text-blue-800 font-medium">
+                                        + Nueva categoria
+                                    </button>
+                                @endcan
+                            </div>
+                            <select name="expense_category_id" id="category_select" required
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                                 <option value="">Seleccionar...</option>
                                 @foreach($categories as $category)
@@ -77,5 +84,101 @@
                 </div>
             </div>
         </form>
+
+        @can('expense-categories.manage')
+            {{-- Quick category creation modal --}}
+            <dialog id="quick_category_dialog" class="rounded-lg shadow-xl p-0 backdrop:bg-black/40 max-w-md w-full">
+                <form id="quick_category_form" method="dialog" class="p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Nueva categoria de gasto</h3>
+
+                    <div id="quick_category_errors" class="hidden mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded text-sm"></div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
+                        <input type="text" name="name" id="qc_name" required maxlength="255"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="ej. Suministros, Alquiler, Servicios publicos">
+                    </div>
+
+                    <div class="mt-5 flex justify-end gap-2">
+                        <button type="button" id="qc_cancel"
+                                class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 text-sm">Cancelar</button>
+                        <button type="button" id="qc_submit"
+                                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium">Crear categoria</button>
+                    </div>
+                </form>
+            </dialog>
+
+            <script>
+                (function () {
+                    const dialog = document.getElementById('quick_category_dialog');
+                    const openBtn = document.getElementById('open_quick_category');
+                    const cancelBtn = document.getElementById('qc_cancel');
+                    const submitBtn = document.getElementById('qc_submit');
+                    const errorBox = document.getElementById('quick_category_errors');
+                    const nameInput = document.getElementById('qc_name');
+                    const categorySelect = document.getElementById('category_select');
+
+                    function resetDialog() {
+                        nameInput.value = '';
+                        errorBox.classList.add('hidden');
+                        errorBox.textContent = '';
+                    }
+
+                    openBtn.addEventListener('click', () => {
+                        resetDialog();
+                        dialog.showModal();
+                        nameInput.focus();
+                    });
+
+                    cancelBtn.addEventListener('click', () => dialog.close());
+
+                    submitBtn.addEventListener('click', async () => {
+                        submitBtn.disabled = true;
+                        errorBox.classList.add('hidden');
+
+                        const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+                        try {
+                            const res = await fetch('{{ route('expense-categories.quick-store') }}', {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRF-TOKEN': csrfToken,
+                                    'Accept': 'application/json',
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({ name: nameInput.value }),
+                            });
+
+                            if (!res.ok) {
+                                const data = await res.json().catch(() => ({}));
+                                const messages = data.errors
+                                    ? Object.values(data.errors).flat().join(' ')
+                                    : (data.message || 'No se pudo crear la categoria.');
+                                errorBox.textContent = messages;
+                                errorBox.classList.remove('hidden');
+                                return;
+                            }
+
+                            const category = await res.json();
+
+                            // Append new option to dropdown and select it
+                            const opt = document.createElement('option');
+                            opt.value = category.id;
+                            opt.text = category.name;
+                            categorySelect.appendChild(opt);
+                            categorySelect.value = category.id;
+
+                            dialog.close();
+                        } catch (err) {
+                            errorBox.textContent = 'Error de red. Intenta nuevamente.';
+                            errorBox.classList.remove('hidden');
+                        } finally {
+                            submitBtn.disabled = false;
+                        }
+                    });
+                })();
+            </script>
+        @endcan
     @endif
 </x-layouts.tenant>

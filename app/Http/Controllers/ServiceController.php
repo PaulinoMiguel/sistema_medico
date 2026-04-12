@@ -3,17 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\Service;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ServiceController extends Controller
 {
     public function index()
     {
-        $clinicId = session('active_clinic_id');
-
-        $services = Service::where('clinic_id', $clinicId)
-            ->orderBy('name')
-            ->get();
+        // Scope filters automatically: doctor sees own, secretary sees
+        // services from doctors in her clinics. Order by name.
+        $services = Service::orderBy('name')->get();
 
         return view('services.index', compact('services'));
     }
@@ -33,23 +32,50 @@ class ServiceController extends Controller
 
         Service::create([
             ...$validated,
-            'clinic_id' => session('active_clinic_id'),
+            'doctor_id' => $request->user()->id,
         ]);
 
         return redirect()->route('services.index')
             ->with('success', 'Servicio creado exitosamente.');
     }
 
+    /**
+     * Inline service creation from the payment form.
+     * Returns JSON so the frontend can append the new option to the dropdown
+     * without losing the in-progress payment data.
+     */
+    public function quickStore(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:500',
+            'price' => 'required|numeric|min:0',
+        ]);
+
+        $service = Service::create([
+            ...$validated,
+            'doctor_id' => $request->user()->id,
+        ]);
+
+        return response()->json([
+            'id' => $service->id,
+            'name' => $service->name,
+            'price' => (float) $service->price,
+            'doctor_id' => $service->doctor_id,
+        ], 201);
+    }
+
     public function edit(Service $service)
     {
-        abort_if($service->clinic_id != session('active_clinic_id'), 403);
+        // Only the owning doctor can edit her own services.
+        abort_if($service->doctor_id !== auth()->id(), 403);
 
         return view('services.edit', compact('service'));
     }
 
     public function update(Request $request, Service $service)
     {
-        abort_if($service->clinic_id != session('active_clinic_id'), 403);
+        abort_if($service->doctor_id !== auth()->id(), 403);
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -65,7 +91,7 @@ class ServiceController extends Controller
 
     public function toggle(Service $service)
     {
-        abort_if($service->clinic_id != session('active_clinic_id'), 403);
+        abort_if($service->doctor_id !== auth()->id(), 403);
 
         $service->update(['is_active' => ! $service->is_active]);
 

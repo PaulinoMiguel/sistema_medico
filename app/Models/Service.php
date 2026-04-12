@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\MedicalRecordScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -21,9 +22,18 @@ class Service extends Model
         ];
     }
 
-    public function clinic(): BelongsTo
+    protected static function booted(): void
     {
-        return $this->belongsTo(Clinic::class);
+        // Doctor sees only own services. Secretary sees services from doctors
+        // who work in any of her assigned clinics.
+        static::addGlobalScope(new MedicalRecordScope(
+            secretaryViaDoctorClinic: true,
+        ));
+    }
+
+    public function doctor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'doctor_id');
     }
 
     public function payments(): HasMany

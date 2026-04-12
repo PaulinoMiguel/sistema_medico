@@ -89,8 +89,10 @@ class RolesAndPermissionsSeeder extends Seeder
         // donde uno solo es el admin). Hace todo lo clinico y financiero
         // pero no toca administracion ni configuracion del sistema.
         $doctorAssociate = Role::firstOrCreate(['name' => 'doctor_associate', 'guard_name' => 'web']);
+        // Doctor associates manage their OWN services (each doctor's catalog
+        // is personal — not shared with other doctors of the same clinic).
+        // The visibility scope on Service ensures they only see their own.
         $doctorAssociate->syncPermissions(array_diff(self::PERMISSIONS, [
-            'services.manage',
             'clinics.manage',
             'staff.view',
             'staff.manage',

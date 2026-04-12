@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ExpenseCategory;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ExpenseCategoryController extends Controller
@@ -32,6 +33,28 @@ class ExpenseCategoryController extends Controller
 
         return redirect()->route('expense-categories.index')
             ->with('success', 'Categoria creada exitosamente.');
+    }
+
+    /**
+     * Inline category creation from the expense form.
+     * Returns JSON so the frontend can append the new option to the dropdown
+     * without losing the in-progress expense data.
+     */
+    public function quickStore(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $category = ExpenseCategory::create([
+            ...$validated,
+            'clinic_id' => session('active_clinic_id'),
+        ]);
+
+        return response()->json([
+            'id' => $category->id,
+            'name' => $category->name,
+        ], 201);
     }
 
     public function update(Request $request, ExpenseCategory $expenseCategory)

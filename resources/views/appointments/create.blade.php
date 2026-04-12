@@ -11,25 +11,30 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Paciente *</label>
-                    <select name="patient_id" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    <select name="patient_id" id="patient_select" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                         <option value="">Seleccionar paciente...</option>
                         @foreach($patients as $patient)
-                            <option value="{{ $patient->id }}" {{ old('patient_id', request('patient_id')) == $patient->id ? 'selected' : '' }}>
+                            <option value="{{ $patient->id }}"
+                                    data-doctor-id="{{ $patient->primary_doctor_id }}"
+                                    {{ old('patient_id', request('patient_id')) == $patient->id ? 'selected' : '' }}>
                                 {{ $patient->full_name }} ({{ $patient->medical_record_number }})
                             </option>
                         @endforeach
                     </select>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Doctor *</label>
-                    <select name="doctor_id" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                        @foreach($doctors as $doctor)
-                            <option value="{{ $doctor->id }}" {{ old('doctor_id') == $doctor->id ? 'selected' : '' }}>
-                                {{ $doctor->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
+                @if($showDoctorSelect)
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Doctor *</label>
+                        <select name="doctor_id" id="doctor_select" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">Seleccionar doctor...</option>
+                            @foreach($doctors as $doctor)
+                                <option value="{{ $doctor->id }}" {{ old('doctor_id') == $doctor->id ? 'selected' : '' }}>
+                                    {{ $doctor->name }}@if($doctor->specialty) — {{ $doctor->specialty }}@endif
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                @endif
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Fecha y hora *</label>
                     <input type="datetime-local" name="scheduled_at" value="{{ old('scheduled_at') }}" required
@@ -77,4 +82,24 @@
             <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium">Crear turno</button>
         </div>
     </form>
+
+    @if($showDoctorSelect)
+        <script>
+            // Auto-select the doctor based on the selected patient's primary doctor.
+            (function () {
+                const patientSelect = document.getElementById('patient_select');
+                const doctorSelect = document.getElementById('doctor_select');
+
+                if (patientSelect && doctorSelect) {
+                    patientSelect.addEventListener('change', function () {
+                        const option = this.options[this.selectedIndex];
+                        const doctorId = option?.dataset.doctorId || '';
+                        if (doctorId) {
+                            doctorSelect.value = doctorId;
+                        }
+                    });
+                }
+            })();
+        </script>
+    @endif
 </x-layouts.tenant>
