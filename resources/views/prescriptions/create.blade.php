@@ -152,26 +152,34 @@
             const linkText = document.getElementById('last-consultation-text');
             const apiUrl = '{{ url("api/patients") }}/';
             const consultationUrl = '{{ url("consultations") }}/';
+            let currentController = null;
 
             function hideAll() {
                 loading.classList.add('hidden');
                 empty.classList.add('hidden');
                 link.classList.add('hidden');
+                link.href = '#';
             }
 
             async function loadLastConsultation(patientId) {
+                // Cancel any pending request
+                if (currentController) currentController.abort();
+
+                hideAll();
+
                 if (!patientId) {
                     panel.classList.add('hidden');
                     return;
                 }
 
                 panel.classList.remove('hidden');
-                hideAll();
                 loading.classList.remove('hidden');
 
+                currentController = new AbortController();
                 try {
                     const res = await fetch(apiUrl + patientId + '/last-consultation', {
-                        headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+                        headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
+                        signal: currentController.signal
                     });
                     const json = await res.json();
                     hideAll();
@@ -180,12 +188,12 @@
                         empty.classList.remove('hidden');
                     } else {
                         const c = json.consultation;
-                        const route = c.is_signed ? consultationUrl + c.id : consultationUrl + c.id + '/edit';
-                        link.href = route;
+                        link.href = c.is_signed ? consultationUrl + c.id : consultationUrl + c.id + '/edit';
                         linkText.textContent = 'Ultima consulta: ' + c.date;
                         link.classList.remove('hidden');
                     }
                 } catch (e) {
+                    if (e.name === 'AbortError') return;
                     hideAll();
                     empty.textContent = 'No se pudo cargar la informacion.';
                     empty.classList.remove('hidden');
