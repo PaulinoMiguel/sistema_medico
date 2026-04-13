@@ -197,4 +197,37 @@ class PatientController extends Controller
 
         return view('patients.history', compact('patient', 'consultations', 'prescriptions'));
     }
+
+    public function lastConsultation(Patient $patient)
+    {
+        $consultation = \App\Models\Consultation::withoutGlobalScopes()
+            ->where('patient_id', $patient->id)
+            ->with('doctor')
+            ->orderByDesc('consultation_date')
+            ->first();
+
+        if (!$consultation) {
+            return response()->json(['consultation' => null]);
+        }
+
+        // Build diagnosis string from JSON
+        $diagnosis = '';
+        $dx = $consultation->diagnoses;
+        if (!empty($dx)) {
+            $labels = collect((array)$dx)
+                ->filter(fn ($d) => is_array($d) ? (!empty($d['description']) || !empty($d['code'])) : !empty($d))
+                ->map(fn ($d) => is_array($d) ? trim(($d['description'] ?? '') . (!empty($d['code']) ? ' ('.$d['code'].')' : '')) : $d);
+            $diagnosis = $labels->implode(', ');
+        }
+
+        return response()->json([
+            'consultation' => [
+                'date' => $consultation->consultation_date->format('d/m/Y') . ' — ' . $consultation->doctor->name,
+                'reason' => $consultation->reason,
+                'subjective' => $consultation->subjective ? \Illuminate\Support\Str::limit($consultation->subjective, 300) : null,
+                'diagnosis' => $diagnosis ?: null,
+                'plan' => $consultation->plan ? \Illuminate\Support\Str::limit($consultation->plan, 300) : null,
+            ],
+        ]);
+    }
 }

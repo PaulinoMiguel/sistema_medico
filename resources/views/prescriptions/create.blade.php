@@ -22,8 +22,8 @@
                 <div>
                     <div class="flex items-center justify-between mb-1">
                         <label class="block text-sm font-medium text-gray-700">Paciente *</label>
-                        <a href="#" id="view-patient-history" target="_blank"
-                           class="text-xs text-blue-600 hover:underline hidden">Ver historial del paciente</a>
+                        <a href="#" id="view-full-history" target="_blank"
+                           class="text-xs text-blue-600 hover:underline hidden">Ver historial completo</a>
                     </div>
                     <select name="patient_id" id="patient_select" required
                             class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
@@ -34,6 +34,25 @@
                             </option>
                         @endforeach
                     </select>
+                    {{-- Ultima consulta inline --}}
+                    <div id="last-consultation-panel" class="hidden mt-3 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg text-sm">
+                        <div id="last-consultation-loading" class="text-blue-600 dark:text-blue-400 text-center py-2 hidden">
+                            Cargando...
+                        </div>
+                        <div id="last-consultation-empty" class="text-center text-gray-500 dark:text-gray-400 py-2 hidden">
+                            Este paciente no tiene consultas previas.
+                        </div>
+                        <div id="last-consultation-data" class="hidden">
+                            <p class="font-semibold text-blue-800 dark:text-blue-300 mb-2">Ultima consulta</p>
+                            <div class="space-y-1 text-gray-700 dark:text-gray-300">
+                                <p><span class="text-gray-500 dark:text-gray-400">Fecha:</span> <span id="lc-date"></span></p>
+                                <p id="lc-reason-row"><span class="text-gray-500 dark:text-gray-400">Motivo:</span> <span id="lc-reason"></span></p>
+                                <p id="lc-subjective-row"><span class="text-gray-500 dark:text-gray-400">Subjetivo:</span> <span id="lc-subjective"></span></p>
+                                <p id="lc-diagnosis-row"><span class="text-gray-500 dark:text-gray-400">Diagnostico:</span> <span id="lc-diagnosis"></span></p>
+                                <p id="lc-plan-row"><span class="text-gray-500 dark:text-gray-400">Plan:</span> <span id="lc-plan"></span></p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Notas generales</label>
@@ -134,23 +153,74 @@
     </template>
 
     <script>
-        // Patient history link
+        // Last consultation inline + full history link
         (function () {
             const select = document.getElementById('patient_select');
-            const link = document.getElementById('view-patient-history');
+            const fullHistoryLink = document.getElementById('view-full-history');
+            const panel = document.getElementById('last-consultation-panel');
+            const loading = document.getElementById('last-consultation-loading');
+            const empty = document.getElementById('last-consultation-empty');
+            const data = document.getElementById('last-consultation-data');
             const baseUrl = '{{ url("patients") }}/';
+            const apiUrl = '{{ url("api/patients") }}/';
 
-            function updateLink() {
-                if (select.value) {
-                    link.href = baseUrl + select.value + '/history';
-                    link.classList.remove('hidden');
+            function hideAll() {
+                loading.classList.add('hidden');
+                empty.classList.add('hidden');
+                data.classList.add('hidden');
+            }
+
+            function setField(id, value) {
+                const el = document.getElementById(id);
+                const row = document.getElementById(id + '-row');
+                if (value) {
+                    el.textContent = value;
+                    if (row) row.classList.remove('hidden');
                 } else {
-                    link.classList.add('hidden');
+                    if (row) row.classList.add('hidden');
                 }
             }
 
-            select.addEventListener('change', updateLink);
-            updateLink();
+            async function loadLastConsultation(patientId) {
+                if (!patientId) {
+                    panel.classList.add('hidden');
+                    fullHistoryLink.classList.add('hidden');
+                    return;
+                }
+
+                fullHistoryLink.href = baseUrl + patientId + '/history';
+                fullHistoryLink.classList.remove('hidden');
+                panel.classList.remove('hidden');
+                hideAll();
+                loading.classList.remove('hidden');
+
+                try {
+                    const res = await fetch(apiUrl + patientId + '/last-consultation', {
+                        headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+                    });
+                    const json = await res.json();
+                    hideAll();
+
+                    if (!json.consultation) {
+                        empty.classList.remove('hidden');
+                    } else {
+                        const c = json.consultation;
+                        document.getElementById('lc-date').textContent = c.date;
+                        setField('lc-reason', c.reason);
+                        setField('lc-subjective', c.subjective);
+                        setField('lc-diagnosis', c.diagnosis);
+                        setField('lc-plan', c.plan);
+                        data.classList.remove('hidden');
+                    }
+                } catch (e) {
+                    hideAll();
+                    empty.textContent = 'No se pudo cargar la informacion.';
+                    empty.classList.remove('hidden');
+                }
+            }
+
+            select.addEventListener('change', () => loadLastConsultation(select.value));
+            loadLastConsultation(select.value);
         })();
 
         let medicationCount = 0;

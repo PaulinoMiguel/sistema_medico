@@ -83,6 +83,7 @@ Route::middleware('auth')->group(function () {
         Route::middleware('permission:patients.view')->group(function () {
             Route::resource('patients', PatientController::class);
             Route::get('/patients/{patient}/history', [PatientController::class, 'history'])->name('patients.history');
+            Route::get('/api/patients/{patient}/last-consultation', [PatientController::class, 'lastConsultation'])->name('patients.last-consultation');
         });
 
         // Appointments (gated by appointments.view)
