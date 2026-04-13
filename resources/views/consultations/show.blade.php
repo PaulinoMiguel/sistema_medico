@@ -1,6 +1,10 @@
 <x-layouts.tenant :title="'Consulta - ' . $consultation->patient->full_name">
     @php
-        $typeLabels = ['initial'=>'Consulta inicial','follow_up'=>'Control','pre_operative'=>'Pre-quirurgico','post_operative'=>'Post-quirurgico','emergency'=>'Urgencia','urodynamic'=>'Urodinamia','procedure'=>'Procedimiento'];
+        $specialtyKey = strtolower(str_replace(' ', '_', $consultation->doctor->specialty ?? 'general'));
+        $specialtyMap = ['urologia' => 'urology', 'pediatria' => 'pediatrics', 'neurologia' => 'neurology', 'medicina_general' => 'general'];
+        $specialtyKey = $specialtyMap[$specialtyKey] ?? $specialtyKey;
+        $specialtyConfig = config("specialties.{$specialtyKey}", config('specialties.general'));
+        $typeLabels = $specialtyConfig['consultation_types'];
         $vs = $consultation->vital_signs ?? [];
         $us = $consultation->urinary_symptoms ?? [];
         $sf = $consultation->sexual_function ?? [];
@@ -48,24 +52,8 @@
                 @if($consultation->history_present_illness)
                     <div><span class="font-medium text-gray-700">Historia de la enfermedad:</span> {{ $consultation->history_present_illness }}</div>
                 @endif
-                @if(!empty($us))
-                    <div>
-                        <span class="font-medium text-gray-700">Sintomas urinarios:</span>
-                        @foreach(['frequency'=>'Frecuencia','urgency'=>'Urgencia','nocturia'=>'Nocturia','weak_stream'=>'Chorro debil','intermittency'=>'Intermitencia','straining'=>'Esfuerzo','incomplete_emptying'=>'Vaciado incompleto','hematuria'=>'Hematuria','dysuria'=>'Disuria','incontinence'=>'Incontinencia'] as $k => $l)
-                            @if(!empty($us[$k])) <span style="background-color:#dbeafe;color:#1e40af;" class="inline-block px-2 py-0.5 rounded text-xs mr-1 mb-1">{{ $l }}</span> @endif
-                        @endforeach
-                        @if(!empty($us['ipss_score'])) <span class="ml-2 text-gray-600">IPSS: {{ $us['ipss_score'] }}</span> @endif
-                    </div>
-                @endif
-                @if(!empty($sf))
-                    <div>
-                        <span class="font-medium text-gray-700">Funcion sexual:</span>
-                        @foreach(['erectile_dysfunction'=>'Disf. erectil','decreased_libido'=>'Libido baja','premature_ejaculation'=>'Eyac. precoz','painful_ejaculation'=>'Eyac. dolorosa','hematospermia'=>'Hematospermia'] as $k => $l)
-                            @if(!empty($sf[$k])) <span style="background-color:#fce7f3;color:#9d174d;" class="inline-block px-2 py-0.5 rounded text-xs mr-1 mb-1">{{ $l }}</span> @endif
-                        @endforeach
-                        @if(!empty($sf['iief_score'])) <span class="ml-2 text-gray-600">IIEF: {{ $sf['iief_score'] }}</span> @endif
-                    </div>
-                @endif
+                {{-- Specialty-specific subjective data --}}
+                @includeIf('consultations.partials.' . $specialtyKey . '-show-subjective')
                 @if($consultation->review_of_systems)
                     <div><span class="font-medium text-gray-700">Revision por sistemas:</span> {{ $consultation->review_of_systems }}</div>
                 @endif
@@ -89,8 +77,8 @@
                 @endif
                 @if($consultation->physical_exam) <div><span class="font-medium text-gray-700">Examen fisico:</span> {{ $consultation->physical_exam }}</div> @endif
                 @if($consultation->abdomen_exam) <div><span class="font-medium text-gray-700">Abdomen:</span> {{ $consultation->abdomen_exam }}</div> @endif
-                @if($consultation->genitourinary_exam) <div><span class="font-medium text-gray-700">Genitourinario:</span> {{ $consultation->genitourinary_exam }}</div> @endif
-                @if($consultation->rectal_exam) <div><span class="font-medium text-gray-700">Tacto rectal:</span> {{ $consultation->rectal_exam }}</div> @endif
+                {{-- Specialty-specific objective data --}}
+                @includeIf('consultations.partials.' . $specialtyKey . '-show-objective')
             </div>
         </div>
 

@@ -137,12 +137,14 @@ class ConsultationController extends Controller
             'history_present_illness' => 'nullable|string',
             'urinary_symptoms' => 'nullable|array',
             'sexual_function' => 'nullable|array',
+            'specialty_data' => 'nullable|array',
             'review_of_systems' => 'nullable|string',
             // Objective
             'vital_signs' => 'nullable|array',
             'physical_exam' => 'nullable|string',
             'genitourinary_exam' => 'nullable|string',
             'rectal_exam' => 'nullable|string',
+            'neurological_exam' => 'nullable|string',
             'abdomen_exam' => 'nullable|string',
             // Assessment
             'assessment' => 'nullable|string',

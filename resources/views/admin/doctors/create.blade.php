@@ -18,8 +18,15 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-300 mb-1">Especialidad *</label>
-                    <input type="text" name="specialty" value="{{ old('specialty') }}" required
-                           class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:ring-blue-500 focus:border-blue-500">
+                    <select name="specialty" required
+                            class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">Seleccionar...</option>
+                        @foreach(config('specialties') as $key => $spec)
+                            <option value="{{ $spec['label'] }}" {{ old('specialty') === $spec['label'] ? 'selected' : '' }}>
+                                {{ $spec['label'] }}
+                            </option>
+                        @endforeach
+                    </select>
                     @error('specialty') <p class="mt-1 text-sm text-red-400">{{ $message }}</p> @enderror
                 </div>
                 <div>

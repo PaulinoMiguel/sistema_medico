@@ -24,6 +24,7 @@ class Consultation extends Model
             'vital_signs' => 'json',
             'urinary_symptoms' => 'json',
             'sexual_function' => 'json',
+            'specialty_data' => 'json',
             'diagnoses' => 'json',
         ];
     }

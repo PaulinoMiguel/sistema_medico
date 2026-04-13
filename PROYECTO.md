@@ -174,12 +174,20 @@ Implementado:
 - [x] Bug fix: secretaria ahora ve "Registrar cobro" en sidebar (payments.create sin payments.view)
 - [x] Bug fix: boton "Pasar a consulta" para secretarias (antes decia "Iniciar consulta")
 
-### Fase 4 - Especialidad Configurable
-**Objetivo:**
-- Tabla `settings` con configuracion por instalacion
-- Selector de especialidad (urologia, medicina general, etc.)
-- Campos SOAP condicionales segun especialidad
-- Lista cerrada de especialidades soportadas, cada una con su template
+### Fase 4 - Especialidad Configurable por Medico ✅
+**Commit:** pendiente (Abr 12, 2026)
+
+Implementado:
+- [x] `config/specialties.php` con definicion de especialidades (urologia, pediatria, neurologia, general)
+- [x] Migracion: columnas `specialty_data` JSON y `neurological_exam` en consultations
+- [x] Enum `type` expandido con tipos de pediatria (well_child, vaccination)
+- [x] Partials Blade por especialidad: symptoms + exams + show (edit y lectura)
+- [x] Urologia: sintomas urinarios, funcion sexual, examen GU, tacto rectal
+- [x] Pediatria: crecimiento, desarrollo psicomotor, alimentacion, vacunacion
+- [x] Neurologia: sintomas neurologicos, Glasgow, NIHSS, examen neurologico
+- [x] Consulta carga dinamicamente los campos segun la especialidad del doctor
+- [x] Selector de especialidad estandarizado (dropdown) en panel admin de doctores
+- [x] Especialidad por medico (no por clinica ni instalacion)
 
 ### Fase 5 - Comando de Instalacion
 **Objetivo:**

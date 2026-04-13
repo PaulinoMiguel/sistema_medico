@@ -1,6 +1,11 @@
 <x-layouts.tenant :title="'Consulta - ' . $consultation->patient->full_name">
     @php
-        $typeLabels = ['initial'=>'Consulta inicial','follow_up'=>'Control','pre_operative'=>'Pre-quirurgico','post_operative'=>'Post-quirurgico','emergency'=>'Urgencia','urodynamic'=>'Urodinamia','procedure'=>'Procedimiento'];
+        $specialtyKey = strtolower(str_replace(' ', '_', $consultation->doctor->specialty ?? 'general'));
+        // Map common Spanish names to config keys
+        $specialtyMap = ['urologia' => 'urology', 'pediatria' => 'pediatrics', 'neurologia' => 'neurology', 'medicina_general' => 'general'];
+        $specialtyKey = $specialtyMap[$specialtyKey] ?? $specialtyKey;
+        $specialtyConfig = config("specialties.{$specialtyKey}", config('specialties.general'));
+        $typeLabels = $specialtyConfig['consultation_types'];
         $vs = $consultation->vital_signs ?? [];
         $us = $consultation->urinary_symptoms ?? [];
         $sf = $consultation->sexual_function ?? [];
@@ -47,72 +52,8 @@
                             <textarea name="history_present_illness" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Inicio, duracion, intensidad, factores agravantes/atenuantes...">{{ old('history_present_illness', $consultation->history_present_illness) }}</textarea>
                         </div>
 
-                        {{-- Urinary symptoms (IPSS-based) --}}
-                        <div class="border border-gray-200 rounded-lg p-4">
-                            <h4 class="text-sm font-semibold text-gray-700 mb-3">Sintomas urinarios</h4>
-                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                @foreach([
-                                    'frequency' => 'Frecuencia',
-                                    'urgency' => 'Urgencia',
-                                    'nocturia' => 'Nocturia',
-                                    'weak_stream' => 'Chorro debil',
-                                    'intermittency' => 'Intermitencia',
-                                    'straining' => 'Esfuerzo',
-                                    'incomplete_emptying' => 'Vaciado incompleto',
-                                    'hematuria' => 'Hematuria',
-                                    'dysuria' => 'Disuria',
-                                    'incontinence' => 'Incontinencia',
-                                ] as $key => $label)
-                                    <label class="flex items-center text-sm">
-                                        <input type="checkbox" name="urinary_symptoms[{{ $key }}]" value="1"
-                                               {{ !empty($us[$key]) ? 'checked' : '' }}
-                                               class="rounded border-gray-300 text-blue-600 mr-2">
-                                        {{ $label }}
-                                    </label>
-                                @endforeach
-                            </div>
-                            <div class="mt-3 grid grid-cols-2 gap-3">
-                                <div>
-                                    <label class="block text-xs text-gray-500 mb-1">IPSS Score (0-35)</label>
-                                    <input type="number" name="urinary_symptoms[ipss_score]" min="0" max="35"
-                                           value="{{ $us['ipss_score'] ?? '' }}"
-                                           class="w-full px-3 py-1 border border-gray-300 rounded-md text-sm">
-                                </div>
-                                <div>
-                                    <label class="block text-xs text-gray-500 mb-1">Calidad de vida (0-6)</label>
-                                    <input type="number" name="urinary_symptoms[quality_of_life]" min="0" max="6"
-                                           value="{{ $us['quality_of_life'] ?? '' }}"
-                                           class="w-full px-3 py-1 border border-gray-300 rounded-md text-sm">
-                                </div>
-                            </div>
-                        </div>
-
-                        {{-- Sexual function --}}
-                        <div class="border border-gray-200 rounded-lg p-4">
-                            <h4 class="text-sm font-semibold text-gray-700 mb-3">Funcion sexual</h4>
-                            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-                                @foreach([
-                                    'erectile_dysfunction' => 'Disfuncion erectil',
-                                    'decreased_libido' => 'Libido disminuida',
-                                    'premature_ejaculation' => 'Eyaculacion precoz',
-                                    'painful_ejaculation' => 'Eyaculacion dolorosa',
-                                    'hematospermia' => 'Hematospermia',
-                                ] as $key => $label)
-                                    <label class="flex items-center text-sm">
-                                        <input type="checkbox" name="sexual_function[{{ $key }}]" value="1"
-                                               {{ !empty($sf[$key]) ? 'checked' : '' }}
-                                               class="rounded border-gray-300 text-blue-600 mr-2">
-                                        {{ $label }}
-                                    </label>
-                                @endforeach
-                            </div>
-                            <div class="mt-3">
-                                <label class="block text-xs text-gray-500 mb-1">IIEF/SHIM Score</label>
-                                <input type="number" name="sexual_function[iief_score]" min="0" max="25"
-                                       value="{{ $sf['iief_score'] ?? '' }}"
-                                       class="w-32 px-3 py-1 border border-gray-300 rounded-md text-sm">
-                            </div>
-                        </div>
+                        {{-- Specialty-specific symptoms --}}
+                        @includeIf('consultations.partials.' . $specialtyKey . '-symptoms')
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Revision por sistemas</label>
@@ -185,14 +126,8 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">Abdomen</label>
                             <textarea name="abdomen_exam" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Blando, depresible, sin masas, Punio percusion...">{{ old('abdomen_exam', $consultation->abdomen_exam) }}</textarea>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Examen genitourinario</label>
-                            <textarea name="genitourinary_exam" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Genitales externos, meato uretral, testiculos, pene, inguinal...">{{ old('genitourinary_exam', $consultation->genitourinary_exam) }}</textarea>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Tacto rectal</label>
-                            <textarea name="rectal_exam" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Prostata: tamano, consistencia, nodulos, sensibilidad, surco medio...">{{ old('rectal_exam', $consultation->rectal_exam) }}</textarea>
-                        </div>
+                        {{-- Specialty-specific exams --}}
+                        @includeIf('consultations.partials.' . $specialtyKey . '-exams')
                     </div>
                 </div>
 
