@@ -26,6 +26,8 @@ class CashRegisterController extends Controller
 
     public function open(Request $request)
     {
+        abort_if($request->user()->isDoctor(), 403, 'Solo el personal de caja puede abrir la caja.');
+
         $clinicId = session('active_clinic_id');
 
         // Check if there's already an open register
@@ -65,6 +67,7 @@ class CashRegisterController extends Controller
 
     public function close(Request $request, CashRegister $cashRegister)
     {
+        abort_if($request->user()->isDoctor(), 403, 'Solo el personal de caja puede cerrar la caja.');
         abort_if($cashRegister->clinic_id != session('active_clinic_id'), 403);
         abort_if(! $cashRegister->isOpen(), 400);
 

@@ -46,6 +46,8 @@ class PaymentController extends Controller
 
         if ($channel === 'doctor_direct') {
             abort_unless($user->isDoctor(), 403);
+        } else {
+            abort_if($user->isDoctor(), 403, 'Los cobros de caja son exclusivos del personal.');
         }
 
         $patients = Patient::whereHas('clinics', function ($q) use ($clinicId) {
@@ -71,6 +73,8 @@ class PaymentController extends Controller
 
         if ($channel === 'doctor_direct') {
             abort_unless($user->isDoctor(), 403);
+        } else {
+            abort_if($user->isDoctor(), 403, 'Los cobros de caja son exclusivos del personal.');
         }
 
         $validated = $request->validate([
