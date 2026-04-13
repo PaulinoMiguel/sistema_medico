@@ -12,18 +12,51 @@
     {{-- Patient Header --}}
     <div class="bg-white rounded-lg shadow p-6 mb-6">
         <div class="flex justify-between items-start">
-            <div>
-                <h2 class="text-2xl font-bold text-gray-800">{{ $patient->full_name }}</h2>
-                <p class="text-gray-500">Expediente: {{ $patient->medical_record_number }}</p>
-                <div class="mt-2 flex gap-4 text-sm text-gray-600">
-                    <span>{{ $patient->age }} años</span>
-                    <span>{{ $patient->gender == 'male' ? 'Masculino' : ($patient->gender == 'female' ? 'Femenino' : 'Otro') }}</span>
-                    @if($patient->blood_type)
-                        <span>Sangre: {{ $patient->blood_type }}</span>
+            <div class="flex items-start gap-4">
+                {{-- Photo --}}
+                <div class="flex-shrink-0">
+                    @if($patient->photo_url)
+                        <img src="{{ $patient->photo_url }}" alt="{{ $patient->full_name }}"
+                             class="w-20 h-20 rounded-full object-cover border-2 border-gray-200">
+                    @else
+                        <div class="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center border-2 border-gray-200">
+                            <span class="text-2xl font-bold text-blue-600">{{ strtoupper(substr($patient->first_name, 0, 1) . substr($patient->last_name, 0, 1)) }}</span>
+                        </div>
                     @endif
-                    @if($patient->phone)
-                        <span>Tel: {{ $patient->phone }}</span>
-                    @endif
+                    {{-- Upload/change photo --}}
+                    <div class="mt-2 text-center">
+                        <button type="button" onclick="document.getElementById('photo-input').click()"
+                                class="text-xs text-blue-600 hover:underline">
+                            {{ $patient->photo_url ? 'Cambiar' : 'Agregar foto' }}
+                        </button>
+                        @if($patient->photo_url)
+                            <form action="{{ route('patients.photo.delete', $patient) }}" method="POST" class="inline">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="text-xs text-red-500 hover:underline ml-1">Quitar</button>
+                            </form>
+                        @endif
+                    </div>
+                    <form id="photo-form" action="{{ route('patients.photo', $patient) }}" method="POST" enctype="multipart/form-data" class="hidden">
+                        @csrf
+                        <input type="file" id="photo-input" name="photo" accept="image/jpeg,image/png,image/webp"
+                               onchange="document.getElementById('photo-form').submit()">
+                    </form>
+                </div>
+
+                {{-- Info --}}
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800">{{ $patient->full_name }}</h2>
+                    <p class="text-gray-500">Expediente: {{ $patient->medical_record_number }}</p>
+                    <div class="mt-2 flex gap-4 text-sm text-gray-600">
+                        <span>{{ $patient->age }} años</span>
+                        <span>{{ $patient->gender == 'male' ? 'Masculino' : ($patient->gender == 'female' ? 'Femenino' : 'Otro') }}</span>
+                        @if($patient->blood_type)
+                            <span>Sangre: {{ $patient->blood_type }}</span>
+                        @endif
+                        @if($patient->phone)
+                            <span>Tel: {{ $patient->phone }}</span>
+                        @endif
+                    </div>
                 </div>
             </div>
             <div class="flex gap-2">

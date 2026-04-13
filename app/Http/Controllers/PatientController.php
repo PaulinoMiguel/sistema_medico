@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Patient;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class PatientController extends Controller
 {
@@ -196,6 +197,34 @@ class PatientController extends Controller
             ->get();
 
         return view('patients.history', compact('patient', 'consultations', 'prescriptions'));
+    }
+
+    public function updatePhoto(Request $request, Patient $patient)
+    {
+        $request->validate([
+            'photo' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
+        ]);
+
+        if ($patient->photo_path) {
+            Storage::disk('public')->delete($patient->photo_path);
+        }
+
+        $path = $request->file('photo')->store('patient-photos', 'public');
+        $patient->update(['photo_path' => $path]);
+
+        return redirect()->route('patients.show', $patient)
+            ->with('success', 'Foto del paciente actualizada.');
+    }
+
+    public function deletePhoto(Patient $patient)
+    {
+        if ($patient->photo_path) {
+            Storage::disk('public')->delete($patient->photo_path);
+            $patient->update(['photo_path' => null]);
+        }
+
+        return redirect()->route('patients.show', $patient)
+            ->with('success', 'Foto del paciente eliminada.');
     }
 
     public function lastConsultation(Patient $patient)

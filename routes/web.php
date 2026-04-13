@@ -83,6 +83,8 @@ Route::middleware('auth')->group(function () {
         Route::middleware('permission:patients.view')->group(function () {
             Route::resource('patients', PatientController::class);
             Route::get('/patients/{patient}/history', [PatientController::class, 'history'])->name('patients.history');
+            Route::post('/patients/{patient}/photo', [PatientController::class, 'updatePhoto'])->name('patients.photo');
+            Route::delete('/patients/{patient}/photo', [PatientController::class, 'deletePhoto'])->name('patients.photo.delete');
             Route::get('/api/patients/{patient}/last-consultation', [PatientController::class, 'lastConsultation'])->name('patients.last-consultation');
         });
 
