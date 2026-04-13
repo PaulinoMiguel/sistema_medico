@@ -97,6 +97,7 @@ class PatientController extends Controller
             'occupation' => 'nullable|string|max:100',
             'referred_by' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
+            'photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ];
 
         if (!$user->isDoctor()) {
@@ -109,6 +110,11 @@ class PatientController extends Controller
         $validated['primary_doctor_id'] = $user->isDoctor()
             ? $user->id
             : $validated['primary_doctor_id'];
+
+        if ($request->hasFile('photo')) {
+            $validated['photo_path'] = $request->file('photo')->store('patient-photos', 'public');
+        }
+        unset($validated['photo']);
 
         $patient = Patient::create($validated);
 
@@ -164,7 +170,16 @@ class PatientController extends Controller
             'occupation' => 'nullable|string|max:100',
             'referred_by' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
+            'photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
+
+        if ($request->hasFile('photo')) {
+            if ($patient->photo_path) {
+                Storage::disk('public')->delete($patient->photo_path);
+            }
+            $validated['photo_path'] = $request->file('photo')->store('patient-photos', 'public');
+        }
+        unset($validated['photo']);
 
         $patient->update($validated);
 

@@ -4,7 +4,7 @@
         <h2 class="text-2xl font-bold text-gray-800 mt-2">Nuevo Paciente</h2>
     </div>
 
-    <form method="POST" action="{{ route('patients.store') }}">
+    <form method="POST" action="{{ route('patients.store') }}" enctype="multipart/form-data">
         @csrf
 
         @if($doctors->isNotEmpty())
@@ -28,6 +28,20 @@
 
         <div class="bg-white rounded-lg shadow p-6 mb-6">
             <h3 class="text-lg font-semibold text-gray-800 mb-4">Datos personales</h3>
+
+            {{-- Photo --}}
+            <div class="mb-6 flex items-center gap-4">
+                <div id="photo-preview" class="w-20 h-20 rounded-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden">
+                    <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Foto del paciente</label>
+                    <input type="file" name="photo" id="photo-input" accept="image/jpeg,image/png,image/webp"
+                           class="text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                    <p class="text-xs text-gray-500 mt-1">JPG, PNG o WEBP. Maximo 2MB. Opcional.</p>
+                </div>
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
@@ -170,4 +184,18 @@
             <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium">Guardar paciente</button>
         </div>
     </form>
+
+    <script>
+        document.getElementById('photo-input').addEventListener('change', function () {
+            const file = this.files[0];
+            const preview = document.getElementById('photo-preview');
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    preview.innerHTML = '<img src="' + e.target.result + '" class="w-20 h-20 rounded-full object-cover">';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
 </x-layouts.tenant>
