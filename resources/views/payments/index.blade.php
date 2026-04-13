@@ -7,18 +7,22 @@
                 {{ $isDirect ? 'Cobros personales (cirugias, procedimientos). No pasan por caja.' : 'Registro de pagos recibidos.' }}
             </p>
         </div>
-        <a href="{{ route('payments.create', $isDirect ? ['channel' => 'doctor_direct'] : []) }}" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 text-sm font-medium">
-            + {{ $isDirect ? 'Nuevo cobro personal' : 'Nuevo cobro' }}
+        @if($isDirect)
+        <a href="{{ route('payments.create', ['channel' => 'doctor_direct']) }}" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 text-sm font-medium">
+            + Nuevo cobro personal
         </a>
+        @endif
     </div>
 
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
         @if($payments->isEmpty())
             <div class="p-8 text-center text-gray-500 dark:text-gray-400">
                 <p class="mb-4">{{ $isDirect ? 'No tienes cobros personales registrados.' : 'No hay cobros registrados.' }}</p>
-                <a href="{{ route('payments.create', $isDirect ? ['channel' => 'doctor_direct'] : []) }}" class="text-blue-600 dark:text-blue-400 hover:underline">
+                @if($isDirect)
+                <a href="{{ route('payments.create', ['channel' => 'doctor_direct']) }}" class="text-blue-600 dark:text-blue-400 hover:underline">
                     Registrar el primer cobro
                 </a>
+                @endif
             </div>
         @else
             <table class="w-full">
