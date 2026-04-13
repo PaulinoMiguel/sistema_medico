@@ -1,6 +1,10 @@
 <x-layouts.tenant :title="'Recibo de Pago'">
     <div class="mb-6">
-        <a href="{{ route('payments.index') }}" class="text-blue-600 hover:underline text-sm">&larr; Volver a cobros</a>
+        @if($payment->channel === 'doctor_direct')
+            <a href="{{ route('payments.index', ['channel' => 'doctor_direct']) }}" class="text-blue-600 hover:underline text-sm">&larr; Volver a mis cobros</a>
+        @else
+            <a href="{{ route('cash-registers.index') }}" class="text-blue-600 hover:underline text-sm">&larr; Volver a caja</a>
+        @endif
     </div>
 
     <div class="max-w-2xl mx-auto">
@@ -68,13 +72,10 @@
             </div>
         </div>
 
-        <div class="mt-4 flex justify-center gap-3">
+        <div class="mt-4 flex justify-center">
             <button onclick="window.print()" class="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-900 text-sm font-medium">
                 Imprimir recibo
             </button>
-            <a href="{{ route('payments.create') }}" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm font-medium">
-                Nuevo cobro
-            </a>
         </div>
     </div>
 
