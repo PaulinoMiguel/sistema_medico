@@ -210,23 +210,11 @@ class PatientController extends Controller
             return response()->json(['consultation' => null]);
         }
 
-        // Build diagnosis string from JSON
-        $diagnosis = '';
-        $dx = $consultation->diagnoses;
-        if (!empty($dx)) {
-            $labels = collect((array)$dx)
-                ->filter(fn ($d) => is_array($d) ? (!empty($d['description']) || !empty($d['code'])) : !empty($d))
-                ->map(fn ($d) => is_array($d) ? trim(($d['description'] ?? '') . (!empty($d['code']) ? ' ('.$d['code'].')' : '')) : $d);
-            $diagnosis = $labels->implode(', ');
-        }
-
         return response()->json([
             'consultation' => [
+                'id' => $consultation->id,
                 'date' => $consultation->consultation_date->format('d/m/Y') . ' — ' . $consultation->doctor->name,
-                'reason' => $consultation->reason,
-                'subjective' => $consultation->subjective ? \Illuminate\Support\Str::limit($consultation->subjective, 300) : null,
-                'diagnosis' => $diagnosis ?: null,
-                'plan' => $consultation->plan ? \Illuminate\Support\Str::limit($consultation->plan, 300) : null,
+                'is_signed' => $consultation->status === 'signed',
             ],
         ]);
     }

@@ -20,10 +20,8 @@
             </div>
             <div class="p-6 space-y-4">
                 <div>
-                    <div class="flex items-center justify-between mb-1">
+                    <div class="mb-1">
                         <label class="block text-sm font-medium text-gray-700">Paciente *</label>
-                        <a href="#" id="view-full-history" target="_blank"
-                           class="text-xs text-blue-600 hover:underline hidden">Ver historial completo</a>
                     </div>
                     <select name="patient_id" id="patient_select" required
                             class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
@@ -34,24 +32,15 @@
                             </option>
                         @endforeach
                     </select>
-                    {{-- Ultima consulta inline --}}
-                    <div id="last-consultation-panel" class="hidden mt-3 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg text-sm">
-                        <div id="last-consultation-loading" class="text-blue-600 dark:text-blue-400 text-center py-2 hidden">
-                            Cargando...
-                        </div>
-                        <div id="last-consultation-empty" class="text-center text-gray-500 dark:text-gray-400 py-2 hidden">
-                            Este paciente no tiene consultas previas.
-                        </div>
-                        <div id="last-consultation-data" class="hidden">
-                            <p class="font-semibold text-blue-800 dark:text-blue-300 mb-2">Ultima consulta</p>
-                            <div class="space-y-1 text-gray-700 dark:text-gray-300">
-                                <p><span class="text-gray-500 dark:text-gray-400">Fecha:</span> <span id="lc-date"></span></p>
-                                <p id="lc-reason-row"><span class="text-gray-500 dark:text-gray-400">Motivo:</span> <span id="lc-reason"></span></p>
-                                <p id="lc-subjective-row"><span class="text-gray-500 dark:text-gray-400">Subjetivo:</span> <span id="lc-subjective"></span></p>
-                                <p id="lc-diagnosis-row"><span class="text-gray-500 dark:text-gray-400">Diagnostico:</span> <span id="lc-diagnosis"></span></p>
-                                <p id="lc-plan-row"><span class="text-gray-500 dark:text-gray-400">Plan:</span> <span id="lc-plan"></span></p>
-                            </div>
-                        </div>
+                    {{-- Ultima consulta --}}
+                    <div id="last-consultation-panel" class="hidden mt-2">
+                        <div id="last-consultation-loading" class="text-xs text-blue-600 hidden">Cargando...</div>
+                        <p id="last-consultation-empty" class="text-xs text-gray-500 hidden">Este paciente no tiene consultas previas.</p>
+                        <a id="last-consultation-link" href="#" target="_blank"
+                           class="hidden inline-flex items-center gap-1 text-xs text-blue-600 hover:underline">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            <span id="last-consultation-text"></span>
+                        </a>
                     </div>
                 </div>
                 <div>
@@ -153,43 +142,29 @@
     </template>
 
     <script>
-        // Last consultation inline + full history link
+        // Last consultation link
         (function () {
             const select = document.getElementById('patient_select');
-            const fullHistoryLink = document.getElementById('view-full-history');
             const panel = document.getElementById('last-consultation-panel');
             const loading = document.getElementById('last-consultation-loading');
             const empty = document.getElementById('last-consultation-empty');
-            const data = document.getElementById('last-consultation-data');
-            const baseUrl = '{{ url("patients") }}/';
+            const link = document.getElementById('last-consultation-link');
+            const linkText = document.getElementById('last-consultation-text');
             const apiUrl = '{{ url("api/patients") }}/';
+            const consultationUrl = '{{ url("consultations") }}/';
 
             function hideAll() {
                 loading.classList.add('hidden');
                 empty.classList.add('hidden');
-                data.classList.add('hidden');
-            }
-
-            function setField(id, value) {
-                const el = document.getElementById(id);
-                const row = document.getElementById(id + '-row');
-                if (value) {
-                    el.textContent = value;
-                    if (row) row.classList.remove('hidden');
-                } else {
-                    if (row) row.classList.add('hidden');
-                }
+                link.classList.add('hidden');
             }
 
             async function loadLastConsultation(patientId) {
                 if (!patientId) {
                     panel.classList.add('hidden');
-                    fullHistoryLink.classList.add('hidden');
                     return;
                 }
 
-                fullHistoryLink.href = baseUrl + patientId + '/history';
-                fullHistoryLink.classList.remove('hidden');
                 panel.classList.remove('hidden');
                 hideAll();
                 loading.classList.remove('hidden');
@@ -205,12 +180,10 @@
                         empty.classList.remove('hidden');
                     } else {
                         const c = json.consultation;
-                        document.getElementById('lc-date').textContent = c.date;
-                        setField('lc-reason', c.reason);
-                        setField('lc-subjective', c.subjective);
-                        setField('lc-diagnosis', c.diagnosis);
-                        setField('lc-plan', c.plan);
-                        data.classList.remove('hidden');
+                        const route = c.is_signed ? consultationUrl + c.id : consultationUrl + c.id + '/edit';
+                        link.href = route;
+                        linkText.textContent = 'Ultima consulta: ' + c.date;
+                        link.classList.remove('hidden');
                     }
                 } catch (e) {
                     hideAll();
