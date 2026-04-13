@@ -33,9 +33,10 @@ class PaymentController extends Controller
             }
         }
 
+        $total = (clone $query)->sum('amount');
         $payments = $query->latest()->paginate(20);
 
-        return view('payments.index', compact('payments', 'channel'));
+        return view('payments.index', compact('payments', 'channel', 'total'));
     }
 
     public function create(Request $request)

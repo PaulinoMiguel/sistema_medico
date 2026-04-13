@@ -56,6 +56,13 @@
                     </tr>
                     @endforeach
                 </tbody>
+                <tfoot class="bg-gray-50 dark:bg-gray-700">
+                    <tr>
+                        <td colspan="{{ $isDirect ? 4 : 5 }}" class="px-6 py-3 text-sm font-bold text-gray-800 dark:text-gray-200 text-right">Total:</td>
+                        <td class="px-6 py-3 text-right font-mono font-bold text-lg text-green-700 dark:text-green-400">${{ number_format($total, 2) }}</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
             </table>
 
             <div class="px-6 py-3 border-t border-gray-200 dark:border-gray-700">
