@@ -171,6 +171,9 @@ class PatientController extends Controller
             'referred_by' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
             'photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'gestational_age_weeks' => 'nullable|integer|min:22|max:44',
+            'birth_weight_kg' => 'nullable|numeric|min:0.3|max:8',
+            'birth_length_cm' => 'nullable|numeric|min:20|max:80',
         ]);
 
         if ($request->hasFile('photo')) {

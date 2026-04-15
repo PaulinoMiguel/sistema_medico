@@ -44,6 +44,22 @@ class Patient extends Model
         return $this->hasMany(Prescription::class);
     }
 
+    public function pediatricMeasurements(): HasMany
+    {
+        return $this->hasMany(PediatricMeasurement::class)->orderBy('measured_at');
+    }
+
+    /** True si el paciente tiene <37 semanas de EG al nacer. */
+    public function isPreterm(): bool
+    {
+        return $this->gestational_age_weeks !== null && $this->gestational_age_weeks < 37;
+    }
+
+    public function ageInMonthsAt(\DateTimeInterface $date): float
+    {
+        return round($this->date_of_birth->floatDiffInMonths($date), 2);
+    }
+
     public function registeredBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'registered_by');

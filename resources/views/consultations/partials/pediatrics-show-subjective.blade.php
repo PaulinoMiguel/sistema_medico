@@ -1,12 +1,42 @@
 @php $sd = $consultation->specialty_data ?? []; @endphp
 
 @if(!empty($sd))
-    @if(!empty($sd['head_circumference']) || !empty($sd['weight_percentile']) || !empty($sd['height_percentile']))
-    <div>
-        <span class="font-medium text-gray-700">Crecimiento:</span>
-        @if(!empty($sd['head_circumference'])) <span class="text-gray-600 ml-2">PC: {{ $sd['head_circumference'] }}cm</span> @endif
-        @if(!empty($sd['weight_percentile'])) <span class="text-gray-600 ml-2">P.Peso: {{ $sd['weight_percentile'] }}</span> @endif
-        @if(!empty($sd['height_percentile'])) <span class="text-gray-600 ml-2">P.Talla: {{ $sd['height_percentile'] }}</span> @endif
+    @php
+        $anthroMeasurement = \App\Models\PediatricMeasurement::where('consultation_id', $consultation->id)->first();
+    @endphp
+    @if($anthroMeasurement || !empty($sd['weight_kg']) || !empty($sd['height_cm']) || !empty($sd['head_circumference_cm']))
+    <div class="bg-gray-50 border border-gray-200 rounded p-3">
+        <span class="font-medium text-gray-700 block mb-1">Antropometria</span>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+            @if($anthroMeasurement?->weight_kg)
+                <div><span class="text-gray-500">Peso:</span> {{ $anthroMeasurement->weight_kg }}kg
+                    @if($anthroMeasurement->weight_z !== null)
+                        <span class="text-gray-400">(Z={{ $anthroMeasurement->weight_z }})</span>
+                    @endif
+                </div>
+            @endif
+            @if($anthroMeasurement?->height_cm)
+                <div><span class="text-gray-500">Talla:</span> {{ $anthroMeasurement->height_cm }}cm
+                    @if($anthroMeasurement->height_z !== null)
+                        <span class="text-gray-400">(Z={{ $anthroMeasurement->height_z }})</span>
+                    @endif
+                </div>
+            @endif
+            @if($anthroMeasurement?->head_circumference_cm)
+                <div><span class="text-gray-500">PC:</span> {{ $anthroMeasurement->head_circumference_cm }}cm
+                    @if($anthroMeasurement->head_circumference_z !== null)
+                        <span class="text-gray-400">(Z={{ $anthroMeasurement->head_circumference_z }})</span>
+                    @endif
+                </div>
+            @endif
+            @if($anthroMeasurement?->bmi)
+                <div><span class="text-gray-500">IMC:</span> {{ $anthroMeasurement->bmi }}
+                    @if($anthroMeasurement->bmi_z !== null)
+                        <span class="text-gray-400">(Z={{ $anthroMeasurement->bmi_z }})</span>
+                    @endif
+                </div>
+            @endif
+        </div>
     </div>
     @endif
 

@@ -58,6 +58,20 @@
                     </select>
                 </div>
                 <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Edad gestacional (sem)</label>
+                    <input type="number" name="gestational_age_weeks" min="22" max="44"
+                           value="{{ old('gestational_age_weeks', $patient->gestational_age_weeks) }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="40">
+                    <p class="mt-1 text-xs text-gray-500">Solo pediatria. &lt;37 usa edad corregida en curvas.</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Peso al nacer (kg)</label>
+                    <input type="number" name="birth_weight_kg" step="0.01" min="0.3" max="8"
+                           value="{{ old('birth_weight_kg', $patient->birth_weight_kg) }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de documento</label>
                     <select name="document_type" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                         <option value="cedula" {{ old('document_type', $patient->document_type) == 'cedula' ? 'selected' : '' }}>Cedula</option>

@@ -61,6 +61,9 @@
             </div>
             <div class="flex gap-2">
                 <a href="{{ route('patients.edit', $patient) }}" class="px-4 py-2 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">Editar</a>
+                @if(auth()->user()->specialty === 'pediatrics' && $patient->date_of_birth && $patient->gender)
+                    <a href="{{ route('patients.growth', $patient) }}" class="px-4 py-2 border border-emerald-300 text-emerald-700 rounded-md text-sm hover:bg-emerald-50">Crecimiento</a>
+                @endif
                 <a href="{{ route('appointments.create', ['patient_id' => $patient->id]) }}" class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700">+ Nuevo turno</a>
             </div>
         </div>
