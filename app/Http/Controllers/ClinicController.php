@@ -66,7 +66,19 @@ class ClinicController extends Controller
             'tax_id' => 'nullable|string|max:50',
             'type' => 'required|in:office,hospital,surgical_center',
             'is_active' => 'boolean',
+            'expense_split_method' => 'nullable|in:equal,percentage,by_income',
+            'expense_split_config' => 'nullable|array',
+            'expense_split_config.*' => 'nullable|numeric|min:0|max:100',
         ]);
+
+        if ($request->user()->can('expenses.manage-split')) {
+            $validated['expense_split_method'] = $request->input('expense_split_method', $clinic->expense_split_method);
+            $validated['expense_split_config'] = $validated['expense_split_method'] === 'percentage'
+                ? array_filter($request->input('expense_split_config', []), fn ($v) => $v !== null && $v !== '')
+                : null;
+        } else {
+            unset($validated['expense_split_method'], $validated['expense_split_config']);
+        }
 
         $clinic->update($validated);
 

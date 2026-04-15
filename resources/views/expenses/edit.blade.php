@@ -59,6 +59,23 @@
                         <span class="ml-2 text-sm text-gray-700">Es un gasto recurrente (mensual)</span>
                     </label>
                 </div>
+
+                @if($doctors->count() > 1 && auth()->user()->isDoctor())
+                    <div class="border-t pt-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Atribucion del gasto</label>
+                        <select name="owner_doctor_id"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">Compartido (se reparte entre todos los doctores)</option>
+                            @foreach($doctors as $doc)
+                                @if(auth()->user()->hasRole('doctor_admin') || $doc->id === auth()->id())
+                                    <option value="{{ $doc->id }}" {{ old('owner_doctor_id', $expense->owner_doctor_id) == $doc->id ? 'selected' : '' }}>
+                                        Personal de {{ $doc->name }}
+                                    </option>
+                                @endif
+                            @endforeach
+                        </select>
+                    </div>
+                @endif
             </div>
 
             <div class="mt-6 flex justify-end gap-3">

@@ -64,6 +64,52 @@
             </div>
         </div>
 
+        @can('expenses.manage-split')
+            @php
+                $doctors = $clinic->doctors()->get();
+                $splitConfig = $clinic->expense_split_config ?? [];
+            @endphp
+            <div class="bg-white rounded-lg shadow p-6 mb-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">Reparto de gastos compartidos</h3>
+                <p class="text-sm text-gray-500 mb-4">
+                    Define como se reparte el pool de gastos compartidos entre los doctores de la clinica.
+                </p>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Metodo</label>
+                    <select name="expense_split_method" id="split_method"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        <option value="equal" {{ old('expense_split_method', $clinic->expense_split_method) == 'equal' ? 'selected' : '' }}>Partes iguales (reparte entre doctores activos)</option>
+                        <option value="percentage" {{ old('expense_split_method', $clinic->expense_split_method) == 'percentage' ? 'selected' : '' }}>Porcentajes personalizados</option>
+                    </select>
+                </div>
+
+                @if($doctors->isNotEmpty())
+                    <div id="split_percentages" class="space-y-2 {{ old('expense_split_method', $clinic->expense_split_method) === 'percentage' ? '' : 'hidden' }}">
+                        <p class="text-xs text-gray-500">Debe sumar 100%.</p>
+                        @foreach($doctors as $doc)
+                            <div class="flex items-center gap-3">
+                                <span class="flex-1 text-sm text-gray-700">{{ $doc->name }}</span>
+                                <input type="number" name="expense_split_config[{{ $doc->id }}]"
+                                       value="{{ old('expense_split_config.' . $doc->id, $splitConfig[$doc->id] ?? '') }}"
+                                       min="0" max="100" step="0.01"
+                                       class="w-24 px-2 py-1 border border-gray-300 rounded-md text-right">
+                                <span class="text-sm text-gray-500">%</span>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+            </div>
+
+            <script>
+                document.getElementById('split_method')?.addEventListener('change', function () {
+                    const pct = document.getElementById('split_percentages');
+                    if (!pct) return;
+                    pct.classList.toggle('hidden', this.value !== 'percentage');
+                });
+            </script>
+        @endcan
+
         <div class="flex justify-end gap-3">
             <a href="{{ route('clinics.index') }}" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">Cancelar</a>
             <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium">Guardar cambios</button>

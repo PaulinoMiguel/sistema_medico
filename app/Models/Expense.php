@@ -35,4 +35,19 @@ class Expense extends Model
     {
         return $this->belongsTo(User::class, 'registered_by');
     }
+
+    public function ownerDoctor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'owner_doctor_id');
+    }
+
+    public function scopePersonalOf($query, int $doctorId)
+    {
+        return $query->where('owner_doctor_id', $doctorId);
+    }
+
+    public function scopeShared($query)
+    {
+        return $query->whereNull('owner_doctor_id');
+    }
 }

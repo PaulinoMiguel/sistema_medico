@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Clinic;
 use App\Models\Expense;
 use App\Models\ExpenseCategory;
 use App\Models\Payment;
+use App\Models\User;
+use App\Services\FinancialSummaryService;
 use Illuminate\Http\Request;
 
 class ExpenseController extends Controller
@@ -47,7 +50,9 @@ class ExpenseController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('expenses.create', compact('categories'));
+        $doctors = $this->clinicDoctors($clinicId);
+
+        return view('expenses.create', compact('categories', 'doctors'));
     }
 
     public function store(Request $request)
@@ -61,6 +66,7 @@ class ExpenseController extends Controller
             'amount' => 'required|numeric|min:0.01',
             'notes' => 'nullable|string|max:500',
             'is_recurring' => 'boolean',
+            'owner_doctor_id' => 'nullable|exists:users,id',
         ]);
 
         Expense::create([
@@ -68,6 +74,7 @@ class ExpenseController extends Controller
             'clinic_id' => $clinicId,
             'registered_by' => auth()->id(),
             'is_recurring' => $request->boolean('is_recurring'),
+            'owner_doctor_id' => $this->resolveOwnerDoctorId($request, $clinicId),
         ]);
 
         return redirect()->route('expenses.index')
@@ -83,7 +90,9 @@ class ExpenseController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('expenses.edit', compact('expense', 'categories'));
+        $doctors = $this->clinicDoctors(session('active_clinic_id'));
+
+        return view('expenses.edit', compact('expense', 'categories', 'doctors'));
     }
 
     public function update(Request $request, Expense $expense)
@@ -97,11 +106,13 @@ class ExpenseController extends Controller
             'amount' => 'required|numeric|min:0.01',
             'notes' => 'nullable|string|max:500',
             'is_recurring' => 'boolean',
+            'owner_doctor_id' => 'nullable|exists:users,id',
         ]);
 
         $expense->update([
             ...$validated,
             'is_recurring' => $request->boolean('is_recurring'),
+            'owner_doctor_id' => $this->resolveOwnerDoctorId($request, $expense->clinic_id),
         ]);
 
         return redirect()->route('expenses.index')
@@ -178,5 +189,62 @@ class ExpenseController extends Controller
             'expensesByCategory', 'dailyIncome', 'dailyExpenses',
             'startDate', 'endDate'
         ));
+    }
+
+    public function mySummary(Request $request, FinancialSummaryService $service)
+    {
+        $clinic = Clinic::findOrFail(session('active_clinic_id'));
+        $month = $request->get('month', now()->format('Y-m'));
+
+        if (! auth()->user()->isDoctor()) {
+            abort(403, 'Solo disponible para doctores.');
+        }
+
+        $data = $service->personalSummary(auth()->user(), $clinic, $month);
+
+        return view('expenses.my-summary', $data);
+    }
+
+    public function sharedPool(Request $request, FinancialSummaryService $service)
+    {
+        $clinic = Clinic::findOrFail(session('active_clinic_id'));
+        $month = $request->get('month', now()->format('Y-m'));
+
+        $data = $service->sharedPoolSummary($clinic, $month);
+
+        return view('expenses.shared-pool', $data);
+    }
+
+    private function clinicDoctors(int $clinicId)
+    {
+        return Clinic::find($clinicId)?->doctors()->get() ?? collect();
+    }
+
+    /**
+     * Solo el doctor_admin puede marcar un gasto como personal de OTRO doctor.
+     * Un doctor_associate solo puede marcarlo como propio o compartido.
+     * Secretarias no pueden asignar owner_doctor_id (siempre compartido).
+     */
+    private function resolveOwnerDoctorId(Request $request, int $clinicId): ?int
+    {
+        $user = $request->user();
+        $requested = $request->input('owner_doctor_id');
+
+        if ($requested === null || $requested === '') {
+            return null;
+        }
+
+        $requested = (int) $requested;
+
+        if ($user->hasRole('doctor_admin')) {
+            $validIds = $this->clinicDoctors($clinicId)->pluck('id')->all();
+            return in_array($requested, $validIds, true) ? $requested : null;
+        }
+
+        if ($user->isDoctor()) {
+            return $requested === $user->id ? $user->id : null;
+        }
+
+        return null;
     }
 }

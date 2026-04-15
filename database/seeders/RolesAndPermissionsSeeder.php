@@ -57,6 +57,9 @@ class RolesAndPermissionsSeeder extends Seeder
         'expenses.update',
         'expenses.delete',
         'expenses.view-summary',
+        'expenses.view-my-summary',
+        'expenses.view-shared-pool',
+        'expenses.manage-split',
         'expense-categories.manage',
 
         // Administracion
@@ -99,6 +102,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'roles.manage',
             'settings.manage',
             'patients.transfer',
+            'expenses.manage-split',
         ]));
 
         // === secretary_limited ===
