@@ -223,6 +223,37 @@ mi_neto            = mis_ingresos - mis_gastos_propios - mi_pool_compartido
 
 **Fuera de scope:** Entidad legal de clinica, IVA/retenciones, facturacion electronica, cuentas por cobrar, sociedades formales.
 
+### Fase 8 - Plantillas de consulta personalizadas por doctor
+**Motivacion:** Dos doctores de la misma especialidad pueden tener cuestionarios distintos (ej. Dra. Herrera pide un set propio, otro urologo usa el generico). Queremos asignar una plantilla concreta a cada doctor al crearlo.
+
+**Schema:**
+- `users.consultation_template` VARCHAR nullable - slug del template que usa ese doctor (fallback al generico de su especialidad si es NULL).
+- `consultations.consultation_template` VARCHAR nullable - snapshot del template al momento de crear la consulta, para que cambios futuros no rompan historiales viejos.
+
+**Registro:** `config/consultation_templates.php` lista templates disponibles:
+```php
+'urology_generic'    => ['label' => 'Urologia generico',        'specialty' => 'urology'],
+'urology_herrera'    => ['label' => 'Urologia - Dra. Herrera',  'specialty' => 'urology'],
+'pediatrics_generic' => ['label' => 'Pediatria generico',       'specialty' => 'pediatrics'],
+```
+
+**Blade:** Cada template tiene sus 4 partials en `resources/views/consultations/partials/`:
+- `{template}-symptoms.blade.php`
+- `{template}-exams.blade.php`
+- `{template}-show-subjective.blade.php`
+- `{template}-show-objective.blade.php`
+
+**UI:** En `/admin/doctors/{edit,create}` agregar dropdown "Plantilla de consulta" que filtra por la especialidad elegida. Consulta mira `consultation_template` (con fallback a `specialty` + `'_generic'`).
+
+**Datos custom:** Siguen guardados en `consultations.specialty_data` JSON, sin cambios.
+
+**Alcance:**
+- El dev (yo) escribe cada template custom a pedido (~30 min-1h por template), commitea y deploya.
+- No es self-service: no hay form builder UI para el cliente.
+- Todos los templates viven en el repo unico y se distribuyen a todas las instalaciones; cada install solo usa los que asigna a sus doctores.
+
+**Fuera de scope:** Form builder drag-and-drop, templates creables desde UI, schema JSON dinamico.
+
 ---
 
 ## Seeders y Datos de Prueba
