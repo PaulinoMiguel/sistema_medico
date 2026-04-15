@@ -4,13 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $title ?? 'MediApp' }} - Sistema Medico</title>
+    @php $branding = \App\Models\InstallationSetting::current(); @endphp
+    <title>{{ $title ?? $branding->brand_name }} - {{ $branding->brand_name }}</title>
     <script>
         if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');
     </script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
     <style>
+        :root { --brand-primary: {{ $branding->primary_color }}; }
         /* Hide native disclosure marker on <details> for sidebar groups */
         details > summary { list-style: none; }
         details > summary::-webkit-details-marker { display: none; }
@@ -23,8 +25,15 @@
         {{-- Sidebar --}}
         <aside class="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 fixed h-full z-10 transition-colors">
             <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-                <h1 class="text-xl font-bold text-blue-600 dark:text-blue-400">MediApp</h1>
-                <p class="text-xs text-gray-500 dark:text-gray-400">Sistema Medico</p>
+                @if($branding->logoUrl())
+                    <div class="flex items-center gap-2 mb-1">
+                        <img src="{{ $branding->logoUrl() }}" alt="logo" class="h-8">
+                        <h1 class="text-xl font-bold" style="color: var(--brand-primary)">{{ $branding->brand_name }}</h1>
+                    </div>
+                @else
+                    <h1 class="text-xl font-bold" style="color: var(--brand-primary)">{{ $branding->brand_name }}</h1>
+                @endif
+                <p class="text-xs text-gray-500 dark:text-gray-400">{{ $branding->brand_tagline }}</p>
             </div>
 
             {{-- Clinic indicator / selector --}}
@@ -70,27 +79,36 @@
                     $groupSummaryClass = 'flex items-center justify-between px-3 py-2 text-sm font-medium rounded-md cursor-pointer text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700';
                     $childItemClass = 'flex items-center px-3 py-2 pl-10 text-sm rounded-md';
 
+                    // Module toggles (installation-level)
+                    $modExpenses = $branding->moduleEnabled('expenses');
+                    $modCashRegister = $branding->moduleEnabled('cash_register');
+                    $modPrescriptions = $branding->moduleEnabled('prescriptions');
+                    $modServices = $branding->moduleEnabled('services');
+
                     // Per-permission visibility flags (driven by spatie permissions)
                     $canConsultations = $u->can('consultations.view') || $u->can('consultations.create');
-                    $canPrescriptions = $u->can('prescriptions.view') || $u->can('prescriptions.create');
+                    $canPrescriptions = $modPrescriptions && ($u->can('prescriptions.view') || $u->can('prescriptions.create'));
                     $showClinical = $canConsultations || $canPrescriptions;
 
                     $canPayments = $u->can('payments.view');
                     $canPaymentsCreate = $u->can('payments.create');
-                    $canServices = $u->can('services.manage') || $u->can('services.view');
+                    $canServices = $modServices && ($u->can('services.manage') || $u->can('services.view'));
                     $showIngresos = $canPayments || ($canPaymentsCreate && $u->isDoctor()) || $canServices;
 
-                    $canExpenses = $u->can('expenses.view');
-                    $canExpenseCategories = $u->can('expense-categories.manage');
-                    $canExpenseSummary = $u->can('expenses.view-summary');
-                    $showEgresos = $canExpenses || $canExpenseCategories || $canExpenseSummary;
+                    $canExpenses = $modExpenses && $u->can('expenses.view');
+                    $canExpenseCategories = $modExpenses && $u->can('expense-categories.manage');
+                    $canExpenseSummary = $modExpenses && $u->can('expenses.view-summary');
+                    $canMySummary = $modExpenses && $u->can('expenses.view-my-summary');
+                    $canSharedPool = $modExpenses && $u->can('expenses.view-shared-pool');
+                    $showEgresos = $canExpenses || $canExpenseCategories || $canExpenseSummary || $canMySummary || $canSharedPool;
 
                     $canClinicsManage = $u->can('clinics.manage');
                     $canStaffManage = $u->can('staff.manage');
                     $canRolesManage = $u->can('roles.manage');
-                    $showAdmin = $canClinicsManage || $canStaffManage || $canRolesManage;
+                    $canSettings = $u->can('settings.manage');
+                    $showAdmin = $canClinicsManage || $canStaffManage || $canRolesManage || $canSettings;
 
-                    $canCashRegister = $u->can('cash-register.view');
+                    $canCashRegister = $modCashRegister && $u->can('cash-register.view');
 
                     // Detect which group should be auto-expanded based on current route
                     $clinicalOpen = request()->routeIs('consultations.*') || request()->routeIs('prescriptions.*');
@@ -218,10 +236,22 @@
                                 Categorias
                             </a>
                             @endif
+                            @if($canMySummary)
+                            <a href="{{ route('expenses.my-summary') }}"
+                               class="{{ $childItemClass }} {{ request()->routeIs('expenses.my-summary') ? $activeClass : $inactiveClass }}">
+                                Mi resumen
+                            </a>
+                            @endif
+                            @if($canSharedPool)
+                            <a href="{{ route('expenses.shared-pool') }}"
+                               class="{{ $childItemClass }} {{ request()->routeIs('expenses.shared-pool') ? $activeClass : $inactiveClass }}">
+                                Gastos compartidos
+                            </a>
+                            @endif
                             @if($canExpenseSummary)
                             <a href="{{ route('expenses.summary') }}"
                                class="{{ $childItemClass }} {{ request()->routeIs('expenses.summary') ? $activeClass : $inactiveClass }}">
-                                Resumen
+                                Resumen clinica
                             </a>
                             @endif
                         </div>
@@ -258,6 +288,12 @@
                             <a href="{{ route('roles.index') }}"
                                class="{{ $childItemClass }} {{ request()->routeIs('roles.*') ? $activeClass : $inactiveClass }}">
                                 Roles y permisos
+                            </a>
+                            @endif
+                            @if($canSettings)
+                            <a href="{{ route('settings.edit') }}"
+                               class="{{ $childItemClass }} {{ request()->routeIs('settings.*') ? $activeClass : $inactiveClass }}">
+                                Configuracion
                             </a>
                             @endif
                         </div>

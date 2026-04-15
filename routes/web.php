@@ -9,12 +9,14 @@ use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\ClinicController;
 use App\Http\Controllers\ConsultationController;
 use App\Http\Controllers\PatientController;
+use App\Http\Controllers\PediatricMeasurementController;
 use App\Http\Controllers\PrescriptionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CashRegisterController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ExpenseCategoryController;
 use App\Http\Controllers\ExpenseController;
+use App\Http\Controllers\InstallationSettingController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SecretaryController;
 use App\Http\Controllers\ServiceController;
@@ -86,6 +88,12 @@ Route::middleware('auth')->group(function () {
             Route::post('/patients/{patient}/photo', [PatientController::class, 'updatePhoto'])->name('patients.photo');
             Route::delete('/patients/{patient}/photo', [PatientController::class, 'deletePhoto'])->name('patients.photo.delete');
             Route::get('/api/patients/{patient}/last-consultation', [PatientController::class, 'lastConsultation'])->name('patients.last-consultation');
+
+            // Pediatria: mediciones + curvas de crecimiento
+            Route::get('/patients/{patient}/growth', [PediatricMeasurementController::class, 'charts'])->name('patients.growth');
+            Route::post('/patients/{patient}/measurements', [PediatricMeasurementController::class, 'store'])->name('patients.measurements.store');
+            Route::delete('/patients/{patient}/measurements/{measurement}', [PediatricMeasurementController::class, 'destroy'])->name('patients.measurements.destroy');
+            Route::post('/api/patients/{patient}/measurements/calculate', [PediatricMeasurementController::class, 'calculate'])->name('patients.measurements.calculate');
         });
 
         // Appointments (gated by appointments.view)
@@ -94,8 +102,14 @@ Route::middleware('auth')->group(function () {
             Route::patch('/appointments/{appointment}/status', [AppointmentController::class, 'updateStatus'])->name('appointments.status');
         });
 
+        // Installation branding + module toggles
+        Route::middleware('permission:settings.manage')->group(function () {
+            Route::get('/settings', [InstallationSettingController::class, 'edit'])->name('settings.edit');
+            Route::put('/settings', [InstallationSettingController::class, 'update'])->name('settings.update');
+        });
+
         // Services catalog (income side) — each doctor manages their own.
-        Route::middleware('permission:services.manage')->group(function () {
+        Route::middleware(['permission:services.manage', 'module:services'])->group(function () {
             Route::post('/services/quick', [ServiceController::class, 'quickStore'])->name('services.quick-store');
             Route::resource('services', ServiceController::class)->except(['show', 'destroy']);
             Route::patch('/services/{service}/toggle', [ServiceController::class, 'toggle'])->name('services.toggle');
@@ -109,11 +123,19 @@ Route::middleware('auth')->group(function () {
         });
 
         // Expenses
-        Route::middleware('permission:expenses.view')->group(function () {
-            Route::resource('expenses', ExpenseController::class)->except(['show']);
-        });
-        Route::middleware('permission:expenses.view-summary')->group(function () {
-            Route::get('/financial-summary', [ExpenseController::class, 'summary'])->name('expenses.summary');
+        Route::middleware(['module:expenses'])->group(function () {
+            Route::middleware('permission:expenses.view')->group(function () {
+                Route::resource('expenses', ExpenseController::class)->except(['show']);
+            });
+            Route::middleware('permission:expenses.view-summary')->group(function () {
+                Route::get('/financial-summary', [ExpenseController::class, 'summary'])->name('expenses.summary');
+            });
+            Route::middleware('permission:expenses.view-my-summary')->group(function () {
+                Route::get('/my-financial-summary', [ExpenseController::class, 'mySummary'])->name('expenses.my-summary');
+            });
+            Route::middleware('permission:expenses.view-shared-pool')->group(function () {
+                Route::get('/shared-pool', [ExpenseController::class, 'sharedPool'])->name('expenses.shared-pool');
+            });
         });
 
         // Payments — view and create are gated independently
@@ -127,15 +149,17 @@ Route::middleware('auth')->group(function () {
             ->middleware('permission:payments.view')->name('payments.show');
 
         // Cash register
-        Route::middleware('permission:cash-register.view')->group(function () {
-            Route::get('/cash-registers', [CashRegisterController::class, 'index'])->name('cash-registers.index');
-            Route::get('/cash-registers/{cashRegister}', [CashRegisterController::class, 'show'])->name('cash-registers.show');
-        });
-        Route::middleware('permission:cash-register.open')->group(function () {
-            Route::post('/cash-registers/open', [CashRegisterController::class, 'open'])->name('cash-registers.open');
-        });
-        Route::middleware('permission:cash-register.close')->group(function () {
-            Route::post('/cash-registers/{cashRegister}/close', [CashRegisterController::class, 'close'])->name('cash-registers.close');
+        Route::middleware(['module:cash_register'])->group(function () {
+            Route::middleware('permission:cash-register.view')->group(function () {
+                Route::get('/cash-registers', [CashRegisterController::class, 'index'])->name('cash-registers.index');
+                Route::get('/cash-registers/{cashRegister}', [CashRegisterController::class, 'show'])->name('cash-registers.show');
+            });
+            Route::middleware('permission:cash-register.open')->group(function () {
+                Route::post('/cash-registers/open', [CashRegisterController::class, 'open'])->name('cash-registers.open');
+            });
+            Route::middleware('permission:cash-register.close')->group(function () {
+                Route::post('/cash-registers/{cashRegister}/close', [CashRegisterController::class, 'close'])->name('cash-registers.close');
+            });
         });
 
         // Consultations — read separated from write
@@ -152,18 +176,20 @@ Route::middleware('auth')->group(function () {
         });
 
         // Prescriptions — read (view/print) separated from write (create/edit)
-        Route::middleware('permission:prescriptions.view')->group(function () {
-            Route::get('/prescriptions', [PrescriptionController::class, 'index'])->name('prescriptions.index');
-            Route::get('/prescriptions/{prescription}', [PrescriptionController::class, 'show'])->name('prescriptions.show');
-            Route::get('/prescriptions/{prescription}/pdf', [PrescriptionController::class, 'pdf'])->name('prescriptions.pdf');
-        });
-        Route::middleware('permission:prescriptions.create')->group(function () {
-            Route::get('/prescriptions-create', [PrescriptionController::class, 'create'])->name('prescriptions.create');
-            Route::post('/prescriptions', [PrescriptionController::class, 'store'])->name('prescriptions.store');
-            Route::get('/prescriptions/{prescription}/edit', [PrescriptionController::class, 'edit'])->name('prescriptions.edit');
-            Route::put('/prescriptions/{prescription}', [PrescriptionController::class, 'update'])->name('prescriptions.update');
-            Route::delete('/prescriptions/{prescription}', [PrescriptionController::class, 'destroy'])->name('prescriptions.destroy');
-            Route::post('/consultations/{consultation}/prescription', [PrescriptionController::class, 'createFromConsultation'])->name('prescriptions.from-consultation');
+        Route::middleware(['module:prescriptions'])->group(function () {
+            Route::middleware('permission:prescriptions.view')->group(function () {
+                Route::get('/prescriptions', [PrescriptionController::class, 'index'])->name('prescriptions.index');
+                Route::get('/prescriptions/{prescription}', [PrescriptionController::class, 'show'])->name('prescriptions.show');
+                Route::get('/prescriptions/{prescription}/pdf', [PrescriptionController::class, 'pdf'])->name('prescriptions.pdf');
+            });
+            Route::middleware('permission:prescriptions.create')->group(function () {
+                Route::get('/prescriptions-create', [PrescriptionController::class, 'create'])->name('prescriptions.create');
+                Route::post('/prescriptions', [PrescriptionController::class, 'store'])->name('prescriptions.store');
+                Route::get('/prescriptions/{prescription}/edit', [PrescriptionController::class, 'edit'])->name('prescriptions.edit');
+                Route::put('/prescriptions/{prescription}', [PrescriptionController::class, 'update'])->name('prescriptions.update');
+                Route::delete('/prescriptions/{prescription}', [PrescriptionController::class, 'destroy'])->name('prescriptions.destroy');
+                Route::post('/consultations/{consultation}/prescription', [PrescriptionController::class, 'createFromConsultation'])->name('prescriptions.from-consultation');
+            });
         });
     });
 });
