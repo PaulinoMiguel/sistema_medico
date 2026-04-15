@@ -10,6 +10,22 @@
         <div class="bg-white rounded-lg shadow p-6 mb-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Fecha y hora *</label>
+                    <input type="datetime-local" name="scheduled_at" value="{{ old('scheduled_at') }}" required
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Duracion (minutos)</label>
+                    <select name="duration_minutes" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        <option value="15">15 min</option>
+                        <option value="30" selected>30 min</option>
+                        <option value="45">45 min</option>
+                        <option value="60">1 hora</option>
+                        <option value="90">1.5 horas</option>
+                        <option value="120">2 horas</option>
+                    </select>
+                </div>
+                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Paciente *</label>
                     <select name="patient_id" id="patient_select" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                         <option value="">Seleccionar paciente...</option>
@@ -35,22 +51,6 @@
                         </select>
                     </div>
                 @endif
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Fecha y hora *</label>
-                    <input type="datetime-local" name="scheduled_at" value="{{ old('scheduled_at') }}" required
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Duracion (minutos)</label>
-                    <select name="duration_minutes" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                        <option value="15">15 min</option>
-                        <option value="30" selected>30 min</option>
-                        <option value="45">45 min</option>
-                        <option value="60">1 hora</option>
-                        <option value="90">1.5 horas</option>
-                        <option value="120">2 horas</option>
-                    </select>
-                </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de turno *</label>
                     <select name="type" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">

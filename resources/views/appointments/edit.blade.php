@@ -11,6 +11,19 @@
         <div class="bg-white rounded-lg shadow p-6 mb-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Fecha y hora *</label>
+                    <input type="datetime-local" name="scheduled_at" value="{{ old('scheduled_at', $appointment->scheduled_at->format('Y-m-d\TH:i')) }}" required
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Duracion (min)</label>
+                    <select name="duration_minutes" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        @foreach([15,30,45,60,90,120] as $d)
+                            <option value="{{ $d }}" {{ old('duration_minutes', $appointment->duration_minutes) == $d ? 'selected' : '' }}>{{ $d }} min</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Paciente *</label>
                     <select name="patient_id" id="patient_select" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                         @foreach($patients as $patient)
@@ -36,11 +49,6 @@
                     </div>
                 @endif
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Fecha y hora *</label>
-                    <input type="datetime-local" name="scheduled_at" value="{{ old('scheduled_at', $appointment->scheduled_at->format('Y-m-d\TH:i')) }}" required
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                </div>
-                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tipo *</label>
                     <select name="type" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                         @foreach(['first_visit'=>'Primera vez','follow_up'=>'Control','pre_operative'=>'Pre-quirurgico','post_operative'=>'Post-quirurgico','urodynamic_study'=>'Urodinamia','procedure'=>'Procedimiento','surgical'=>'Cirugia','emergency'=>'Urgencia'] as $val => $label)
@@ -48,18 +56,10 @@
                         @endforeach
                     </select>
                 </div>
-                <div>
+                <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Motivo</label>
                     <input type="text" name="reason" value="{{ old('reason', $appointment->reason) }}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Duracion (min)</label>
-                    <select name="duration_minutes" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                        @foreach([15,30,45,60,90,120] as $d)
-                            <option value="{{ $d }}" {{ old('duration_minutes', $appointment->duration_minutes) == $d ? 'selected' : '' }}>{{ $d }} min</option>
-                        @endforeach
-                    </select>
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Notas</label>

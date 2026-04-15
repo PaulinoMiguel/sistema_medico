@@ -123,6 +123,15 @@
 .dark .bg-gray-100.text-gray-700 { background-color: rgba(55, 65, 81, 0.5); color: #d1d5db; }
 .dark .bg-blue-50.text-blue-700 { background-color: rgba(30, 58, 138, 0.3); color: #93c5fd; }
 
+/* Appointment status cards (bg-X-200 + text-X-800 combos) */
+.dark .bg-gray-200.text-gray-800   { background-color: #374151; color: #f3f4f6; }
+.dark .bg-blue-200.text-blue-800   { background-color: #1e3a8a; color: #dbeafe; }
+.dark .bg-yellow-200.text-yellow-800 { background-color: #78350f; color: #fef3c7; }
+.dark .bg-purple-200.text-purple-800 { background-color: #581c87; color: #ede9fe; }
+.dark .bg-green-200.text-green-800 { background-color: #14532d; color: #d1fae5; }
+.dark .bg-red-200.text-red-800     { background-color: #7f1d1d; color: #fee2e2; }
+.dark .bg-red-100.text-red-600     { background-color: #7f1d1d; color: #fecaca; }
+
 /* Buttons - keep primary buttons visible */
 .dark .bg-blue-600 { background-color: #2563eb; }
 .dark .bg-green-600 { background-color: #059669; }

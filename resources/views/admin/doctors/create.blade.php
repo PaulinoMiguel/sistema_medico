@@ -22,7 +22,7 @@
                             class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:ring-blue-500 focus:border-blue-500">
                         <option value="">Seleccionar...</option>
                         @foreach(config('specialties') as $key => $spec)
-                            <option value="{{ $spec['label'] }}" {{ old('specialty') === $spec['label'] ? 'selected' : '' }}>
+                            <option value="{{ $key }}" {{ old('specialty') === $key ? 'selected' : '' }}>
                                 {{ $spec['label'] }}
                             </option>
                         @endforeach

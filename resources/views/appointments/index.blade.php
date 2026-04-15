@@ -71,7 +71,7 @@
         <div class="bg-white rounded-lg shadow overflow-hidden">
             <div class="grid grid-cols-7 border-b">
                 @foreach($days as $key => $day)
-                    <div class="p-3 text-center border-r last:border-r-0 {{ $day['isToday'] ? 'bg-blue-50' : '' }}">
+                    <div class="p-3 text-center border-r last:border-r-0 {{ $day['isToday'] ? 'bg-blue-50 dark:bg-blue-900/40' : '' }}">
                         <p class="text-xs text-gray-500 uppercase">{{ $day['date']->translatedFormat('D') }}</p>
                         <p class="text-lg font-semibold {{ $day['isToday'] ? 'text-blue-600' : 'text-gray-800' }}">
                             {{ $day['date']->format('d') }}
@@ -83,7 +83,7 @@
 
             <div class="grid grid-cols-7 min-h-[500px]">
                 @foreach($days as $key => $day)
-                    <div class="border-r last:border-r-0 p-2 {{ $day['isToday'] ? 'bg-blue-50/30' : '' }}">
+                    <div class="border-r last:border-r-0 p-2 {{ $day['isToday'] ? 'bg-blue-50/30 dark:bg-blue-900/20' : '' }}">
                         @foreach($day['appointments'] as $apt)
                             <a href="{{ route('appointments.show', $apt) }}"
                                class="block mb-1.5 p-2 rounded text-xs {{ $statusColors[$apt->status] ?? 'bg-gray-100' }} hover:opacity-80 transition">
@@ -117,7 +117,7 @@
 
             <div class="grid grid-cols-7">
                 @foreach($days as $key => $day)
-                    <div class="border-r border-b last:border-r-0 min-h-[120px] p-2 {{ !$day['isCurrentMonth'] ? 'bg-gray-50/50' : '' }} {{ $day['isToday'] ? 'bg-blue-50/50' : '' }}">
+                    <div class="border-r border-b last:border-r-0 min-h-[120px] p-2 {{ !$day['isCurrentMonth'] ? 'bg-gray-50/50 dark:bg-gray-900/50' : '' }} {{ $day['isToday'] ? 'bg-blue-50/50 dark:bg-blue-900/30' : '' }}">
                         <div class="flex justify-between items-center mb-1">
                             <span class="text-sm {{ $day['isToday'] ? 'bg-blue-600 text-white w-7 h-7 rounded-full flex items-center justify-center font-bold' : ($day['isCurrentMonth'] ? 'text-gray-800 font-medium' : 'text-gray-400') }}">
                                 {{ $day['date']->format('d') }}
