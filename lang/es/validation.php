@@ -205,7 +205,7 @@ return [
         'occupation' => 'ocupacion',
         'referred_by' => 'referido por',
         'notes' => 'notas',
-        'primary_doctor_id' => 'doctor responsable',
+        'doctor_id' => 'doctor responsable',
 
         // Usuarios
         'name' => 'nombre',

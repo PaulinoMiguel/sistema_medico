@@ -4,10 +4,9 @@
         <h2 class="text-2xl font-bold text-gray-800 mt-2">Nueva Secretaria</h2>
     </div>
 
-    @if(\App\Models\Clinic::count() === 0)
+    @if(auth()->user()->clinics()->count() === 0)
         <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
-            <p class="text-yellow-800 mb-3">Necesitas crear al menos una clinica antes de agregar secretarias.</p>
-            <a href="{{ route('clinics.create') }}" class="text-blue-600 hover:underline font-medium">Crear clinica</a>
+            <p class="text-yellow-800">No tienes clinicas asignadas. Contacta al administrador para que te asigne una clinica.</p>
         </div>
     @else
         <form method="POST" action="{{ route('secretaries.store') }}">

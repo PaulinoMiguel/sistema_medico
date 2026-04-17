@@ -8,19 +8,19 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('patients', function (Blueprint $table) {
-            $table->foreignId('primary_doctor_id')
-                ->after('registered_by')
-                ->constrained('users')
-                ->restrictOnDelete();
+        Schema::create('doctor_patient', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('doctor_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('patient_id')->constrained()->cascadeOnDelete();
+            $table->boolean('is_primary')->default(false);
+            $table->timestamps();
+
+            $table->unique(['doctor_id', 'patient_id']);
         });
     }
 
     public function down(): void
     {
-        Schema::table('patients', function (Blueprint $table) {
-            $table->dropForeign(['primary_doctor_id']);
-            $table->dropColumn('primary_doctor_id');
-        });
+        Schema::dropIfExists('doctor_patient');
     }
 };

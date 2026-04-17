@@ -15,9 +15,6 @@ class PatientController extends Controller
         $clinicId = session('active_clinic_id');
         $search = $request->get('search');
 
-        // The MedicalRecordScope already enforces visibility (doctor sees own,
-        // secretary sees clinic-assigned). The clinic filter below is an
-        // optional UI refinement, not a security boundary.
         $patients = Patient::query()
             ->when($clinicId, function ($q) use ($clinicId) {
                 $q->whereHas('clinics', function ($q2) use ($clinicId) {
@@ -44,8 +41,6 @@ class PatientController extends Controller
         $user = $request->user();
         $doctors = collect();
 
-        // Non-doctors (secretary, nurse, ...) must pick which doctor owns
-        // the new patient. Doctors get auto-assigned to themselves.
         if (!$user->isDoctor()) {
             $clinicIds = $user->clinics()->pluck('clinics.id');
             $doctors = User::role(['doctor_admin', 'doctor_associate'])
@@ -62,13 +57,10 @@ class PatientController extends Controller
     {
         $user = $request->user();
 
-        // Defense in depth: even though clinic.required middleware blocks
-        // doctors without clinics, this guard prevents creating orphan
-        // patients in any other code path.
         $clinicId = session('active_clinic_id');
         if (!$clinicId) {
-            return redirect()->route('clinics.create')
-                ->with('warning', 'Necesitas crear una clinica antes de registrar pacientes.');
+            return redirect()->route('dashboard')
+                ->with('warning', 'No tienes clinicas asignadas. Contacta al administrador.');
         }
 
         $isAdult = $request->date_of_birth
@@ -101,36 +93,95 @@ class PatientController extends Controller
         ];
 
         if (!$user->isDoctor()) {
-            $rules['primary_doctor_id'] = 'required|exists:users,id';
+            $rules['doctor_id'] = 'required|exists:users,id';
         }
 
         $validated = $request->validate($rules);
 
+        $doctorId = $user->isDoctor() ? $user->id : $validated['doctor_id'];
         $validated['registered_by'] = $user->id;
-        $validated['primary_doctor_id'] = $user->isDoctor()
-            ? $user->id
-            : $validated['primary_doctor_id'];
+        unset($validated['doctor_id']);
 
         if ($request->hasFile('photo')) {
             $validated['photo_path'] = $request->file('photo')->store('patient-photos', 'public');
         }
         unset($validated['photo']);
 
-        $patient = Patient::create($validated);
+        $patient = Patient::withoutGlobalScopes()->create($validated);
 
-        // Attach to current clinic (guaranteed not null by the guard above)
+        $patient->doctors()->attach($doctorId, ['is_primary' => true]);
         $patient->clinics()->attach($clinicId);
-
-        // Create empty medical history
         $patient->medicalHistory()->create();
 
         return redirect()->route('patients.show', $patient)
             ->with('success', 'Paciente registrado exitosamente.');
     }
 
+    /**
+     * Associate an existing patient with the current doctor.
+     * Used when duplicate detection finds the patient already exists.
+     */
+    public function associate(Request $request, Patient $patient)
+    {
+        $user = $request->user();
+        $doctorId = $user->isDoctor() ? $user->id : $request->input('doctor_id');
+
+        if (!$doctorId) {
+            return back()->with('error', 'Debe seleccionar un doctor.');
+        }
+
+        $alreadyLinked = $patient->doctors()->where('doctor_id', $doctorId)->exists();
+        if ($alreadyLinked) {
+            return redirect()->route('patients.show', $patient)
+                ->with('info', 'Este paciente ya esta asociado a este doctor.');
+        }
+
+        $patient->doctors()->attach($doctorId, ['is_primary' => false]);
+
+        $clinicId = session('active_clinic_id');
+        if ($clinicId && !$patient->clinics()->where('clinics.id', $clinicId)->exists()) {
+            $patient->clinics()->attach($clinicId);
+        }
+
+        return redirect()->route('patients.show', $patient)
+            ->with('success', 'Paciente asociado exitosamente.');
+    }
+
+    /**
+     * AJAX: search for existing patient by document number.
+     * Bypasses MedicalRecordScope to find patients from any doctor.
+     */
+    public function checkDuplicate(Request $request)
+    {
+        $docNumber = $request->input('document_number');
+
+        if (!$docNumber || strlen($docNumber) < 3) {
+            return response()->json(['found' => false]);
+        }
+
+        $patient = Patient::withoutGlobalScopes()
+            ->where('document_number', $docNumber)
+            ->first();
+
+        if (!$patient) {
+            return response()->json(['found' => false]);
+        }
+
+        return response()->json([
+            'found' => true,
+            'patient' => [
+                'id' => $patient->id,
+                'full_name' => $patient->full_name,
+                'document_number' => $patient->document_number,
+                'date_of_birth' => $patient->date_of_birth->format('d/m/Y'),
+                'gender' => $patient->gender,
+            ],
+        ]);
+    }
+
     public function show(Patient $patient)
     {
-        $patient->load(['medicalHistory', 'clinics', 'appointments' => function ($q) {
+        $patient->load(['medicalHistory', 'clinics', 'doctors', 'appointments' => function ($q) {
             $q->latest('scheduled_at')->limit(10);
         }]);
 

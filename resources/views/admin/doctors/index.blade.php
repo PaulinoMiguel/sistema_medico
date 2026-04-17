@@ -19,6 +19,7 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Nombre</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Email</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Especialidad</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Rol</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Clinica(s)</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Estado</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Acciones</th>
@@ -37,6 +38,12 @@
                         <td class="px-6 py-4 text-sm font-medium text-white">{{ $doctor->name }}</td>
                         <td class="px-6 py-4 text-sm text-gray-300">{{ $doctor->email }}</td>
                         <td class="px-6 py-4 text-sm text-gray-300">{{ $doctor->specialty ?? '-' }}</td>
+                        <td class="px-6 py-4 text-sm">
+                            @php $roleName = $doctor->roles->first()?->name; @endphp
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $roleName === 'doctor_admin' ? 'bg-purple-900/50 text-purple-300' : 'bg-blue-900/50 text-blue-300' }}">
+                                {{ $roleName === 'doctor_admin' ? 'Admin' : 'Asociado' }}
+                            </span>
+                        </td>
                         <td class="px-6 py-4 text-sm text-gray-300">
                             @forelse($doctor->clinics as $clinic)
                                 <span class="inline-block px-2 py-0.5 text-xs rounded-full bg-blue-900/50 text-blue-300 mr-1">

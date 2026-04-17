@@ -12,28 +12,14 @@ use Illuminate\Support\Facades\DB;
  * Restricts visibility of medical records based on the authenticated user.
  *
  * - No authenticated user (CLI / queue / seeder): no filter applied.
- * - Doctor (doctor_admin / doctor_associate): only records they own
- *   (filtered by $doctorColumn).
+ * - Doctor: only records they own. Two modes:
+ *     useDoctorPivot = true: Patient — via doctor_patient pivot table.
+ *     default: via $doctorColumn on the model's table.
  * - Any other role (secretary, nurse, ...): records belonging to clinics
- *   the user is assigned to. Three modes for the secretary path:
- *
- *     useClinicPivot = true:
- *         Patient case — visibility through the clinic_patient pivot table
- *         (a patient may belong to multiple clinics).
- *
- *     secretaryViaDoctorClinic = true:
- *         Service case — services have no clinic_id, only doctor_id. The
- *         secretary sees a service if its doctor works at one of her clinics.
- *
- *     default:
- *         Appointment / Consultation / Payment — model has clinic_id directly,
- *         filter is whereIn('clinic_id', $clinicIds).
- *
- * Note: super admins live in the separate `admins` table (different guard),
- * so they never reach this scope through the User model.
- *
- * This is the security boundary for record visibility — controllers must not
- * rely on session('active_clinic_id') alone.
+ *   the user is assigned to. Three modes:
+ *     useClinicPivot = true: Patient — via clinic_patient pivot.
+ *     secretaryViaDoctorClinic = true: Service — via doctor's clinic.
+ *     default: via clinic_id column on the model's table.
  */
 class MedicalRecordScope implements Scope
 {
@@ -41,6 +27,7 @@ class MedicalRecordScope implements Scope
         public bool $useClinicPivot = false,
         public string $doctorColumn = 'doctor_id',
         public bool $secretaryViaDoctorClinic = false,
+        public bool $useDoctorPivot = false,
     ) {}
 
     public function apply(Builder $builder, Model $model): void
@@ -54,7 +41,16 @@ class MedicalRecordScope implements Scope
         $table = $model->getTable();
 
         if ($user->isDoctor()) {
-            $builder->where("{$table}.{$this->doctorColumn}", $user->id);
+            if ($this->useDoctorPivot) {
+                $builder->whereExists(function ($query) use ($user, $table) {
+                    $query->select(DB::raw(1))
+                        ->from('doctor_patient')
+                        ->whereColumn('doctor_patient.patient_id', "{$table}.id")
+                        ->where('doctor_patient.doctor_id', $user->id);
+                });
+            } else {
+                $builder->where("{$table}.{$this->doctorColumn}", $user->id);
+            }
             return;
         }
 

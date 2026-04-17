@@ -4,6 +4,10 @@
         <h2 class="text-2xl font-bold text-white mt-2">Editar Doctor</h2>
     </div>
 
+    @php
+        $currentRole = $doctor->roles->first()?->name ?? 'doctor_admin';
+    @endphp
+
     <form method="POST" action="{{ route('admin.doctors.update', $doctor) }}">
         @csrf
         @method('PUT')
@@ -46,7 +50,44 @@
                     <input type="text" name="professional_license" value="{{ old('professional_license', $doctor->professional_license) }}"
                            class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:ring-blue-500 focus:border-blue-500">
                 </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-1">Rol *</label>
+                    <select name="role" required
+                            class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:ring-blue-500 focus:border-blue-500">
+                        <option value="doctor_admin" {{ old('role', $currentRole) === 'doctor_admin' ? 'selected' : '' }}>Doctor Admin</option>
+                        <option value="doctor_associate" {{ old('role', $currentRole) === 'doctor_associate' ? 'selected' : '' }}>Doctor Asociado</option>
+                    </select>
+                    <p class="mt-1 text-xs text-gray-400">Admin: gestiona staff y configuracion. Asociado: solo atencion clinica y financiera.</p>
+                    @error('role') <p class="mt-1 text-sm text-red-400">{{ $message }}</p> @enderror
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-1">Estado *</label>
+                    <select name="status" required
+                            class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:ring-blue-500 focus:border-blue-500">
+                        <option value="active" {{ old('status', $doctor->status) === 'active' ? 'selected' : '' }}>Activo</option>
+                        <option value="passive" {{ old('status', $doctor->status) === 'passive' ? 'selected' : '' }}>Pasivo</option>
+                        <option value="inactive" {{ old('status', $doctor->status) === 'inactive' ? 'selected' : '' }}>Inactivo</option>
+                    </select>
+                    <p class="mt-1 text-xs text-gray-400">Pasivo: no puede operar pero cuenta en reparto de gastos. Inactivo: sin acceso.</p>
+                    @error('status') <p class="mt-1 text-sm text-red-400">{{ $message }}</p> @enderror
+                </div>
             </div>
+        </div>
+
+        <div class="bg-gray-800 rounded-lg shadow p-6 mb-6">
+            <h3 class="text-lg font-semibold text-white mb-4">Asignar a clinica(s) *</h3>
+            <p class="text-sm text-gray-400 mb-4">Selecciona en que clinica(s) trabaja este doctor. La primera seleccionada sera su clinica principal.</p>
+            <div class="space-y-2">
+                @foreach($clinics as $clinic)
+                    <label class="flex items-center p-3 bg-gray-700/50 rounded-md hover:bg-gray-700 cursor-pointer">
+                        <input type="checkbox" name="clinic_ids[]" value="{{ $clinic->id }}"
+                               {{ in_array($clinic->id, old('clinic_ids', $doctorClinicIds)) ? 'checked' : '' }}
+                               class="rounded border-gray-500 text-blue-600 focus:ring-blue-500 bg-gray-600">
+                        <span class="ml-3 text-sm text-gray-200">{{ $clinic->name }}</span>
+                    </label>
+                @endforeach
+            </div>
+            @error('clinic_ids') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
         </div>
 
         <div class="bg-gray-800 rounded-lg shadow p-6 mb-6">

@@ -28,8 +28,8 @@ class EnsureClinicExists
         // Only doctors are subject to this guard. Secretaries are always
         // attached to a clinic when created (no orphan secretaries possible).
         if ($user && $user->isDoctor() && $user->clinics()->count() === 0) {
-            return redirect()->route('clinics.create')
-                ->with('warning', 'Necesitas crear tu primera clinica antes de continuar.');
+            return redirect()->route('dashboard')
+                ->with('warning', 'No tienes clinicas asignadas. Contacta al administrador.');
         }
 
         return $next($request);

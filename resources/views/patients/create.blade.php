@@ -12,11 +12,11 @@
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">Doctor responsable</h3>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Doctor *</label>
-                    <select name="primary_doctor_id" required
+                    <select name="doctor_id" id="doctor_id" required
                             class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                         <option value="">Seleccionar doctor...</option>
                         @foreach($doctors as $doctor)
-                            <option value="{{ $doctor->id }}" {{ old('primary_doctor_id') == $doctor->id ? 'selected' : '' }}>
+                            <option value="{{ $doctor->id }}" {{ old('doctor_id') == $doctor->id ? 'selected' : '' }}>
                                 {{ $doctor->name }}@if($doctor->specialty) — {{ $doctor->specialty }}@endif
                             </option>
                         @endforeach
@@ -25,6 +25,27 @@
                 </div>
             </div>
         @endif
+
+        {{-- Duplicate detection banner --}}
+        <div id="duplicate-banner" class="hidden bg-yellow-50 border border-yellow-300 rounded-lg p-4 mb-6">
+            <div class="flex items-start">
+                <svg class="w-5 h-5 text-yellow-600 mt-0.5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <div class="flex-1">
+                    <p class="font-semibold text-yellow-800">Este paciente ya existe en el sistema</p>
+                    <p class="text-sm text-yellow-700 mt-1">
+                        <span id="dup-name" class="font-medium"></span> — <span id="dup-doc"></span> — Nac: <span id="dup-dob"></span>
+                    </p>
+                    <form id="associate-form" method="POST" class="mt-3">
+                        @csrf
+                        <input type="hidden" name="doctor_id" id="assoc-doctor-id">
+                        <button type="submit" class="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 text-sm font-medium">
+                            Asociar a mi lista de pacientes
+                        </button>
+                        <span class="text-xs text-yellow-600 ml-2">En vez de crear uno nuevo</span>
+                    </form>
+                </div>
+            </div>
+        </div>
 
         <div class="bg-white rounded-lg shadow p-6 mb-6">
             <h3 class="text-lg font-semibold text-gray-800 mb-4">Datos personales</h3>
@@ -197,5 +218,52 @@
                 reader.readAsDataURL(file);
             }
         });
+
+        // Duplicate detection by document number
+        let debounceTimer;
+        const docInput = document.querySelector('input[name="document_number"]');
+        const banner = document.getElementById('duplicate-banner');
+
+        if (docInput) {
+            docInput.addEventListener('input', function () {
+                clearTimeout(debounceTimer);
+                const val = this.value.trim();
+
+                if (val.length < 3) {
+                    banner.classList.add('hidden');
+                    return;
+                }
+
+                debounceTimer = setTimeout(() => {
+                    fetch('{{ route("patients.check-duplicate") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Accept': 'application/json',
+                        },
+                        body: JSON.stringify({ document_number: val })
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.found) {
+                            document.getElementById('dup-name').textContent = data.patient.full_name;
+                            document.getElementById('dup-doc').textContent = data.patient.document_number;
+                            document.getElementById('dup-dob').textContent = data.patient.date_of_birth;
+                            const form = document.getElementById('associate-form');
+                            form.action = '/patients/' + data.patient.id + '/associate';
+                            const doctorSelect = document.getElementById('doctor_id');
+                            const assocDoctor = document.getElementById('assoc-doctor-id');
+                            if (doctorSelect) {
+                                assocDoctor.value = doctorSelect.value;
+                            }
+                            banner.classList.remove('hidden');
+                        } else {
+                            banner.classList.add('hidden');
+                        }
+                    });
+                }, 500);
+            });
+        }
     </script>
 </x-layouts.tenant>

@@ -189,25 +189,36 @@ Implementado:
 - [x] Selector de especialidad estandarizado (dropdown) en panel admin de doctores
 - [x] Especialidad por medico (no por clinica ni instalacion)
 
-### Fase 5 - Comando de Instalacion
-**Objetivo:**
-- Comando `php artisan medicalsystem:install` interactivo
-- Pregunta perfil (doctor individual, consultorio multi-doctor, etc.)
-- Siembra roles, permisos y configuracion por defecto segun perfil elegido
-- Seeders diferenciados por tipo de instalacion
+### Fase 5 - Comando de Instalacion ✅
+**Commit:** `d4a82ad` (Abr 14, 2026)
 
-### Fase 6 - Branding y Modulos Opcionales (Opcional)
-**Objetivo:**
-- Personalizacion visual por instalacion (logo, colores, nombre)
-- Toggle de modulos opcionales (recetas, gastos, caja, etc.)
+Implementado:
+- [x] Comando `php artisan medicalsystem:install` interactivo (`app/Console/Commands/MedicalSystemInstall.php`)
+- [x] Perfiles: `solo`, `urologist`, `multi_doctor`
+- [x] Siembra roles, permisos y configuracion por defecto segun perfil elegido
 
-### Fase 7 - Modelo Contable Multi-Doctor
-**Objetivo:** Separacion financiera por doctor con gastos compartidos.
+### Fase 6 - Branding y Modulos Opcionales ✅
+**Commit:** `2da57f8` (Abr 14, 2026)
 
-**Schema:**
-- `expenses.owner_doctor_id` (nullable) - NULL = compartido, valor = personal
-- `clinics.expense_split_method` - enum: equal | percentage | by_income
-- `clinics.expense_split_config` - JSON con porcentajes por doctor
+Implementado:
+- [x] Modelo `InstallationSetting` + migracion `installation_settings`
+- [x] `InstallationSettingController` + vista `settings/edit.blade.php`
+- [x] Personalizacion visual por instalacion: nombre, logo, color
+- [x] Toggle de modulos opcionales (recetas, gastos, caja, servicios)
+- [x] Middleware `EnsureModuleEnabled` aplicado a rutas de modulos opcionales
+- [x] Integracion en sidebar y layout (`7a5a78d`)
+
+### Fase 7 - Modelo Contable Multi-Doctor ✅
+**Commit:** `9674533` (Abr 14, 2026)
+
+Implementado:
+- [x] `expenses.owner_doctor_id` (nullable) - NULL = compartido, valor = personal
+- [x] `clinics.expense_split_method` - enum: equal | percentage | by_income
+- [x] `clinics.expense_split_config` - JSON con porcentajes por doctor
+- [x] `FinancialSummaryService` con calculo de neto personal
+- [x] Vistas `expenses/my-summary.blade.php` y `expenses/shared-pool.blade.php`
+- [x] Configuracion de split en `clinics/edit.blade.php`
+- [x] Items de sidebar "Mi resumen" y "Gastos compartidos"
 
 **Logica del neto personal:**
 ```
@@ -217,11 +228,18 @@ mi_pool_compartido = SUM(expenses WHERE owner_doctor_id IS NULL) x mi_porcentaje
 mi_neto            = mis_ingresos - mis_gastos_propios - mi_pool_compartido
 ```
 
-**Menu:**
-- "Mi resumen" - neto personal del doctor logueado
-- "Gastos compartidos" - desglose del pool
-
 **Fuera de scope:** Entidad legal de clinica, IVA/retenciones, facturacion electronica, cuentas por cobrar, sociedades formales.
+
+### Extra - Antropometria Pediatrica ✅
+**Commit:** `13f03dc` (Abr 14, 2026)
+
+Implementado fuera del plan original de fases:
+- [x] Tabla `pediatric_measurements` + `gestational_age_weeks`/`birth_weight` en pacientes
+- [x] Datos LMS de WHO (0-36m) y CDC (2-20y) en `resources/data/growth`
+- [x] `GrowthService`: z-score, percentil, edad corregida para prematuros
+- [x] Vista `/patients/{id}/growth` con 4 graficos Chart.js (peso/talla/PC/IMC)
+- [x] Preview en vivo de percentiles al cargar mediciones
+- [x] La consulta pediatrica alimenta automaticamente la tabla de mediciones
 
 ### Fase 8 - Plantillas de consulta personalizadas por doctor
 **Motivacion:** Dos doctores de la misma especialidad pueden tener cuestionarios distintos (ej. Dra. Herrera pide un set propio, otro urologo usa el generico). Queremos asignar una plantilla concreta a cada doctor al crearlo.

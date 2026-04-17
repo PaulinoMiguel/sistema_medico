@@ -46,7 +46,39 @@
                     <input type="text" name="professional_license" value="{{ old('professional_license') }}"
                            class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:ring-blue-500 focus:border-blue-500">
                 </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-1">Rol *</label>
+                    <select name="role" required
+                            class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:ring-blue-500 focus:border-blue-500">
+                        <option value="doctor_admin" {{ old('role') === 'doctor_admin' ? 'selected' : '' }}>Doctor Admin</option>
+                        <option value="doctor_associate" {{ old('role') === 'doctor_associate' ? 'selected' : '' }}>Doctor Asociado</option>
+                    </select>
+                    <p class="mt-1 text-xs text-gray-400">Admin: gestiona staff y configuracion. Asociado: solo atencion clinica y financiera.</p>
+                    @error('role') <p class="mt-1 text-sm text-red-400">{{ $message }}</p> @enderror
+                </div>
             </div>
+        </div>
+
+        <div class="bg-gray-800 rounded-lg shadow p-6 mb-6">
+            <h3 class="text-lg font-semibold text-white mb-4">Asignar a clinica(s) *</h3>
+            <p class="text-sm text-gray-400 mb-4">Selecciona en que clinica(s) trabajara este doctor. La primera seleccionada sera su clinica principal.</p>
+            @if($clinics->isEmpty())
+                <div class="p-4 bg-yellow-900/30 border border-yellow-700 rounded-md">
+                    <p class="text-yellow-300 text-sm">No hay clinicas registradas. <a href="{{ route('admin.clinics.create') }}" class="underline">Crea una clinica primero.</a></p>
+                </div>
+            @else
+                <div class="space-y-2">
+                    @foreach($clinics as $clinic)
+                        <label class="flex items-center p-3 bg-gray-700/50 rounded-md hover:bg-gray-700 cursor-pointer">
+                            <input type="checkbox" name="clinic_ids[]" value="{{ $clinic->id }}"
+                                   {{ in_array($clinic->id, old('clinic_ids', [])) ? 'checked' : '' }}
+                                   class="rounded border-gray-500 text-blue-600 focus:ring-blue-500 bg-gray-600">
+                            <span class="ml-3 text-sm text-gray-200">{{ $clinic->name }}</span>
+                        </label>
+                    @endforeach
+                </div>
+            @endif
+            @error('clinic_ids') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
         </div>
 
         <div class="bg-gray-800 rounded-lg shadow p-6 mb-6">

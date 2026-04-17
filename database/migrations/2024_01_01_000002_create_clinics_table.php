@@ -18,7 +18,6 @@ return new class extends Migration
             $table->string('state')->nullable();
             $table->string('zip_code')->nullable();
             $table->string('tax_id')->nullable();
-            $table->enum('type', ['office', 'hospital', 'surgical_center'])->default('office');
             $table->string('logo_path')->nullable();
             $table->json('settings')->nullable();
             $table->boolean('is_active')->default(true);

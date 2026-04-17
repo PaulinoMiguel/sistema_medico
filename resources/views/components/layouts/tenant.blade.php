@@ -102,11 +102,10 @@
                     $canSharedPool = $modExpenses && $u->can('expenses.view-shared-pool');
                     $showEgresos = $canExpenses || $canExpenseCategories || $canExpenseSummary || $canMySummary || $canSharedPool;
 
-                    $canClinicsManage = $u->can('clinics.manage');
                     $canStaffManage = $u->can('staff.manage');
                     $canRolesManage = $u->can('roles.manage');
                     $canSettings = $u->can('settings.manage');
-                    $showAdmin = $canClinicsManage || $canStaffManage || $canRolesManage || $canSettings;
+                    $showAdmin = $canStaffManage || $canRolesManage || $canSettings;
 
                     $canCashRegister = $modCashRegister && $u->can('cash-register.view');
 
@@ -115,7 +114,7 @@
                     $ingresosOpen = request()->routeIs('payments.*') || request()->routeIs('services.*');
                     $isDirectChannel = request()->query('channel') === 'doctor_direct';
                     $egresosOpen = request()->routeIs('expenses.*') || request()->routeIs('expense-categories.*');
-                    $adminOpen = request()->routeIs('clinics.*') || request()->routeIs('secretaries.*') || request()->routeIs('roles.*');
+                    $adminOpen = request()->routeIs('secretaries.*') || request()->routeIs('roles.*');
                 @endphp
 
                 {{-- Always visible --}}
@@ -260,8 +259,6 @@
 
                 @endif {{-- end hasClinic --}}
 
-                {{-- Administracion — always visible so the doctor can create
-                     their first clinic even from a state of zero. --}}
                 @if($showAdmin)
                     <details class="mt-2" {{ $adminOpen ? 'open' : '' }}>
                         <summary class="{{ $groupSummaryClass }}">
@@ -272,12 +269,6 @@
                             <svg class="chevron w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                         </summary>
                         <div class="mt-1 space-y-1">
-                            @if($canClinicsManage)
-                            <a href="{{ route('clinics.index') }}"
-                               class="{{ $childItemClass }} {{ request()->routeIs('clinics.*') ? $activeClass : $inactiveClass }}">
-                                Clinicas
-                            </a>
-                            @endif
                             @if($canStaffManage)
                             <a href="{{ route('secretaries.index') }}"
                                class="{{ $childItemClass }} {{ request()->routeIs('secretaries.*') ? $activeClass : $inactiveClass }}">

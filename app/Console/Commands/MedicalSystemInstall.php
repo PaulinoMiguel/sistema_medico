@@ -181,7 +181,6 @@ class MedicalSystemInstall extends Command
 
         return Clinic::create([
             'name' => $name,
-            'type' => 'office',
             'is_active' => true,
         ]);
     }

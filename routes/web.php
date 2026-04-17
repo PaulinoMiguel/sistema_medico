@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminAuthController;
+use App\Http\Controllers\Admin\AdminClinicController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminDoctorController;
 use App\Http\Controllers\Auth\LoginController;
@@ -30,6 +31,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     Route::middleware('admin.auth')->group(function () {
         Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
+        Route::resource('clinics', AdminClinicController::class)->except(['show', 'destroy']);
         Route::resource('doctors', AdminDoctorController::class)->except(['show', 'destroy']);
         Route::patch('/doctors/{doctor}/toggle', [AdminDoctorController::class, 'toggle'])->name('doctors.toggle');
         Route::get('/profile', [AdminAuthController::class, 'showProfile'])->name('profile');
@@ -55,11 +57,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile/photo', [ProfileController::class, 'deletePhoto'])->name('profile.photo.delete');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
 
-    // Clinics management — NOT inside clinic.required because the doctor
-    // needs to be able to create their first clinic from a state of zero.
-    Route::middleware('permission:clinics.manage')->group(function () {
-        Route::resource('clinics', ClinicController::class)->except(['show']);
-    });
+    // Clinics are now managed exclusively from the super admin panel.
+    // Doctors only see a read-only list of their assigned clinics.
+    Route::get('/clinics', [ClinicController::class, 'index'])->name('clinics.index');
 
     // ====================================================================
     // Operational routes — require at least one clinic to exist for the
@@ -87,6 +87,8 @@ Route::middleware('auth')->group(function () {
             Route::get('/patients/{patient}/history', [PatientController::class, 'history'])->name('patients.history');
             Route::post('/patients/{patient}/photo', [PatientController::class, 'updatePhoto'])->name('patients.photo');
             Route::delete('/patients/{patient}/photo', [PatientController::class, 'deletePhoto'])->name('patients.photo.delete');
+            Route::post('/patients/{patient}/associate', [PatientController::class, 'associate'])->name('patients.associate');
+            Route::post('/api/patients/check-duplicate', [PatientController::class, 'checkDuplicate'])->name('patients.check-duplicate');
             Route::get('/api/patients/{patient}/last-consultation', [PatientController::class, 'lastConsultation'])->name('patients.last-consultation');
 
             // Pediatria: mediciones + curvas de crecimiento

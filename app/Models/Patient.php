@@ -65,9 +65,23 @@ class Patient extends Model
         return $this->belongsTo(User::class, 'registered_by');
     }
 
-    public function primaryDoctor(): BelongsTo
+    public function doctors(): BelongsToMany
     {
-        return $this->belongsTo(User::class, 'primary_doctor_id');
+        return $this->belongsToMany(User::class, 'doctor_patient', 'patient_id', 'doctor_id')
+            ->withPivot('is_primary')
+            ->withTimestamps();
+    }
+
+    public function primaryDoctor(): ?User
+    {
+        return $this->doctors()->wherePivot('is_primary', true)->first();
+    }
+
+    public function getPrimaryDoctorIdAttribute(): ?int
+    {
+        $primary = $this->doctors()->wherePivot('is_primary', true)->first();
+
+        return $primary?->id ?? $this->doctors()->first()?->id;
     }
 
     public function getFullNameAttribute(): string
@@ -93,7 +107,7 @@ class Patient extends Model
     {
         static::addGlobalScope(new MedicalRecordScope(
             useClinicPivot: true,
-            doctorColumn: 'primary_doctor_id',
+            useDoctorPivot: true,
         ));
 
         static::creating(function (Patient $patient) {

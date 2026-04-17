@@ -1,9 +1,7 @@
-<x-layouts.tenant :title="'Clinicas'">
-    <div class="flex justify-between items-center mb-6">
+<x-layouts.tenant :title="'Mis Clinicas'">
+    <div class="mb-6">
         <h2 class="text-2xl font-bold text-gray-800">Mis Clinicas</h2>
-        <a href="{{ route('clinics.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm font-medium">
-            + Nueva clinica
-        </a>
+        <p class="text-sm text-gray-500 mt-1">Las clinicas son gestionadas por el administrador del sistema.</p>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -12,19 +10,13 @@
                 <div class="flex justify-between items-start mb-4">
                     <div>
                         <h3 class="text-lg font-semibold text-gray-800">{{ $clinic->name }}</h3>
-                        @php
-                            $typeLabels = ['office' => 'Consultorio', 'hospital' => 'Hospital', 'surgical_center' => 'Centro quirurgico'];
-                        @endphp
-                        <span class="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">
-                            {{ $typeLabels[$clinic->type] ?? $clinic->type }}
-                        </span>
                     </div>
                     @if(!$clinic->is_active)
                         <span class="text-xs px-2 py-1 rounded-full bg-red-100 text-red-600">Inactiva</span>
                     @endif
                 </div>
 
-                <dl class="space-y-2 text-sm text-gray-600 mb-4">
+                <dl class="space-y-2 text-sm text-gray-600">
                     @if($clinic->address)
                         <div class="flex items-start">
                             <svg class="w-4 h-4 mr-2 mt-0.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
@@ -39,18 +31,15 @@
                     @endif
                 </dl>
 
-                <div class="flex items-center justify-between text-sm border-t pt-4">
-                    <div class="flex gap-4 text-gray-500">
-                        <span>{{ $clinic->users_count }} usuarios</span>
-                        <span>{{ $clinic->patients_count }} pacientes</span>
-                    </div>
-                    <a href="{{ route('clinics.edit', $clinic) }}" class="text-blue-600 hover:underline">Editar</a>
+                <div class="flex items-center text-sm border-t pt-4 mt-4 text-gray-500">
+                    <span>{{ $clinic->users_count }} usuarios</span>
+                    <span class="mx-2">·</span>
+                    <span>{{ $clinic->patients_count }} pacientes</span>
                 </div>
             </div>
         @empty
             <div class="col-span-full bg-white rounded-lg shadow p-8 text-center text-gray-500">
-                <p class="mb-4">No tienes clinicas creadas.</p>
-                <a href="{{ route('clinics.create') }}" class="text-blue-600 hover:underline">Crear tu primera clinica</a>
+                <p>No tienes clinicas asignadas. Contacta al administrador.</p>
             </div>
         @endforelse
     </div>

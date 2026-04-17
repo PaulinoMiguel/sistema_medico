@@ -49,12 +49,12 @@ class DatabaseSeeder extends Seeder
 
         $clinicA = Clinic::firstOrCreate(
             ['name' => 'Consultorio Centro'],
-            ['type' => 'office', 'is_active' => true]
+            ['is_active' => true]
         );
 
         $clinicB = Clinic::firstOrCreate(
             ['name' => 'Consultorio Norte'],
-            ['type' => 'office', 'is_active' => true]
+            ['is_active' => true]
         );
 
         $urologist->clinics()->syncWithoutDetaching([
@@ -93,11 +93,11 @@ class DatabaseSeeder extends Seeder
                 'date_of_birth' => '1970-05-12',
                 'gender' => 'male',
                 'document_type' => 'cedula',
-                'primary_doctor_id' => $urologist->id,
                 'registered_by' => $urologist->id,
                 'is_active' => true,
             ]
         );
+        $patientA->doctors()->syncWithoutDetaching([$urologist->id => ['is_primary' => true]]);
         $patientA->clinics()->syncWithoutDetaching([$clinicA->id]);
         $patientA->medicalHistory()->firstOrCreate([]);
 
@@ -109,11 +109,11 @@ class DatabaseSeeder extends Seeder
                 'date_of_birth' => '1985-09-30',
                 'gender' => 'female',
                 'document_type' => 'cedula',
-                'primary_doctor_id' => $urologist->id,
                 'registered_by' => $urologist->id,
                 'is_active' => true,
             ]
         );
+        $patientB->doctors()->syncWithoutDetaching([$urologist->id => ['is_primary' => true]]);
         $patientB->clinics()->syncWithoutDetaching([$clinicB->id]);
         $patientB->medicalHistory()->firstOrCreate([]);
     }
@@ -126,7 +126,7 @@ class DatabaseSeeder extends Seeder
     {
         $clinic = Clinic::firstOrCreate(
             ['name' => 'Policlinico Compartido'],
-            ['type' => 'office', 'is_active' => true]
+            ['is_active' => true]
         );
 
         $doctorsData = [
@@ -176,11 +176,11 @@ class DatabaseSeeder extends Seeder
                     'date_of_birth' => ['1990-01-15', '2015-06-20', '1965-11-03'][$i],
                     'gender' => ['male', 'female', 'male'][$i],
                     'document_type' => 'cedula',
-                    'primary_doctor_id' => $doctor->id,
                     'registered_by' => $doctor->id,
                     'is_active' => true,
                 ]
             );
+            $patient->doctors()->syncWithoutDetaching([$doctor->id => ['is_primary' => true]]);
             $patient->clinics()->syncWithoutDetaching([$clinic->id]);
             $patient->medicalHistory()->firstOrCreate([]);
         }
