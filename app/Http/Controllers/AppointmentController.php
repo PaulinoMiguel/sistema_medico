@@ -29,9 +29,16 @@ class AppointmentController extends Controller
             $endOfPeriod = $date->copy()->endOfDay();
         }
 
-        $appointments = Appointment::where('clinic_id', $clinicId)
-            ->whereBetween('scheduled_at', [$startOfPeriod, $endOfPeriod])
-            ->with(['patient', 'doctor'])
+        $doctorFilter = $request->get('doctor_id');
+
+        $query = Appointment::where('clinic_id', $clinicId)
+            ->whereBetween('scheduled_at', [$startOfPeriod, $endOfPeriod]);
+
+        if ($doctorFilter) {
+            $query->where('doctor_id', $doctorFilter);
+        }
+
+        $appointments = $query->with(['patient', 'doctor'])
             ->orderBy('scheduled_at')
             ->get()
             ->groupBy(fn ($a) => $a->scheduled_at->toDateString());
@@ -50,7 +57,17 @@ class AppointmentController extends Controller
             $current->addDay();
         }
 
-        return view('appointments.index', compact('days', 'date', 'view'));
+        $doctors = collect();
+        $user = $request->user();
+        if (!$user->isDoctor() && $clinicId) {
+            $doctors = User::role(['doctor_admin', 'doctor_associate'])
+                ->whereIn('status', ['active', 'passive'])
+                ->whereHas('clinics', fn ($q) => $q->where('clinics.id', $clinicId))
+                ->orderBy('name')
+                ->get();
+        }
+
+        return view('appointments.index', compact('days', 'date', 'view', 'doctors', 'doctorFilter'));
     }
 
     public function create(Request $request)
@@ -63,14 +80,11 @@ class AppointmentController extends Controller
             ->orderBy('last_name')
             ->get();
 
-        // Doctors create appointments only for themselves — the doctor field
-        // is hidden in the view and auto-filled in store(). Secretaries see
-        // a dropdown filtered to active doctors of the current clinic.
         $showDoctorSelect = !$user->isDoctor();
         $doctors = $showDoctorSelect
             ? User::role(['doctor_admin', 'doctor_associate'])
                 ->whereHas('clinics', fn ($q) => $q->where('clinics.id', $clinicId))
-                ->where('status', 'active')
+                ->whereIn('status', ['active', 'passive'])
                 ->get()
             : collect();
 
@@ -118,6 +132,12 @@ class AppointmentController extends Controller
         $validated['created_by'] = $user->id;
         $validated['status'] = 'scheduled';
 
+        // Auto-associate patient with the assigned doctor if not already linked
+        $patient = Patient::withoutGlobalScopes()->find($validated['patient_id']);
+        if ($patient && !$patient->doctors()->where('doctor_id', $validated['doctor_id'])->exists()) {
+            $patient->doctors()->attach($validated['doctor_id'], ['is_primary' => false]);
+        }
+
         $appointment = Appointment::create($validated);
 
         return redirect()->route('appointments.index', ['date' => $appointment->scheduled_at->toDateString()])
@@ -145,7 +165,7 @@ class AppointmentController extends Controller
         $doctors = $showDoctorSelect
             ? User::role(['doctor_admin', 'doctor_associate'])
                 ->whereHas('clinics', fn ($q) => $q->where('clinics.id', $clinicId))
-                ->where('status', 'active')
+                ->whereIn('status', ['active', 'passive'])
                 ->get()
             : collect();
 

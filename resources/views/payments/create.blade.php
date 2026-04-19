@@ -14,8 +14,30 @@
     <form method="POST" action="{{ route('payments.store') }}">
         @csrf
         <input type="hidden" name="channel" value="{{ $channel ?? 'cash_register' }}">
+        <input type="hidden" name="appointment_id" id="appointment_id" value="{{ old('appointment_id', $selectedAppointmentId) }}">
+
         <div class="bg-white rounded-lg shadow p-6 max-w-2xl">
             <div class="space-y-4">
+
+                {{-- Turno selector --}}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Turno</label>
+                    <select id="appointment_select"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        <option value="" data-patient-id="" data-doctor-id="">Servicio libre (sin turno)</option>
+                        @foreach($unpaidAppointments as $apt)
+                            <option value="{{ $apt->id }}"
+                                    data-patient-id="{{ $apt->patient_id }}"
+                                    data-doctor-id="{{ $apt->doctor_id }}"
+                                    {{ old('appointment_id', $selectedAppointmentId) == $apt->id ? 'selected' : '' }}>
+                                {{ $apt->scheduled_at->format('d/m/Y H:i') }} — {{ $apt->patient->full_name }} — Dr. {{ $apt->doctor->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <p class="mt-1 text-xs text-gray-500">Selecciona un turno para cobrar o elige "Servicio libre" para un cobro sin turno.</p>
+                </div>
+
+                {{-- Patient --}}
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Paciente *</label>
                     <select name="patient_id" id="patient_select" required
@@ -32,6 +54,7 @@
                     @error('patient_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
 
+                {{-- Service --}}
                 <div>
                     <div class="flex items-center justify-between mb-1">
                         <label class="block text-sm font-medium text-gray-700">Servicio</label>
@@ -60,6 +83,7 @@
                     </p>
                 </div>
 
+                {{-- Concept --}}
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Concepto *</label>
                     <input type="text" name="concept" id="concept_input" value="{{ old('concept') }}" required
@@ -68,6 +92,7 @@
                     @error('concept') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
 
+                {{-- Amount --}}
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Monto *</label>
                     <div class="relative">
@@ -79,10 +104,7 @@
                     @error('amount') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
 
-                @if($selectedAppointmentId)
-                    <input type="hidden" name="appointment_id" value="{{ $selectedAppointmentId }}">
-                @endif
-
+                {{-- Notes --}}
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Notas</label>
                     <textarea name="notes" rows="2"
@@ -146,27 +168,42 @@
 
     <script>
         (function () {
+            const appointmentSelect = document.getElementById('appointment_select');
+            const appointmentIdInput = document.getElementById('appointment_id');
             const patientSelect = document.getElementById('patient_select');
             const serviceSelect = document.getElementById('service_select');
             const conceptInput  = document.getElementById('concept_input');
             const amountInput   = document.getElementById('amount_input');
             const filterHint    = document.getElementById('service_filter_hint');
 
-            // Filter services to those owned by the selected patient's doctor.
-            // The "Sin servicio" option always stays visible.
+            // When an appointment is selected, auto-fill patient and appointment_id
+            appointmentSelect.addEventListener('change', function () {
+                const opt = this.options[this.selectedIndex];
+                const patientId = opt.dataset.patientId;
+                appointmentIdInput.value = opt.value || '';
+
+                if (patientId) {
+                    patientSelect.value = patientId;
+                    patientSelect.dispatchEvent(new Event('change'));
+                }
+            });
+
+            // Apply on load if appointment is pre-selected
+            if (appointmentSelect.value) {
+                appointmentSelect.dispatchEvent(new Event('change'));
+            }
+
+            // Filter services by patient's doctor
             function filterServicesByPatient() {
                 const selectedPatientOption = patientSelect.options[patientSelect.selectedIndex];
                 const patientDoctorId = selectedPatientOption?.dataset.doctorId || '';
 
-                let visibleCount = 0;
                 Array.from(serviceSelect.options).forEach(opt => {
                     if (opt.value === '') { opt.hidden = false; return; }
                     const matches = !patientDoctorId || opt.dataset.doctorId === patientDoctorId;
                     opt.hidden = !matches;
-                    if (matches) visibleCount++;
                 });
 
-                // If the currently selected service is now hidden, reset to "Sin servicio".
                 const current = serviceSelect.options[serviceSelect.selectedIndex];
                 if (current && current.hidden) {
                     serviceSelect.value = '';
@@ -176,10 +213,9 @@
             }
 
             patientSelect.addEventListener('change', filterServicesByPatient);
-            // Apply filter on initial load (in case patient is pre-selected)
             filterServicesByPatient();
 
-            // When a service is picked, prefill concept and amount.
+            // When a service is picked, prefill concept and amount
             serviceSelect.addEventListener('change', function () {
                 const option = this.options[this.selectedIndex];
                 const price = option.dataset.price;
@@ -191,7 +227,7 @@
                 }
             });
 
-            // === Quick service creation modal (only present when user has permission) ===
+            // === Quick service creation modal ===
             const dialog = document.getElementById('quick_service_dialog');
             if (dialog) {
                 const openBtn = document.getElementById('open_quick_service');
@@ -251,7 +287,6 @@
 
                         const service = await res.json();
 
-                        // Append new option to the dropdown
                         const opt = document.createElement('option');
                         opt.value = service.id;
                         opt.dataset.price = service.price;
@@ -259,7 +294,6 @@
                         opt.text = `${service.name} - $${Number(service.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
                         serviceSelect.appendChild(opt);
 
-                        // Select it and trigger the change handler so concept/amount get prefilled
                         serviceSelect.value = service.id;
                         serviceSelect.dispatchEvent(new Event('change'));
 

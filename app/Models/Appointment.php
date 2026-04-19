@@ -20,6 +20,7 @@ class Appointment extends Model
         return [
             'scheduled_at' => 'datetime',
             'cancelled_at' => 'datetime',
+            'is_paid' => 'boolean',
         ];
     }
 

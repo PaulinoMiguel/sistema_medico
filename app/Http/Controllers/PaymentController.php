@@ -56,14 +56,21 @@ class PaymentController extends Controller
         })->orderBy('first_name')->get();
 
         $services = Service::where('is_active', true)
-            ->whereHas('doctor', fn ($q) => $q->where('status', 'active'))
+            ->whereHas('doctor', fn ($q) => $q->whereIn('status', ['active', 'passive']))
             ->orderBy('name')
             ->get();
 
         $selectedPatientId = $request->query('patient_id');
         $selectedAppointmentId = $request->query('appointment_id');
 
-        return view('payments.create', compact('patients', 'services', 'selectedPatientId', 'selectedAppointmentId', 'channel'));
+        $unpaidAppointments = Appointment::where('clinic_id', $clinicId)
+            ->where('is_paid', false)
+            ->whereNotIn('status', ['cancelled', 'no_show'])
+            ->with(['patient', 'doctor'])
+            ->orderByDesc('scheduled_at')
+            ->get();
+
+        return view('payments.create', compact('patients', 'services', 'selectedPatientId', 'selectedAppointmentId', 'channel', 'unpaidAppointments'));
     }
 
     public function store(Request $request)
@@ -117,6 +124,12 @@ class PaymentController extends Controller
             'cash_register_id' => $cashRegisterId,
             'receipt_number' => $this->generateReceiptNumber($clinicId),
         ]);
+
+        if (!empty($validated['appointment_id'])) {
+            Appointment::withoutGlobalScopes()
+                ->where('id', $validated['appointment_id'])
+                ->update(['is_paid' => true]);
+        }
 
         if ($channel === 'doctor_direct') {
             return redirect()->route('payments.index', ['channel' => 'doctor_direct'])

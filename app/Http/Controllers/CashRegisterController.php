@@ -18,7 +18,7 @@ class CashRegisterController extends Controller
 
         $openRegister = CashRegister::where('clinic_id', $clinicId)
             ->where('status', 'open')
-            ->with(['openedBy', 'payments.patient', 'payments.receivedBy'])
+            ->with(['openedBy', 'payments.patient', 'payments.receivedBy', 'payments.doctor'])
             ->first();
 
         return view('cash-registers.index', compact('registers', 'openRegister'));
@@ -60,7 +60,7 @@ class CashRegisterController extends Controller
     {
         abort_if($cashRegister->clinic_id != session('active_clinic_id'), 403);
 
-        $cashRegister->load(['openedBy', 'closedBy', 'payments.patient', 'payments.service', 'payments.receivedBy']);
+        $cashRegister->load(['openedBy', 'closedBy', 'payments.patient', 'payments.service', 'payments.receivedBy', 'payments.doctor']);
 
         return view('cash-registers.show', compact('cashRegister'));
     }

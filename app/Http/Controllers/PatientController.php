@@ -15,8 +15,10 @@ class PatientController extends Controller
         $clinicId = session('active_clinic_id');
         $search = $request->get('search');
 
+        $user = $request->user();
+
         $patients = Patient::query()
-            ->when($clinicId, function ($q) use ($clinicId) {
+            ->when(!$user->isDoctor() && $clinicId, function ($q) use ($clinicId) {
                 $q->whereHas('clinics', function ($q2) use ($clinicId) {
                     $q2->where('clinics.id', $clinicId);
                 });
@@ -44,7 +46,7 @@ class PatientController extends Controller
         if (!$user->isDoctor()) {
             $clinicIds = $user->clinics()->pluck('clinics.id');
             $doctors = User::role(['doctor_admin', 'doctor_associate'])
-                ->where('status', 'active')
+                ->whereIn('status', ['active', 'passive'])
                 ->whereHas('clinics', fn ($q) => $q->whereIn('clinics.id', $clinicIds))
                 ->orderBy('name')
                 ->get();
@@ -63,8 +65,13 @@ class PatientController extends Controller
                 ->with('warning', 'No tienes clinicas asignadas. Contacta al administrador.');
         }
 
-        $isAdult = $request->date_of_birth
-            && now()->diffInYears($request->date_of_birth) >= 18;
+        $isAdult = false;
+        if ($request->date_of_birth) {
+            try {
+                $dob = \Carbon\Carbon::parse($request->date_of_birth);
+                $isAdult = $dob->age >= 18;
+            } catch (\Exception $e) {}
+        }
 
         $rules = [
             'first_name' => 'required|string|max:100',
@@ -99,6 +106,30 @@ class PatientController extends Controller
         $validated = $request->validate($rules);
 
         $doctorId = $user->isDoctor() ? $user->id : $validated['doctor_id'];
+
+        // Server-side duplicate check by document number
+        $docNumber = $validated['document_number'] ?? null;
+        if ($docNumber) {
+            $existing = Patient::withoutGlobalScopes()
+                ->where('document_number', $docNumber)
+                ->first();
+
+            if ($existing) {
+                $alreadyLinked = $existing->doctors()->where('doctor_id', $doctorId)->exists();
+                if ($alreadyLinked) {
+                    return redirect()->route('patients.show', $existing)
+                        ->with('info', 'Este paciente ya existe y esta asociado a este doctor.');
+                }
+
+                return redirect()->route('patients.create')
+                    ->with('duplicate_patient_id', $existing->id)
+                    ->with('duplicate_patient_name', $existing->full_name)
+                    ->with('duplicate_patient_doc', $existing->document_number)
+                    ->with('duplicate_doctor_id', $doctorId)
+                    ->withInput();
+            }
+        }
+
         $validated['registered_by'] = $user->id;
         unset($validated['doctor_id']);
 
@@ -121,8 +152,9 @@ class PatientController extends Controller
      * Associate an existing patient with the current doctor.
      * Used when duplicate detection finds the patient already exists.
      */
-    public function associate(Request $request, Patient $patient)
+    public function associate(Request $request, int $patient)
     {
+        $patient = Patient::withoutGlobalScopes()->findOrFail($patient);
         $user = $request->user();
         $doctorId = $user->isDoctor() ? $user->id : $request->input('doctor_id');
 
@@ -195,8 +227,13 @@ class PatientController extends Controller
 
     public function update(Request $request, Patient $patient)
     {
-        $isAdult = $request->date_of_birth
-            && now()->diffInYears($request->date_of_birth) >= 18;
+        $isAdult = false;
+        if ($request->date_of_birth) {
+            try {
+                $dob = \Carbon\Carbon::parse($request->date_of_birth);
+                $isAdult = $dob->age >= 18;
+            } catch (\Exception $e) {}
+        }
 
         $validated = $request->validate([
             'first_name' => 'required|string|max:100',

@@ -4,7 +4,51 @@
         <h2 class="text-2xl font-bold text-gray-800 mt-2">Nuevo Paciente</h2>
     </div>
 
-    <form method="POST" action="{{ route('patients.store') }}" enctype="multipart/form-data">
+    {{-- Duplicate detection banner (server-side) --}}
+    @if(session('duplicate_patient_id'))
+        <div class="bg-yellow-50 border border-yellow-300 rounded-lg p-4 mb-6">
+            <div class="flex items-start">
+                <svg class="w-5 h-5 text-yellow-600 mt-0.5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <div class="flex-1">
+                    <p class="font-semibold text-yellow-800">Este paciente ya existe en el sistema</p>
+                    <p class="text-sm text-yellow-700 mt-1">
+                        <span class="font-medium">{{ session('duplicate_patient_name') }}</span> — {{ session('duplicate_patient_doc') }}
+                    </p>
+                    <form method="POST" action="{{ route('patients.associate', session('duplicate_patient_id')) }}" class="mt-3">
+                        @csrf
+                        <input type="hidden" name="doctor_id" value="{{ session('duplicate_doctor_id') }}">
+                        <button type="submit" class="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 text-sm font-medium">
+                            Asociar a mi lista de pacientes
+                        </button>
+                        <span class="text-xs text-yellow-600 ml-2">En vez de crear uno nuevo</span>
+                    </form>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- Duplicate detection banner (AJAX / client-side) --}}
+    <div id="duplicate-banner" class="hidden bg-yellow-50 border border-yellow-300 rounded-lg p-4 mb-6">
+        <div class="flex items-start">
+            <svg class="w-5 h-5 text-yellow-600 mt-0.5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div class="flex-1">
+                <p class="font-semibold text-yellow-800">Este paciente ya existe en el sistema</p>
+                <p class="text-sm text-yellow-700 mt-1">
+                    <span id="dup-name" class="font-medium"></span> — <span id="dup-doc"></span> — Nac: <span id="dup-dob"></span>
+                </p>
+                <form id="associate-form" method="POST" class="mt-3">
+                    @csrf
+                    <input type="hidden" name="doctor_id" id="assoc-doctor-id">
+                    <button type="submit" class="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 text-sm font-medium">
+                        Asociar a mi lista de pacientes
+                    </button>
+                    <span class="text-xs text-yellow-600 ml-2">En vez de crear uno nuevo</span>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <form method="POST" action="{{ route('patients.store') }}" enctype="multipart/form-data" id="patient-form">
         @csrf
 
         @if($doctors->isNotEmpty())
@@ -25,27 +69,6 @@
                 </div>
             </div>
         @endif
-
-        {{-- Duplicate detection banner --}}
-        <div id="duplicate-banner" class="hidden bg-yellow-50 border border-yellow-300 rounded-lg p-4 mb-6">
-            <div class="flex items-start">
-                <svg class="w-5 h-5 text-yellow-600 mt-0.5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                <div class="flex-1">
-                    <p class="font-semibold text-yellow-800">Este paciente ya existe en el sistema</p>
-                    <p class="text-sm text-yellow-700 mt-1">
-                        <span id="dup-name" class="font-medium"></span> — <span id="dup-doc"></span> — Nac: <span id="dup-dob"></span>
-                    </p>
-                    <form id="associate-form" method="POST" class="mt-3">
-                        @csrf
-                        <input type="hidden" name="doctor_id" id="assoc-doctor-id">
-                        <button type="submit" class="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 text-sm font-medium">
-                            Asociar a mi lista de pacientes
-                        </button>
-                        <span class="text-xs text-yellow-600 ml-2">En vez de crear uno nuevo</span>
-                    </form>
-                </div>
-            </div>
-        </div>
 
         <div class="bg-white rounded-lg shadow p-6 mb-6">
             <h3 class="text-lg font-semibold text-gray-800 mb-4">Datos personales</h3>

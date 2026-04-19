@@ -28,6 +28,7 @@ return new class extends Migration
             $table->text('cancellation_reason')->nullable();
             $table->dateTime('cancelled_at')->nullable();
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->boolean('is_paid')->default(false);
             $table->timestamps();
 
             $table->index(['scheduled_at', 'clinic_id']);

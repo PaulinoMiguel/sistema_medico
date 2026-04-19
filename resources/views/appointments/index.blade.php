@@ -37,11 +37,11 @@
                     $prevDate = $view === 'month' ? $date->copy()->subMonth()->toDateString() : $date->copy()->subWeek()->toDateString();
                     $nextDate = $view === 'month' ? $date->copy()->addMonth()->toDateString() : $date->copy()->addWeek()->toDateString();
                 @endphp
-                <a href="{{ route('appointments.index', ['view' => $view, 'date' => $prevDate]) }}"
+                <a href="{{ route('appointments.index', array_filter(['view' => $view, 'date' => $prevDate, 'doctor_id' => $doctorFilter])) }}"
                    class="p-2 hover:bg-gray-100 rounded text-gray-600">&larr;</a>
-                <a href="{{ route('appointments.index', ['view' => $view, 'date' => today()->toDateString()]) }}"
+                <a href="{{ route('appointments.index', array_filter(['view' => $view, 'date' => today()->toDateString(), 'doctor_id' => $doctorFilter])) }}"
                    class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-md text-gray-700">Hoy</a>
-                <a href="{{ route('appointments.index', ['view' => $view, 'date' => $nextDate]) }}"
+                <a href="{{ route('appointments.index', array_filter(['view' => $view, 'date' => $nextDate, 'doctor_id' => $doctorFilter])) }}"
                    class="p-2 hover:bg-gray-100 rounded text-gray-600">&rarr;</a>
 
                 <span class="ml-4 text-lg font-semibold text-gray-800 capitalize">
@@ -53,15 +53,31 @@
                 </span>
             </div>
 
-            <div class="flex bg-gray-100 rounded-md p-1">
-                <a href="{{ route('appointments.index', ['view' => 'week', 'date' => $date->toDateString()]) }}"
-                   class="px-3 py-1 text-sm rounded {{ $view === 'week' ? 'bg-white shadow text-blue-600 font-medium' : 'text-gray-600 hover:text-gray-800' }}">
-                    Semana
-                </a>
-                <a href="{{ route('appointments.index', ['view' => 'month', 'date' => $date->toDateString()]) }}"
-                   class="px-3 py-1 text-sm rounded {{ $view === 'month' ? 'bg-white shadow text-blue-600 font-medium' : 'text-gray-600 hover:text-gray-800' }}">
-                    Mes
-                </a>
+            <div class="flex items-center gap-4">
+                @if($doctors->isNotEmpty())
+                    <select onchange="window.location.href=this.value"
+                            class="px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        <option value="{{ route('appointments.index', ['view' => $view, 'date' => $date->toDateString()]) }}"
+                            {{ !$doctorFilter ? 'selected' : '' }}>Todos los doctores</option>
+                        @foreach($doctors as $doc)
+                            <option value="{{ route('appointments.index', ['view' => $view, 'date' => $date->toDateString(), 'doctor_id' => $doc->id]) }}"
+                                {{ $doctorFilter == $doc->id ? 'selected' : '' }}>
+                                {{ $doc->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                @endif
+
+                <div class="flex bg-gray-100 rounded-md p-1">
+                    <a href="{{ route('appointments.index', array_filter(['view' => 'week', 'date' => $date->toDateString(), 'doctor_id' => $doctorFilter])) }}"
+                       class="px-3 py-1 text-sm rounded {{ $view === 'week' ? 'bg-white shadow text-blue-600 font-medium' : 'text-gray-600 hover:text-gray-800' }}">
+                        Semana
+                    </a>
+                    <a href="{{ route('appointments.index', array_filter(['view' => 'month', 'date' => $date->toDateString(), 'doctor_id' => $doctorFilter])) }}"
+                       class="px-3 py-1 text-sm rounded {{ $view === 'month' ? 'bg-white shadow text-blue-600 font-medium' : 'text-gray-600 hover:text-gray-800' }}">
+                        Mes
+                    </a>
+                </div>
             </div>
         </div>
     </div>
