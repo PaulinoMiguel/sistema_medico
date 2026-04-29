@@ -1,8 +1,13 @@
 <x-layouts.tenant :title="'Consulta - ' . $consultation->patient->full_name">
     @php
-        $specialtyKey = strtolower(str_replace(' ', '_', $consultation->doctor->specialty ?? 'general'));
-        $specialtyMap = ['urologia' => 'urology', 'pediatria' => 'pediatrics', 'neurologia' => 'neurology', 'medicina_general' => 'general'];
-        $specialtyKey = $specialtyMap[$specialtyKey] ?? $specialtyKey;
+        $templateSlug = $consultation->consultation_template;
+        if (!$templateSlug) {
+            $sk = strtolower(str_replace(' ', '_', $consultation->doctor->specialty ?? 'general'));
+            $sm = ['urologia' => 'urology', 'pediatria' => 'pediatrics', 'neurologia' => 'neurology', 'medicina_general' => 'general'];
+            $templateSlug = ($sm[$sk] ?? $sk) . '_generic';
+        }
+        $templateConfig = config("consultation_templates.{$templateSlug}");
+        $specialtyKey = $templateConfig['specialty'] ?? 'general';
         $specialtyConfig = config("specialties.{$specialtyKey}", config('specialties.general'));
         $typeLabels = $specialtyConfig['consultation_types'];
         $vs = $consultation->vital_signs ?? [];
@@ -53,7 +58,7 @@
                     <div><span class="font-medium text-gray-700">Historia de la enfermedad:</span> {{ $consultation->history_present_illness }}</div>
                 @endif
                 {{-- Specialty-specific subjective data --}}
-                @includeIf('consultations.partials.' . $specialtyKey . '-show-subjective')
+                @includeIf('consultations.partials.' . $templateSlug . '-show-subjective')
                 @if($consultation->review_of_systems)
                     <div><span class="font-medium text-gray-700">Revision por sistemas:</span> {{ $consultation->review_of_systems }}</div>
                 @endif
@@ -78,7 +83,7 @@
                 @if($consultation->physical_exam) <div><span class="font-medium text-gray-700">Examen fisico:</span> {{ $consultation->physical_exam }}</div> @endif
                 @if($consultation->abdomen_exam) <div><span class="font-medium text-gray-700">Abdomen:</span> {{ $consultation->abdomen_exam }}</div> @endif
                 {{-- Specialty-specific objective data --}}
-                @includeIf('consultations.partials.' . $specialtyKey . '-show-objective')
+                @includeIf('consultations.partials.' . $templateSlug . '-show-objective')
             </div>
         </div>
 

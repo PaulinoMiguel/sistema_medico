@@ -56,6 +56,21 @@
                     <p class="mt-1 text-xs text-gray-400">Admin: gestiona staff y configuracion. Asociado: solo atencion clinica y financiera.</p>
                     @error('role') <p class="mt-1 text-sm text-red-400">{{ $message }}</p> @enderror
                 </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-1">Plantilla de consulta</label>
+                    <select name="consultation_template" id="consultation_template"
+                            class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">Generico de la especialidad</option>
+                        @foreach($templates as $slug => $tpl)
+                            <option value="{{ $slug }}" data-specialty="{{ $tpl['specialty'] }}"
+                                    {{ old('consultation_template') === $slug ? 'selected' : '' }}>
+                                {{ $tpl['label'] }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <p class="mt-1 text-xs text-gray-400">Se filtra automaticamente segun la especialidad seleccionada.</p>
+                    @error('consultation_template') <p class="mt-1 text-sm text-red-400">{{ $message }}</p> @enderror
+                </div>
             </div>
         </div>
 
@@ -103,4 +118,23 @@
             <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium">Crear doctor</button>
         </div>
     </form>
+
+    <script>
+        const specialtySelect = document.querySelector('select[name="specialty"]');
+        const templateSelect = document.getElementById('consultation_template');
+
+        function filterTemplates() {
+            const specialty = specialtySelect.value;
+            Array.from(templateSelect.options).forEach(opt => {
+                if (opt.value === '') { opt.hidden = false; return; }
+                opt.hidden = opt.dataset.specialty !== specialty;
+            });
+            if (templateSelect.selectedOptions[0]?.hidden) {
+                templateSelect.value = '';
+            }
+        }
+
+        specialtySelect.addEventListener('change', filterTemplates);
+        filterTemplates();
+    </script>
 </x-layouts.admin>

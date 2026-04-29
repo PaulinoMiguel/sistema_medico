@@ -26,8 +26,9 @@ class AdminDoctorController extends Controller
     public function create()
     {
         $clinics = Clinic::where('is_active', true)->get();
+        $templates = config('consultation_templates');
 
-        return view('admin.doctors.create', compact('clinics'));
+        return view('admin.doctors.create', compact('clinics', 'templates'));
     }
 
     public function store(Request $request)
@@ -37,6 +38,7 @@ class AdminDoctorController extends Controller
             'email' => 'required|email|max:255|unique:users,email',
             'password' => ['required', 'confirmed', Password::min(8)->mixedCase()->numbers()->symbols()],
             'specialty' => 'required|string|max:255',
+            'consultation_template' => 'nullable|string|max:255',
             'professional_license' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:50',
             'role' => 'required|in:doctor_admin,doctor_associate',
@@ -49,6 +51,7 @@ class AdminDoctorController extends Controller
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'specialty' => $validated['specialty'],
+            'consultation_template' => $validated['consultation_template'] ?? null,
             'professional_license' => $validated['professional_license'] ?? null,
             'phone' => $validated['phone'] ?? null,
             'status' => 'active',
@@ -72,8 +75,9 @@ class AdminDoctorController extends Controller
 
         $clinics = Clinic::where('is_active', true)->get();
         $doctorClinicIds = $doctor->clinics()->pluck('clinics.id')->toArray();
+        $templates = config('consultation_templates');
 
-        return view('admin.doctors.edit', compact('doctor', 'clinics', 'doctorClinicIds'));
+        return view('admin.doctors.edit', compact('doctor', 'clinics', 'doctorClinicIds', 'templates'));
     }
 
     public function update(Request $request, User $doctor)
@@ -85,6 +89,7 @@ class AdminDoctorController extends Controller
             'email' => 'required|email|max:255|unique:users,email,' . $doctor->id,
             'password' => ['nullable', 'confirmed', Password::min(8)->mixedCase()->numbers()->symbols()],
             'specialty' => 'required|string|max:255',
+            'consultation_template' => 'nullable|string|max:255',
             'professional_license' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:50',
             'role' => 'required|in:doctor_admin,doctor_associate',
@@ -97,6 +102,7 @@ class AdminDoctorController extends Controller
             'name' => $validated['name'],
             'email' => $validated['email'],
             'specialty' => $validated['specialty'],
+            'consultation_template' => $validated['consultation_template'] ?? null,
             'professional_license' => $validated['professional_license'] ?? null,
             'phone' => $validated['phone'] ?? null,
             'status' => $validated['status'],

@@ -40,7 +40,7 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Dra. Maria Lopez',
                 'password' => Hash::make('password'),
-                'specialty' => 'Urologia',
+                'specialty' => 'urology',
                 'professional_license' => 'MED-001',
                 'status' => 'active',
             ]
@@ -130,9 +130,9 @@ class DatabaseSeeder extends Seeder
         );
 
         $doctorsData = [
-            ['email' => 'doctor1@mediapp.local', 'name' => 'Dr. Juan Torres',   'specialty' => 'Medicina General'],
-            ['email' => 'doctor2@mediapp.local', 'name' => 'Dra. Sofia Ruiz',   'specialty' => 'Pediatria'],
-            ['email' => 'doctor3@mediapp.local', 'name' => 'Dr. Luis Mendoza',  'specialty' => 'Cardiologia'],
+            ['email' => 'doctor1@mediapp.local', 'name' => 'Dr. Juan Torres',   'specialty' => 'general'],
+            ['email' => 'doctor2@mediapp.local', 'name' => 'Dra. Sofia Ruiz',   'specialty' => 'pediatrics'],
+            ['email' => 'doctor3@mediapp.local', 'name' => 'Dr. Luis Mendoza',  'specialty' => 'neurology'],
         ];
 
         $doctors = [];

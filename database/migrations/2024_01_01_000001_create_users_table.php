@@ -16,6 +16,7 @@ return new class extends Migration
             $table->enum('role', ['doctor', 'secretary', 'nurse', 'associate_doctor', 'researcher', 'admin']);
             $table->string('professional_license')->nullable();
             $table->string('specialty')->nullable();
+            $table->string('consultation_template')->nullable();
             $table->string('phone')->nullable();
             $table->string('digital_signature_path')->nullable();
             $table->boolean('is_active')->default(true);

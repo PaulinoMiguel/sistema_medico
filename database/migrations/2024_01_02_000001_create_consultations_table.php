@@ -20,6 +20,7 @@ return new class extends Migration
                 'emergency', 'urodynamic', 'procedure',
             ])->default('initial');
             $table->enum('status', ['in_progress', 'completed', 'signed'])->default('in_progress');
+            $table->string('consultation_template')->nullable();
 
             // SOAP - Subjective
             $table->text('chief_complaint')->nullable();

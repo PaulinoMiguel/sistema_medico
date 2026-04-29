@@ -1,9 +1,13 @@
 <x-layouts.tenant :title="'Consulta - ' . $consultation->patient->full_name">
     @php
-        $specialtyKey = strtolower(str_replace(' ', '_', $consultation->doctor->specialty ?? 'general'));
-        // Map common Spanish names to config keys
-        $specialtyMap = ['urologia' => 'urology', 'pediatria' => 'pediatrics', 'neurologia' => 'neurology', 'medicina_general' => 'general'];
-        $specialtyKey = $specialtyMap[$specialtyKey] ?? $specialtyKey;
+        $templateSlug = $consultation->consultation_template;
+        if (!$templateSlug) {
+            $sk = strtolower(str_replace(' ', '_', $consultation->doctor->specialty ?? 'general'));
+            $sm = ['urologia' => 'urology', 'pediatria' => 'pediatrics', 'neurologia' => 'neurology', 'medicina_general' => 'general'];
+            $templateSlug = ($sm[$sk] ?? $sk) . '_generic';
+        }
+        $templateConfig = config("consultation_templates.{$templateSlug}");
+        $specialtyKey = $templateConfig['specialty'] ?? 'general';
         $specialtyConfig = config("specialties.{$specialtyKey}", config('specialties.general'));
         $typeLabels = $specialtyConfig['consultation_types'];
         $vs = $consultation->vital_signs ?? [];
@@ -53,7 +57,7 @@
                         </div>
 
                         {{-- Specialty-specific symptoms --}}
-                        @includeIf('consultations.partials.' . $specialtyKey . '-symptoms')
+                        @includeIf('consultations.partials.' . $templateSlug . '-symptoms')
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Revision por sistemas</label>
@@ -127,7 +131,7 @@
                             <textarea name="abdomen_exam" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Blando, depresible, sin masas, Punio percusion...">{{ old('abdomen_exam', $consultation->abdomen_exam) }}</textarea>
                         </div>
                         {{-- Specialty-specific exams --}}
-                        @includeIf('consultations.partials.' . $specialtyKey . '-exams')
+                        @includeIf('consultations.partials.' . $templateSlug . '-exams')
                     </div>
                 </div>
 

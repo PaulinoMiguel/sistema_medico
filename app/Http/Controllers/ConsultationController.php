@@ -42,6 +42,9 @@ class ConsultationController extends Controller
             return redirect()->route('consultations.edit', $existing);
         }
 
+        $doctor = $appointment->doctor;
+        $template = $this->resolveTemplate($doctor);
+
         $consultation = Consultation::create([
             'patient_id' => $appointment->patient_id,
             'doctor_id' => $appointment->doctor_id,
@@ -49,6 +52,7 @@ class ConsultationController extends Controller
             'appointment_id' => $appointment->id,
             'consultation_date' => now(),
             'type' => $this->mapAppointmentType($appointment->type),
+            'consultation_template' => $template,
             'status' => 'in_progress',
         ]);
 
@@ -81,12 +85,16 @@ class ConsultationController extends Controller
             'type' => 'required|in:initial,follow_up,pre_operative,post_operative,emergency,urodynamic,procedure',
         ]);
 
+        $doctor = $request->user();
+        $template = $this->resolveTemplate($doctor);
+
         $consultation = Consultation::create([
             'patient_id' => $validated['patient_id'],
-            'doctor_id' => $request->user()->id,
+            'doctor_id' => $doctor->id,
             'clinic_id' => session('active_clinic_id'),
             'consultation_date' => now(),
             'type' => $validated['type'],
+            'consultation_template' => $template,
             'status' => 'in_progress',
         ]);
 
@@ -250,6 +258,23 @@ class ConsultationController extends Controller
     private function nullIfEmpty($v): ?float
     {
         return ($v === null || $v === '') ? null : (float) $v;
+    }
+
+    private function resolveTemplate($doctor): string
+    {
+        if ($doctor->consultation_template) {
+            return $doctor->consultation_template;
+        }
+
+        $specialtyMap = [
+            'urologia' => 'urology', 'pediatria' => 'pediatrics',
+            'neurologia' => 'neurology', 'medicina_general' => 'general',
+        ];
+
+        $key = strtolower(str_replace(' ', '_', $doctor->specialty ?? 'general'));
+        $key = $specialtyMap[$key] ?? $key;
+
+        return $key . '_generic';
     }
 
     private function mapAppointmentType(string $type): string
