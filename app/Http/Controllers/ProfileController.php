@@ -66,6 +66,57 @@ class ProfileController extends Controller
             ->with('success', 'Foto de perfil eliminada.');
     }
 
+    public function editPrintProfile(Request $request)
+    {
+        return view('profile.print', ['user' => $request->user()]);
+    }
+
+    public function updatePrintProfile(Request $request)
+    {
+        $validated = $request->validate([
+            'print_address' => 'nullable|string|max:255',
+            'print_website' => 'nullable|string|max:255',
+            'print_extra_header' => 'nullable|string|max:1000',
+        ]);
+
+        $request->user()->update($validated);
+
+        return redirect()->route('profile.print')
+            ->with('success', 'Perfil de impresion actualizado.');
+    }
+
+    public function updatePrintLogo(Request $request)
+    {
+        $request->validate([
+            'print_logo' => 'required|image|mimes:jpg,jpeg,png,webp,svg|max:2048',
+        ]);
+
+        $user = $request->user();
+
+        if ($user->print_logo_path) {
+            Storage::disk('public')->delete($user->print_logo_path);
+        }
+
+        $path = $request->file('print_logo')->store('print-logos', 'public');
+        $user->update(['print_logo_path' => $path]);
+
+        return redirect()->route('profile.print')
+            ->with('success', 'Logo actualizado.');
+    }
+
+    public function deletePrintLogo(Request $request)
+    {
+        $user = $request->user();
+
+        if ($user->print_logo_path) {
+            Storage::disk('public')->delete($user->print_logo_path);
+            $user->update(['print_logo_path' => null]);
+        }
+
+        return redirect()->route('profile.print')
+            ->with('success', 'Logo eliminado.');
+    }
+
     public function updatePassword(Request $request)
     {
         $validated = $request->validate([

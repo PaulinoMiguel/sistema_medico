@@ -13,7 +13,8 @@
         $vs = $consultation->vital_signs ?? [];
         $us = $consultation->urinary_symptoms ?? [];
         $sf = $consultation->sexual_function ?? [];
-        $dx = $consultation->diagnoses ?? [];
+        $subjectivePartial = \App\Support\ConsultationTemplate::resolvePartial($templateSlug, 'show-subjective');
+        $objectivePartial = \App\Support\ConsultationTemplate::resolvePartial($templateSlug, 'show-objective');
     @endphp
 
     <div class="mb-6">
@@ -44,6 +45,16 @@
         </div>
     </div>
 
+    @if($consultation->type !== 'initial')
+        <div class="bg-white rounded-lg shadow p-6 max-w-4xl mx-auto">
+            <h3 class="font-semibold text-gray-800 mb-3">Notas de la consulta</h3>
+            @if($consultation->notes)
+                <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ $consultation->notes }}</p>
+            @else
+                <p class="text-sm text-gray-400 italic">Sin notas registradas.</p>
+            @endif
+        </div>
+    @else
     <div class="space-y-6">
         {{-- S --}}
         <div class="bg-white rounded-lg shadow">
@@ -58,10 +69,7 @@
                     <div><span class="font-medium text-gray-700">Historia de la enfermedad:</span> {{ $consultation->history_present_illness }}</div>
                 @endif
                 {{-- Specialty-specific subjective data --}}
-                @includeIf('consultations.partials.' . $templateSlug . '-show-subjective')
-                @if($consultation->review_of_systems)
-                    <div><span class="font-medium text-gray-700">Revision por sistemas:</span> {{ $consultation->review_of_systems }}</div>
-                @endif
+                @includeIf($subjectivePartial)
             </div>
         </div>
 
@@ -73,17 +81,16 @@
             <div class="p-6 space-y-3 text-sm">
                 @if(!empty($vs))
                     <div class="flex flex-wrap gap-4">
-                        @foreach(['blood_pressure'=>'PA','heart_rate'=>'FC','temperature'=>'Temp','weight'=>'Peso','height'=>'Talla','oxygen_saturation'=>'SpO2','respiratory_rate'=>'FR'] as $k => $l)
+                        @foreach(['blood_pressure'=>'PA','heart_rate'=>'FC','temperature'=>'Temp','weight'=>'Peso','height'=>'Talla','respiratory_rate'=>'FR'] as $k => $l)
                             @if(!empty($vs[$k]))
                                 <span class="text-gray-600"><span class="font-medium">{{ $l }}:</span> {{ $vs[$k] }}</span>
                             @endif
                         @endforeach
                     </div>
                 @endif
-                @if($consultation->physical_exam) <div><span class="font-medium text-gray-700">Examen fisico:</span> {{ $consultation->physical_exam }}</div> @endif
                 @if($consultation->abdomen_exam) <div><span class="font-medium text-gray-700">Abdomen:</span> {{ $consultation->abdomen_exam }}</div> @endif
                 {{-- Specialty-specific objective data --}}
-                @includeIf('consultations.partials.' . $templateSlug . '-show-objective')
+                @includeIf($objectivePartial)
             </div>
         </div>
 
@@ -94,19 +101,6 @@
             </div>
             <div class="p-6 space-y-3 text-sm">
                 @if($consultation->assessment) <div>{{ $consultation->assessment }}</div> @endif
-                @if(!empty($dx))
-                    <div class="mt-2">
-                        @foreach($dx as $d)
-                            @if(!empty($d['code']) || !empty($d['description']))
-                                <div class="flex items-center gap-2 py-1">
-                                    @if(!empty($d['code'])) <span style="background-color:#f3f4f6;" class="px-2 py-0.5 rounded text-xs font-mono">{{ $d['code'] }}</span> @endif
-                                    <span>{{ $d['description'] ?? '' }}</span>
-                                    <span class="text-xs text-gray-400">({{ ($d['type'] ?? 'primary') === 'primary' ? 'Principal' : 'Secundario' }})</span>
-                                </div>
-                            @endif
-                        @endforeach
-                    </div>
-                @endif
             </div>
         </div>
 
@@ -119,10 +113,10 @@
                 @if($consultation->treatment_plan) <div><span class="font-medium text-gray-700">Tratamiento:</span> {{ $consultation->treatment_plan }}</div> @endif
                 @if($consultation->diagnostic_orders) <div><span class="font-medium text-gray-700">Ordenes:</span> {{ $consultation->diagnostic_orders }}</div> @endif
                 @if($consultation->surgical_recommendation) <div><span class="font-medium text-gray-700">Recomendacion quirurgica:</span> {{ $consultation->surgical_recommendation }}</div> @endif
-                @if($consultation->follow_up_instructions) <div><span class="font-medium text-gray-700">Seguimiento:</span> {{ $consultation->follow_up_instructions }}</div> @endif
                 @if($consultation->follow_up_days) <div><span class="font-medium text-gray-700">Proxima cita:</span> {{ $consultation->follow_up_days }} dias</div> @endif
                 @if($consultation->referrals) <div><span class="font-medium text-gray-700">Referencias:</span> {{ $consultation->referrals }}</div> @endif
             </div>
         </div>
     </div>
+    @endif
 </x-layouts.tenant>

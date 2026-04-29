@@ -82,7 +82,7 @@ class ConsultationController extends Controller
     {
         $validated = $request->validate([
             'patient_id' => 'required|exists:patients,id',
-            'type' => 'required|in:initial,follow_up,pre_operative,post_operative,emergency,urodynamic,procedure',
+            'type' => 'required|in:initial,follow_up,pre_operative,post_operative,emergency,urodynamic,flowmetry,procedure',
         ]);
 
         $doctor = $request->user();
@@ -149,11 +149,14 @@ class ConsultationController extends Controller
             'sexual_function' => 'nullable|array',
             'specialty_data' => 'nullable|array',
             'review_of_systems' => 'nullable|string',
+            'medical_history' => 'nullable|array',
+            'medical_history.*' => 'nullable|string',
             // Objective
             'vital_signs' => 'nullable|array',
             'physical_exam' => 'nullable|string',
             'genitourinary_exam' => 'nullable|string',
             'rectal_exam' => 'nullable|string',
+            'vaginal_exam' => 'nullable|string',
             'neurological_exam' => 'nullable|string',
             'abdomen_exam' => 'nullable|string',
             // Assessment
@@ -168,9 +171,20 @@ class ConsultationController extends Controller
             'referrals' => 'nullable|string',
             // Notes
             'private_notes' => 'nullable|string',
+            'notes' => 'nullable|string',
         ]);
 
+        $medicalHistoryData = $validated['medical_history'] ?? null;
+        unset($validated['medical_history']);
+
         $consultation->update($validated);
+
+        if ($medicalHistoryData !== null) {
+            $consultation->patient->medicalHistory()->updateOrCreate(
+                ['patient_id' => $consultation->patient_id],
+                $medicalHistoryData
+            );
+        }
 
         // Si el doctor es pediatra y la consulta trae antropometria, sincroniza
         // la tabla pediatric_measurements (crea una o actualiza la que ya exista
@@ -253,6 +267,30 @@ class ConsultationController extends Controller
                 'bmi_z' => $bmi ? $growth->zScore('bmi_for_age', $patient->gender, $zAge, $bmi) : null,
             ],
         );
+    }
+
+    public function printOrders(Request $request, Consultation $consultation)
+    {
+        $consultation->load(['patient', 'doctor', 'clinic']);
+
+        $items = (array) $request->input('items', []);
+        $catalog = config('order_templates');
+
+        $selected = [];
+        foreach ($catalog as $category) {
+            foreach ($category['templates'] as $slug => $tpl) {
+                if (in_array($slug, $items, true)) {
+                    $selected[] = $tpl;
+                }
+            }
+        }
+
+        if (empty($selected)) {
+            return redirect()->route('consultations.edit', $consultation)
+                ->with('error', 'Selecciona al menos una orden para imprimir.');
+        }
+
+        return view('consultations.print-orders', compact('consultation', 'selected'));
     }
 
     private function nullIfEmpty($v): ?float

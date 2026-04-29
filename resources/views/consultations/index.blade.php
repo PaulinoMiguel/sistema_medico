@@ -31,7 +31,7 @@
                 </thead>
                 <tbody class="divide-y divide-gray-200">
                     @php
-                        $typeLabels = ['initial'=>'Inicial','follow_up'=>'Control','pre_operative'=>'Pre-Qx','post_operative'=>'Post-Qx','emergency'=>'Urgencia','urodynamic'=>'Urodinamia','procedure'=>'Procedimiento'];
+                        $typeLabels = ['initial'=>'Inicial','follow_up'=>'Control','pre_operative'=>'Pre-Qx','post_operative'=>'Post-Qx','emergency'=>'Urgencia','urodynamic'=>'Urodinamia','flowmetry'=>'Flujometria','procedure'=>'Procedimiento'];
                     @endphp
                     @foreach($consultations as $c)
                     <tr class="hover:bg-gray-50">

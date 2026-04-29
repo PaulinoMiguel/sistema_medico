@@ -42,7 +42,7 @@
                            class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-300 mb-1">Cedula profesional</label>
+                    <label class="block text-sm font-medium text-gray-300 mb-1">Exequatur</label>
                     <input type="text" name="professional_license" value="{{ old('professional_license') }}"
                            class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:ring-blue-500 focus:border-blue-500">
                 </div>

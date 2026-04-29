@@ -287,6 +287,10 @@
                                 Configuracion
                             </a>
                             @endif
+                            <a href="{{ route('profile.print') }}"
+                               class="{{ $childItemClass }} {{ request()->routeIs('profile.print*') ? $activeClass : $inactiveClass }}">
+                                Mi perfil de impresion
+                            </a>
                         </div>
                     </details>
                 @endif

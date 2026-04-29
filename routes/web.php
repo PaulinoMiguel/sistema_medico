@@ -56,6 +56,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/profile/photo', [ProfileController::class, 'updatePhoto'])->name('profile.photo');
     Route::delete('/profile/photo', [ProfileController::class, 'deletePhoto'])->name('profile.photo.delete');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+    Route::get('/profile/print', [ProfileController::class, 'editPrintProfile'])->name('profile.print');
+    Route::put('/profile/print', [ProfileController::class, 'updatePrintProfile'])->name('profile.print.update');
+    Route::post('/profile/print/logo', [ProfileController::class, 'updatePrintLogo'])->name('profile.print.logo');
+    Route::delete('/profile/print/logo', [ProfileController::class, 'deletePrintLogo'])->name('profile.print.logo.delete');
 
     // Clinics are now managed exclusively from the super admin panel.
     // Doctors only see a read-only list of their assigned clinics.
@@ -168,6 +172,7 @@ Route::middleware('auth')->group(function () {
         Route::middleware('permission:consultations.view')->group(function () {
             Route::get('/consultations', [ConsultationController::class, 'index'])->name('consultations.index');
             Route::get('/consultations/{consultation}', [ConsultationController::class, 'show'])->name('consultations.show');
+            Route::get('/consultations/{consultation}/print-orders', [ConsultationController::class, 'printOrders'])->name('consultations.print-orders');
         });
         Route::middleware('permission:consultations.create')->group(function () {
             Route::get('/consultations-create', [ConsultationController::class, 'create'])->name('consultations.create');

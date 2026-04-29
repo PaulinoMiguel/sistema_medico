@@ -1,0 +1,55 @@
+Plantillas:
+
+1) Evaluacion Pre-Anestesica
+		Piso M
+	Plan:
+
+2) Evaluacion Pre_Operatoria
+		Medico___________
+		Consultorio__________
+	Plan:
+	
+3_ Rx Torax
+	Eval. Pre_Operatoria
+	
+4) Analitica Quirofano
+	Hemograma glicosilada	Triglicericos		VDRL
+	Orina					AST					
+	Urea					ACT
+	Creatinina				TP
+	Glicemia				TPT
+	Hemoglobina Glico		HIV
+	Colecterol 				Hep B
+							Hepa C
+							
+5) Analitica concreta hombre
+	Hemograma
+	Orina
+	Urea
+	Creatinina
+	Glicemia
+	Hemograma glicosilada
+	PSA Total
+	PSA Libre
+	% PSA
+	
+6) Analitica consulta normal
+	Hemograma
+	Orina
+	Urea
+	Creatinina
+	Glicemia
+	Hemograma glicosilada
+	
+7 Sonografia Abdomen Pelvica
+	Medir volumen prostatica
+	Medir volumen pre o pro miccion
+	
+8 Sonografia Abdomen Pelvica
+	Medir volumen pre o pro miccion
+	
+	
+	
+	
+	
+	

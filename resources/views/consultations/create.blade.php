@@ -24,8 +24,8 @@
                         <option value="follow_up">Control</option>
                         <option value="pre_operative">Pre-quirurgico</option>
                         <option value="post_operative">Post-quirurgico</option>
-                        <option value="emergency">Urgencia</option>
                         <option value="urodynamic">Urodinamia</option>
+                        <option value="flowmetry">Flujometria</option>
                         <option value="procedure">Procedimiento</option>
                     </select>
                 </div>
