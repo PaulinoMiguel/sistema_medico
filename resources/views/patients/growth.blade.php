@@ -113,11 +113,11 @@
                         <tr>
                             <th class="text-left py-2">Fecha</th>
                             <th class="text-right py-2">Edad (m)</th>
-                            <th class="text-right py-2">Peso</th>
-                            <th class="text-right py-2">Talla</th>
-                            <th class="text-right py-2">PC</th>
-                            <th class="text-right py-2">IMC</th>
-                            <th class="text-left py-2 pl-3">Z (P/T/PC/IMC)</th>
+                            <th class="text-right py-2">Peso (kg)</th>
+                            <th class="text-right py-2">Talla (cm)</th>
+                            <th class="text-right py-2" title="Perimetro Cefalico">PC (cm)</th>
+                            <th class="text-right py-2">IMC (kg/m²)</th>
+                            <th class="text-left py-2 pl-3" title="Z-score: Peso / Talla / Perimetro Cefalico / IMC">Z (P/T/PC/IMC)</th>
                             <th class="py-2"></th>
                         </tr>
                     </thead>
