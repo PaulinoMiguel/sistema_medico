@@ -183,7 +183,10 @@
                         </div>
 
                         {{-- Plantillas de ordenes para imprimir y entregar al paciente.
-                             No persiste seleccion: es utilidad de impresion. --}}
+                             No persiste seleccion: es utilidad de impresion.
+                             Por ahora solo urologia (las plantillas son urologicas). Cuando
+                             el set se generalice o haya sets por especialidad, abrir este gate. --}}
+                        @if ($specialtyKey === 'urology')
                         <div class="border border-gray-200 rounded-lg p-4">
                             <div class="flex items-center justify-between mb-3">
                                 <div>
@@ -216,6 +219,7 @@
                                 @endforeach
                             </div>
                         </div>
+                        @endif
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Recomendacion quirurgica</label>
                             <textarea name="surgical_recommendation" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Procedimiento recomendado, si aplica...">{{ old('surgical_recommendation', $consultation->surgical_recommendation) }}</textarea>
@@ -324,6 +328,7 @@
         </div>
     </form>
 
+    @if ($specialtyKey === 'urology')
     <script>
         const orderChecks = document.querySelectorAll('.order-template-check');
         const selectAll = document.getElementById('select-all-orders');
@@ -352,6 +357,7 @@
             window.open(url, '_blank');
         });
     </script>
+    @endif
     @endif
 
 </x-layouts.tenant>
