@@ -56,7 +56,7 @@
             </div>
 
             {{-- Live percentile preview --}}
-            <div id="preview" class="mt-3 hidden grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+            <div id="preview" class="mt-3 hidden grid grid-cols-2 md:grid-cols-5 gap-3 text-xs">
                 <div data-key="weight" class="bg-gray-50 dark:bg-gray-900 rounded p-2">
                     <p class="text-gray-500">Peso</p>
                     <p class="font-mono text-base"><span class="z">-</span> · P<span class="p">-</span></p>
@@ -70,7 +70,11 @@
                     <p class="font-mono text-base"><span class="z">-</span> · P<span class="p">-</span></p>
                 </div>
                 <div data-key="bmi" class="bg-gray-50 dark:bg-gray-900 rounded p-2">
-                    <p class="text-gray-500">IMC</p>
+                    <p class="text-gray-500">IMC <span class="text-gray-400">(≥2a)</span></p>
+                    <p class="font-mono text-base"><span class="z">-</span> · P<span class="p">-</span></p>
+                </div>
+                <div data-key="weight_for_length" class="bg-gray-50 dark:bg-gray-900 rounded p-2" title="Peso para la talla: indicador clinico clave en lactantes (<2 anos)">
+                    <p class="text-gray-500">Peso/Talla <span class="text-gray-400">(&lt;2a)</span></p>
                     <p class="font-mono text-base"><span class="z">-</span> · P<span class="p">-</span></p>
                 </div>
             </div>
@@ -117,7 +121,7 @@
                             <th class="text-right py-2">Talla (cm)</th>
                             <th class="text-right py-2" title="Perimetro Cefalico">PC (cm)</th>
                             <th class="text-right py-2">IMC (kg/m²)</th>
-                            <th class="text-left py-2 pl-3" title="Z-score: Peso / Talla / Perimetro Cefalico / IMC">Z (P/T/PC/IMC)</th>
+                            <th class="text-left py-2 pl-3" title="Z-scores: Peso-edad / Talla-edad / Perimetro Cefalico-edad / IMC-edad / Peso-para-Talla">Z (P/T/PC/IMC/PpT)</th>
                             <th class="py-2"></th>
                         </tr>
                     </thead>
@@ -136,7 +140,7 @@
                             <td class="py-2 text-right font-mono">{{ $m->head_circumference_cm ? number_format($m->head_circumference_cm, 1) : '-' }}</td>
                             <td class="py-2 text-right font-mono">{{ $m->bmi ? number_format($m->bmi, 1) : '-' }}</td>
                             <td class="py-2 pl-3 font-mono text-xs text-gray-600 dark:text-gray-400">
-                                {{ $m->weight_z ?? '-' }} / {{ $m->height_z ?? '-' }} / {{ $m->head_circumference_z ?? '-' }} / {{ $m->bmi_z ?? '-' }}
+                                {{ $m->weight_z ?? '-' }} / {{ $m->height_z ?? '-' }} / {{ $m->head_circumference_z ?? '-' }} / {{ $m->bmi_z ?? '-' }} / {{ $m->weight_for_length_z ?? '-' }}
                             </td>
                             <td class="py-2 text-right">
                                 <form method="POST" action="{{ route('patients.measurements.destroy', [$patient, $m]) }}" class="inline"

@@ -64,6 +64,7 @@ class PediatricMeasurementController extends Controller
             'height_z' => $height && $sex ? $this->growth->zScore('height_for_age', $sex, $zAge, $height) : null,
             'head_circumference_z' => $hc && $sex ? $this->growth->zScore('head_circumference_for_age', $sex, $zAge, $hc) : null,
             'bmi_z' => $bmi && $sex ? $this->growth->zScore('bmi_for_age', $sex, $zAge, $bmi) : null,
+            'weight_for_length_z' => $weight && $height && $sex ? $this->growth->zScore('weight_for_length', $sex, $height, $weight) : null,
             'notes' => $validated['notes'] ?? null,
         ]);
 
@@ -147,13 +148,14 @@ class PediatricMeasurementController extends Controller
             'indicators' => [],
         ];
 
-        $map = [
+        // Indicadores con eje = edad
+        $byAge = [
             'weight' => ['weight_for_age', $w],
             'height' => ['height_for_age', $h],
             'head_circumference' => ['head_circumference_for_age', $hc],
             'bmi' => ['bmi_for_age', $bmi],
         ];
-        foreach ($map as $key => [$indicator, $value]) {
+        foreach ($byAge as $key => [$indicator, $value]) {
             if ($value === null || !$sex) {
                 $out['indicators'][$key] = null;
                 continue;
@@ -162,6 +164,15 @@ class PediatricMeasurementController extends Controller
             $out['indicators'][$key] = $z !== null
                 ? ['z' => $z, 'percentile' => $this->growth->percentile($z)]
                 : null;
+        }
+
+        // Peso para Talla: eje = longitud (no edad). Solo aplica si tiene ambos.
+        $out['indicators']['weight_for_length'] = null;
+        if ($w && $h && $sex) {
+            $z = $this->growth->zScore('weight_for_length', $sex, (float) $h, (float) $w);
+            if ($z !== null) {
+                $out['indicators']['weight_for_length'] = ['z' => $z, 'percentile' => $this->growth->percentile($z)];
+            }
         }
 
         return response()->json($out);
