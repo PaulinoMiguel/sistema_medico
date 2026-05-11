@@ -220,10 +220,12 @@
                             </div>
                         </div>
                         @endif
+                        @if ($specialtyKey === 'urology')
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Recomendacion quirurgica</label>
                             <textarea name="surgical_recommendation" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Procedimiento recomendado, si aplica...">{{ old('surgical_recommendation', $consultation->surgical_recommendation) }}</textarea>
                         </div>
+                        @endif
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Proxima cita en (dias)</label>
                             <input type="number" name="follow_up_days" value="{{ old('follow_up_days', $consultation->follow_up_days) }}"
