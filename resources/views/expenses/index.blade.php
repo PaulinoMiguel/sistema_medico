@@ -31,7 +31,7 @@
             <p class="text-2xl font-mono font-bold text-red-700">${{ number_format($totalExpenses, 2) }}</p>
         </div>
         <div class="bg-white rounded-lg shadow p-4">
-            <p class="text-xs text-gray-500 uppercase mb-2">Por categoria</p>
+            <p class="text-xs text-gray-500 uppercase mb-2">Por categoría</p>
             @forelse($byCategory as $catName => $catTotal)
                 <div class="flex justify-between text-sm mb-1">
                     <span class="text-gray-600">{{ $catName }}</span>
@@ -55,7 +55,7 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Categoria</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Categoría</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Concepto</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Monto</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>

@@ -14,7 +14,7 @@
         </div>
 
         <div class="bg-gray-800 rounded-lg shadow-xl p-8">
-            <h2 class="text-xl font-semibold text-white mb-6">Iniciar sesion</h2>
+            <h2 class="text-xl font-semibold text-white mb-6">Iniciar sesión</h2>
 
             @if($errors->any())
                 <div class="mb-4 p-3 bg-red-900/50 border border-red-700 text-red-300 rounded-md text-sm">
@@ -27,12 +27,12 @@
             <form method="POST" action="{{ route('admin.login') }}">
                 @csrf
                 <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-300 mb-1">Correo electronico</label>
+                    <label class="block text-sm font-medium text-gray-300 mb-1">Correo electrónico</label>
                     <input type="email" name="email" value="{{ old('email') }}" required autofocus
                            class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-300 mb-1">Contrasena</label>
+                    <label class="block text-sm font-medium text-gray-300 mb-1">Contraseña</label>
                     <input type="password" name="password" required
                            class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500">
                 </div>

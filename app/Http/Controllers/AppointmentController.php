@@ -119,7 +119,7 @@ class AppointmentController extends Controller
             'scheduled_at.date' => 'La fecha y hora no son validas.',
             'scheduled_at.after_or_equal' => 'La fecha del turno no puede ser anterior a hoy.',
             'type.required' => 'Debes seleccionar un tipo de turno.',
-            'type.in' => 'El tipo de turno seleccionado no es valido.',
+            'type.in' => 'El tipo de turno seleccionado no es válido.',
         ]);
 
         if ($user->isDoctor()) {
@@ -237,6 +237,25 @@ class AppointmentController extends Controller
         $appointment->save();
 
         return redirect()->back()->with('success', 'Estado del turno actualizado.');
+    }
+
+    /**
+     * Cambia solo el tipo del turno desde su pantalla de detalle, para que el
+     * doctor lo ajuste antes de iniciar la consulta (de ahí se mapea el tipo de
+     * consulta). No toca fecha/paciente/doctor, así que evita el form completo.
+     */
+    public function updateType(Request $request, Appointment $appointment)
+    {
+        $validated = $request->validate([
+            'type' => 'required|in:first_visit,follow_up,pre_operative,post_operative,urodynamic_study,procedure,emergency,surgical',
+        ], [
+            'type.required' => 'Debes seleccionar un tipo de turno.',
+            'type.in' => 'El tipo de turno seleccionado no es válido.',
+        ]);
+
+        $appointment->update(['type' => $validated['type']]);
+
+        return redirect()->back()->with('success', 'Tipo de turno actualizado.');
     }
 
     private function checkOverlap(int $doctorId, string $scheduledAt, int $durationMinutes, ?int $excludeId = null): void

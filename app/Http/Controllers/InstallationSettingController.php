@@ -53,6 +53,6 @@ class InstallationSettingController extends Controller
         $settings->update($payload);
         InstallationSetting::forget();
 
-        return redirect()->route('settings.edit')->with('success', 'Configuracion actualizada.');
+        return redirect()->route('settings.edit')->with('success', 'Configuración actualizada.');
     }
 }

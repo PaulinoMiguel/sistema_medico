@@ -21,8 +21,8 @@
         $types = [
             'first_visit'=>'Primera vez',
             'follow_up'=>'Control',
-            'pre_operative'=>'Pre-quirurgico',
-            'post_operative'=>'Post-quirurgico',
+            'pre_operative'=>'Pre-quirúrgico',
+            'post_operative'=>'Post-quirúrgico',
             'urodynamic_study'=>'Urodinamia',
             'procedure'=>'Procedimiento',
             'emergency'=>'Urgencia',
@@ -98,18 +98,37 @@
                             <dd>{{ $appointment->doctor->name }}</dd>
                         </div>
                         <div class="flex justify-between">
-                            <dt class="text-gray-500">Clinica</dt>
+                            <dt class="text-gray-500">Clínica</dt>
                             <dd>{{ $appointment->clinic->name }}</dd>
                         </div>
                         <div class="flex justify-between">
-                            <dt class="text-gray-500">Duracion</dt>
+                            <dt class="text-gray-500">Duración</dt>
                             <dd>{{ $appointment->duration_minutes }} min</dd>
                         </div>
                     </dl>
                     <dl class="space-y-3 text-sm">
-                        <div class="flex justify-between">
+                        <div class="flex justify-between items-center">
                             <dt class="text-gray-500">Tipo</dt>
-                            <dd>{{ $types[$appointment->type] ?? $appointment->type }}</dd>
+                            <dd>
+                                @php
+                                    $canEditType = auth()->user()->isDoctor()
+                                        && !$appointment->consultation
+                                        && !in_array($appointment->status, ['completed', 'cancelled', 'no_show']);
+                                @endphp
+                                @if($canEditType)
+                                    <form method="POST" action="{{ route('appointments.type', $appointment) }}" class="inline">
+                                        @csrf @method('PATCH')
+                                        <select name="type" title="Tipo de turno" onchange="this.form.submit()"
+                                                class="text-sm border-gray-300 rounded-md py-1 pl-2 pr-8 focus:ring-blue-500 focus:border-blue-500">
+                                            @foreach($types as $val => $label)
+                                                <option value="{{ $val }}" @selected($appointment->type === $val)>{{ $label }}</option>
+                                            @endforeach
+                                        </select>
+                                    </form>
+                                @else
+                                    {{ $types[$appointment->type] ?? $appointment->type }}
+                                @endif
+                            </dd>
                         </div>
                         <div class="flex justify-between">
                             <dt class="text-gray-500">Motivo</dt>
@@ -131,15 +150,15 @@
                 <div class="mt-6 pt-6 border-t border-gray-200 flex gap-3">
                     <a href="{{ route('appointments.edit', $appointment) }}" class="px-4 py-2 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">Editar</a>
 
-                    @if(auth()->user()->isDoctor() && in_array($appointment->status, ['in_waiting_room', 'in_progress', 'completed']))
+                    @if(auth()->user()->isDoctor())
                         @php $existingConsultation = $appointment->consultation; @endphp
                         @if($existingConsultation)
                             <a href="{{ route($existingConsultation->isSigned() ? 'consultations.show' : 'consultations.edit', $existingConsultation) }}"
                                style="background-color:#9333ea;color:#fff;" class="px-4 py-2 rounded-md text-sm font-medium">
                                 {{ $existingConsultation->isSigned() ? 'Ver consulta' : 'Continuar consulta' }}
                             </a>
-                        @else
-                            <form action="{{ route('consultations.from-appointment', $appointment) }}" method="POST">
+                        @elseif(!in_array($appointment->status, ['cancelled', 'no_show']))
+                            <form action="{{ route('consultations.from-appointment', $appointment) }}" method="POST" class="inline">
                                 @csrf
                                 <button type="submit" style="background-color:#9333ea;color:#fff;" class="px-4 py-2 rounded-md text-sm font-medium">
                                     Iniciar consulta
@@ -156,31 +175,15 @@
             <div class="bg-white rounded-lg shadow p-6">
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">Acciones</h3>
 
-                @if($appointment->status === 'scheduled')
-                    <form action="{{ route('appointments.status', $appointment) }}" method="POST" class="mb-6">
-                        @csrf @method('PATCH')
-                        <input type="hidden" name="status" value="confirmed">
-                        <button type="submit" style="background-color:#2563eb;color:#fff;" class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            Confirmar turno
-                        </button>
-                    </form>
-                @elseif($appointment->status === 'confirmed')
-                    <form action="{{ route('appointments.status', $appointment) }}" method="POST" class="mb-6">
-                        @csrf @method('PATCH')
-                        <input type="hidden" name="status" value="in_waiting_room">
-                        <button type="submit" style="background-color:#eab308;color:#fff;" class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                            Paciente llego
-                        </button>
-                    </form>
-                @elseif($appointment->status === 'in_waiting_room')
-                    @php
-                        $isDoc = auth()->user()->isDoctor();
-                        $existing = $appointment->consultation;
-                    @endphp
-                    @if($isDoc && !$existing)
-                        {{-- El doctor crea la consulta (y de paso cambia el estado a in_progress). --}}
+                @php
+                    $isDoc = auth()->user()->isDoctor();
+                    $existing = $appointment->consultation;
+                @endphp
+
+                @if($isDoc)
+                    {{-- Doctor: atajo directo a la consulta (paciente fijo + elegir tipo),
+                         sin tener que caminar el turno por confirmar / sala de espera. --}}
+                    @if(!$existing && !in_array($appointment->status, ['completed', 'cancelled', 'no_show']))
                         <form action="{{ route('consultations.from-appointment', $appointment) }}" method="POST" class="mb-6">
                             @csrf
                             <button type="submit" style="background-color:#9333ea;color:#fff;" class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition">
@@ -188,13 +191,37 @@
                                 Iniciar consulta
                             </button>
                         </form>
-                    @elseif($isDoc && $existing)
-                        <a href="{{ route($existing->isSigned() ? 'consultations.show' : 'consultations.edit', $existing) }}"
-                           style="background-color:#9333ea;color:#fff;" class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition mb-6">
-                            {{ $existing->isSigned() ? 'Ver consulta' : 'Continuar consulta' }}
-                        </a>
-                    @else
-                        {{-- Secretaria: solo cambia el estado a in_progress. --}}
+                    @elseif($existing && $appointment->status === 'in_progress')
+                        <form action="{{ route('appointments.status', $appointment) }}" method="POST" class="mb-6">
+                            @csrf @method('PATCH')
+                            <input type="hidden" name="status" value="completed">
+                            <button type="submit" style="background-color:#16a34a;color:#fff;" class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                Finalizar consulta
+                            </button>
+                        </form>
+                    @endif
+                @else
+                    {{-- Secretaria / staff: conserva el flujo de estados del turno. --}}
+                    @if($appointment->status === 'scheduled')
+                        <form action="{{ route('appointments.status', $appointment) }}" method="POST" class="mb-6">
+                            @csrf @method('PATCH')
+                            <input type="hidden" name="status" value="confirmed">
+                            <button type="submit" style="background-color:#2563eb;color:#fff;" class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                Confirmar turno
+                            </button>
+                        </form>
+                    @elseif($appointment->status === 'confirmed')
+                        <form action="{{ route('appointments.status', $appointment) }}" method="POST" class="mb-6">
+                            @csrf @method('PATCH')
+                            <input type="hidden" name="status" value="in_waiting_room">
+                            <button type="submit" style="background-color:#eab308;color:#fff;" class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                Paciente llego
+                            </button>
+                        </form>
+                    @elseif($appointment->status === 'in_waiting_room')
                         <form action="{{ route('appointments.status', $appointment) }}" method="POST" class="mb-6">
                             @csrf @method('PATCH')
                             <input type="hidden" name="status" value="in_progress">
@@ -203,24 +230,13 @@
                                 Pasar a consulta
                             </button>
                         </form>
-                    @endif
-                @elseif($appointment->status === 'in_progress')
-                    @if(auth()->user()->isDoctor())
-                    <form action="{{ route('appointments.status', $appointment) }}" method="POST" class="mb-6">
-                        @csrf @method('PATCH')
-                        <input type="hidden" name="status" value="completed">
-                        <button type="submit" style="background-color:#16a34a;color:#fff;" class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                            Finalizar consulta
-                        </button>
-                    </form>
-                    @else
-                    <div class="text-center py-4">
-                        <div class="bg-purple-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-2">
-                            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    @elseif($appointment->status === 'in_progress')
+                        <div class="text-center py-4">
+                            <div class="bg-purple-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-2">
+                                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            </div>
+                            <p class="text-purple-700 font-medium">Consulta en curso</p>
                         </div>
-                        <p class="text-purple-700 font-medium">Consulta en curso</p>
-                    </div>
                     @endif
                 @endif
 

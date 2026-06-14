@@ -1,7 +1,7 @@
 <x-layouts.tenant :title="'Mi Perfil'">
     <div class="mb-6">
         <h2 class="text-2xl font-bold text-gray-800">Mi Perfil</h2>
-        <p class="text-gray-500">Configura tu informacion personal y credenciales.</p>
+        <p class="text-gray-500">Configura tu información personal y credenciales.</p>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -59,13 +59,13 @@
                             @error('name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Correo electronico *</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Correo electrónico *</label>
                             <input type="email" name="email" value="{{ old('email', $user->email) }}" required
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                             @error('email') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Telefono</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
                             <input type="tel" name="phone" value="{{ old('phone', $user->phone) }}"
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                         </div>
@@ -86,7 +86,7 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1">Acerca de mi</label>
                         <textarea name="bio" rows="3"
                                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                                  placeholder="Breve descripcion profesional...">{{ old('bio', $user->bio) }}</textarea>
+                                  placeholder="Breve descripción profesional...">{{ old('bio', $user->bio) }}</textarea>
                         @error('bio') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
@@ -102,29 +102,29 @@
             <form method="POST" action="{{ route('profile.password') }}">
                 @csrf @method('PUT')
                 <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Cambiar contrasena</h3>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Cambiar contraseña</h3>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Contrasena actual *</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Contraseña actual *</label>
                             <input type="password" name="current_password" required
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                             @error('current_password') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Nueva contrasena *</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nueva contraseña *</label>
                             <input type="password" name="password" required
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                             @error('password') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Confirmar contrasena *</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Confirmar contraseña *</label>
                             <input type="password" name="password_confirmation" required
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                         </div>
                     </div>
                     <div class="mt-6 flex justify-end">
                         <button type="submit" class="px-6 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-900 font-medium">
-                            Cambiar contrasena
+                            Cambiar contraseña
                         </button>
                     </div>
                 </div>

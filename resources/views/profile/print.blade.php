@@ -1,7 +1,7 @@
-<x-layouts.tenant title="Mi perfil de impresion">
+<x-layouts.tenant title="Mi perfil de impresión">
     <div class="max-w-3xl mx-auto">
         <div class="mb-6">
-            <h2 class="text-2xl font-bold text-gray-800">Mi perfil de impresion</h2>
+            <h2 class="text-2xl font-bold text-gray-800">Mi perfil de impresión</h2>
             <p class="text-gray-500 text-sm mt-1">Estos datos se muestran en las cabeceras de ordenes diagnosticas, recetas y demas documentos impresos. Cada doctor configura los suyos.</p>
         </div>
 
@@ -51,10 +51,10 @@
         <form method="POST" action="{{ route('profile.print.update') }}" class="bg-white rounded-lg shadow p-6 space-y-4">
             @csrf @method('PUT')
             <h3 class="font-semibold text-gray-800">Datos para cabecera</h3>
-            <p class="text-xs text-gray-500 -mt-2">Tu nombre, exequatur y telefono se toman de "Mi perfil". Estos campos son adicionales para los documentos impresos.</p>
+            <p class="text-xs text-gray-500 -mt-2">Tu nombre, exequatur y teléfono se toman de "Mi perfil". Estos campos son adicionales para los documentos impresos.</p>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Direccion del consultorio</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Dirección del consultorio</label>
                 <input type="text" name="print_address" value="{{ old('print_address', $user->print_address) }}" maxlength="255"
                        placeholder="Ej: Av. Independencia 123, Local 4, Santo Domingo"
                        class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500">
@@ -72,7 +72,7 @@
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Texto adicional de cabecera (opcional)</label>
                 <textarea name="print_extra_header" rows="3" maxlength="1000"
-                          placeholder="Ej: Especialista en endourologia y urologia funcional"
+                          placeholder="Ej: Especialista en endourología y urología funcional"
                           class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500">{{ old('print_extra_header', $user->print_extra_header) }}</textarea>
                 <p class="mt-1 text-xs text-gray-500">Aparece debajo del nombre y exequatur en los documentos impresos.</p>
                 @error('print_extra_header') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror

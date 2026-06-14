@@ -24,7 +24,7 @@
                             <p class="text-lg font-mono font-bold text-green-800 dark:text-green-300">${{ number_format($openRegister->opening_amount, 2) }}</p>
                         </div>
                         <div>
-                            <p class="text-xs text-green-600 dark:text-green-400">Cobros del dia</p>
+                            <p class="text-xs text-green-600 dark:text-green-400">Cobros del día</p>
                             <p class="text-lg font-mono font-bold text-green-800 dark:text-green-300">${{ number_format($openRegister->total_collected, 2) }}</p>
                         </div>
                         <div>
@@ -44,7 +44,7 @@
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden mb-6">
             <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
                 <div class="flex items-center gap-4">
-                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Cobros del dia</h3>
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Cobros del día</h3>
                     @if($doctorsList->count() > 1)
                         <select id="doctor-filter" onchange="filterByDoctor(this.value)"
                                 class="px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
@@ -72,7 +72,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Hora</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Recibo</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Paciente</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Medico</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Médico</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Concepto</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Cobro por</th>
                             <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Monto</th>
@@ -168,7 +168,7 @@
                     @if(auth()->user()->isDoctor())
                         <p class="text-sm text-yellow-700">No hay caja abierta en este momento.</p>
                     @else
-                        <p class="text-sm text-yellow-700">Abre la caja para comenzar a registrar cobros del dia.</p>
+                        <p class="text-sm text-yellow-700">Abre la caja para comenzar a registrar cobros del día.</p>
                     @endif
                 </div>
                 @if(!auth()->user()->isDoctor() && auth()->user()->can('cash-register.open'))

@@ -1,6 +1,6 @@
-<x-layouts.tenant :title="'Configuracion'">
+<x-layouts.tenant :title="'Configuración'">
     <div class="mb-6">
-        <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Configuracion de la instalacion</h2>
+        <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Configuración de la instalación</h2>
         <p class="text-gray-500 dark:text-gray-400 text-sm">Marca visual y modulos habilitados.</p>
     </div>
 

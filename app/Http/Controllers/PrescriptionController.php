@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Consultation;
+use App\Models\Medication;
 use App\Models\Patient;
 use App\Models\Prescription;
 use App\Models\PrescriptionItem;
@@ -42,7 +43,11 @@ class PrescriptionController extends Controller
         $selectedPatientId = $request->get('patient_id');
         $consultationId = $request->get('consultation_id');
 
-        return view('prescriptions.create', compact('patients', 'selectedPatientId', 'consultationId'));
+        $medications = Medication::where('doctor_id', $request->user()->id)
+            ->orderBy('name')
+            ->get();
+
+        return view('prescriptions.create', compact('patients', 'selectedPatientId', 'consultationId', 'medications'));
     }
 
     public function store(Request $request)
@@ -55,7 +60,7 @@ class PrescriptionController extends Controller
             'items' => 'required|array|min:1',
             'items.*.medication_name' => 'required|string|max:255',
             'items.*.dosage' => 'required|string|max:255',
-            'items.*.frequency' => 'required|string|max:255',
+            'items.*.frequency' => 'nullable|string|max:255',
             'items.*.duration' => 'nullable|string|max:255',
             'items.*.route' => 'required|string|max:50',
             'items.*.instructions' => 'nullable|string',
@@ -78,6 +83,8 @@ class PrescriptionController extends Controller
                 'sort_order' => $index,
             ]);
         }
+
+        $this->syncMedicationBank($prescription->doctor_id, $validated['items']);
 
         return redirect()->route('prescriptions.show', $prescription)
             ->with('success', 'Receta creada exitosamente.');
@@ -104,7 +111,11 @@ class PrescriptionController extends Controller
             ->orderBy('last_name')
             ->get();
 
-        return view('prescriptions.edit', compact('prescription', 'patients'));
+        $medications = Medication::where('doctor_id', $prescription->doctor_id)
+            ->orderBy('name')
+            ->get();
+
+        return view('prescriptions.edit', compact('prescription', 'patients', 'medications'));
     }
 
     public function update(Request $request, Prescription $prescription)
@@ -120,7 +131,7 @@ class PrescriptionController extends Controller
             'items' => 'required|array|min:1',
             'items.*.medication_name' => 'required|string|max:255',
             'items.*.dosage' => 'required|string|max:255',
-            'items.*.frequency' => 'required|string|max:255',
+            'items.*.frequency' => 'nullable|string|max:255',
             'items.*.duration' => 'nullable|string|max:255',
             'items.*.route' => 'required|string|max:50',
             'items.*.instructions' => 'nullable|string',
@@ -142,8 +153,42 @@ class PrescriptionController extends Controller
             ]);
         }
 
+        $this->syncMedicationBank($prescription->doctor_id, $validated['items']);
+
         return redirect()->route('prescriptions.show', $prescription)
             ->with('success', 'Receta actualizada.');
+    }
+
+    /**
+     * Auto-alimenta el banco del doctor: por cada medicamento de la receta
+     * que no exista ya en su banco (por nombre, sin distinguir mayúsculas),
+     * lo agrega con la dosis/duración/vía/observación de esta receta.
+     */
+    private function syncMedicationBank(int $doctorId, array $items): void
+    {
+        foreach ($items as $item) {
+            $name = trim($item['medication_name'] ?? '');
+            if ($name === '') {
+                continue;
+            }
+
+            $exists = Medication::where('doctor_id', $doctorId)
+                ->whereRaw('LOWER(name) = ?', [mb_strtolower($name)])
+                ->exists();
+
+            if ($exists) {
+                continue;
+            }
+
+            Medication::create([
+                'doctor_id' => $doctorId,
+                'name' => $name,
+                'dosage' => $item['dosage'] ?? null,
+                'duration' => $item['duration'] ?? null,
+                'route' => $item['route'] ?? 'oral',
+                'instructions' => $item['instructions'] ?? null,
+            ]);
+        }
     }
 
     public function pdf(Prescription $prescription)

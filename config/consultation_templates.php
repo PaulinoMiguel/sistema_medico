@@ -26,7 +26,7 @@
 
 return [
     'urology_generic' => [
-        'label' => 'Urologia - Generico',
+        'label' => 'Urología - Genérico',
         'specialty' => 'urology',
     ],
 
@@ -37,17 +37,17 @@ return [
     ],
 
     'pediatrics_generic' => [
-        'label' => 'Pediatria - Generico',
+        'label' => 'Pediatría - Genérico',
         'specialty' => 'pediatrics',
     ],
 
     'neurology_generic' => [
-        'label' => 'Neurologia - Generico',
+        'label' => 'Neurología - Genérico',
         'specialty' => 'neurology',
     ],
 
     'general_generic' => [
-        'label' => 'Medicina General - Generico',
+        'label' => 'Medicina General - Genérico',
         'specialty' => 'general',
     ],
 ];

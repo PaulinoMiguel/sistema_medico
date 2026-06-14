@@ -52,13 +52,13 @@ class AdminAuthController extends Controller
         $admin = Auth::guard('admin')->user();
 
         if (! Hash::check($validated['current_password'], $admin->password)) {
-            return back()->withErrors(['current_password' => 'La contrasena actual no es correcta.']);
+            return back()->withErrors(['current_password' => 'La contraseña actual no es correcta.']);
         }
 
         $admin->update(['password' => Hash::make($validated['password'])]);
 
         return redirect()->route('admin.profile')
-            ->with('success', 'Contrasena actualizada exitosamente.');
+            ->with('success', 'Contraseña actualizada exitosamente.');
     }
 
     public function logout(Request $request)

@@ -1,7 +1,7 @@
 <x-layouts.tenant :title="'Mi Resumen'">
     <div class="mb-6">
         <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Mi Resumen Financiero</h2>
-        <p class="text-gray-500 dark:text-gray-400 text-sm">Neto personal del doctor en esta clinica.</p>
+        <p class="text-gray-500 dark:text-gray-400 text-sm">Neto personal del doctor en esta clínica.</p>
     </div>
 
     {{-- Month filter --}}
@@ -54,7 +54,7 @@
         </div>
     </div>
 
-    {{-- Formula --}}
+    {{-- Fórmula --}}
     <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4 text-sm font-mono text-gray-700 dark:text-gray-300">
         ${{ number_format($income, 2) }}
         <span class="text-gray-400">(ingresos)</span>

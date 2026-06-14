@@ -1,7 +1,7 @@
 <x-layouts.tenant :title="'Resumen Financiero'">
     <div class="mb-6">
         <h2 class="text-2xl font-bold text-gray-800">Resumen Financiero</h2>
-        <p class="text-gray-500 text-sm">Ingresos, gastos y balance de tu clinica.</p>
+        <p class="text-gray-500 text-sm">Ingresos, gastos y balance de tu clínica.</p>
     </div>
 
     {{-- Month filter --}}
@@ -74,7 +74,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {{-- Expenses by category --}}
         <div class="bg-white rounded-lg shadow p-6">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">Gastos por categoria</h3>
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Gastos por categoría</h3>
             @if($expensesByCategory->isEmpty())
                 <p class="text-gray-400 text-sm">Sin gastos este mes.</p>
             @else

@@ -2,7 +2,7 @@
 
 {{-- Neurological symptoms --}}
 <div class="border border-gray-200 rounded-lg p-4">
-    <h4 class="text-sm font-semibold text-gray-700 mb-3">Sintomas neurologicos</h4>
+    <h4 class="text-sm font-semibold text-gray-700 mb-3">Síntomas neurológicos</h4>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
         @foreach([
             'headache' => 'Cefalea',
@@ -10,13 +10,13 @@
             'paresthesia' => 'Parestesias',
             'weakness' => 'Debilidad',
             'tremor' => 'Temblor',
-            'dizziness' => 'Vertigo/Mareo',
+            'dizziness' => 'Vértigo/Mareo',
             'speech_disorder' => 'Trastorno del habla',
             'visual_disorder' => 'Trastorno visual',
             'memory_loss' => 'Perdida de memoria',
             'gait_disorder' => 'Trastorno de la marcha',
             'numbness' => 'Entumecimiento',
-            'syncope' => 'Sincope',
+            'syncope' => 'Síncope',
         ] as $key => $label)
             <label class="flex items-center text-sm">
                 <input type="checkbox" name="specialty_data[neuro_symptoms][{{ $key }}]" value="1"

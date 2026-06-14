@@ -1,7 +1,7 @@
-<x-layouts.tenant :title="'Mis Clinicas'">
+<x-layouts.tenant :title="'Mis Clínicas'">
     <div class="mb-6">
-        <h2 class="text-2xl font-bold text-gray-800">Mis Clinicas</h2>
-        <p class="text-sm text-gray-500 mt-1">Las clinicas son gestionadas por el administrador del sistema.</p>
+        <h2 class="text-2xl font-bold text-gray-800">Mis Clínicas</h2>
+        <p class="text-sm text-gray-500 mt-1">Las clínicas son gestionadas por el administrador del sistema.</p>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -39,7 +39,7 @@
             </div>
         @empty
             <div class="col-span-full bg-white rounded-lg shadow p-8 text-center text-gray-500">
-                <p>No tienes clinicas asignadas. Contacta al administrador.</p>
+                <p>No tienes clínicas asignadas. Contacta al administrador.</p>
             </div>
         @endforelse
     </div>

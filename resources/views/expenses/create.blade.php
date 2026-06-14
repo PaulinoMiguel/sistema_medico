@@ -6,7 +6,7 @@
 
     @if($categories->isEmpty() && !auth()->user()->can('expense-categories.manage'))
         <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
-            <p class="text-yellow-800 mb-3">No hay categorias de gasto configuradas. Pidele al administrador del consultorio que cree las categorias necesarias.</p>
+            <p class="text-yellow-800 mb-3">No hay categorías de gasto configuradas. Pídele al administrador del consultorio que cree las categorías necesarias.</p>
         </div>
     @else
         <form method="POST" action="{{ route('expenses.store') }}">
@@ -16,11 +16,11 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <div class="flex items-center justify-between mb-1">
-                                <label class="block text-sm font-medium text-gray-700">Categoria *</label>
+                                <label class="block text-sm font-medium text-gray-700">Categoría *</label>
                                 @can('expense-categories.manage')
                                     <button type="button" id="open_quick_category"
                                             class="text-xs text-blue-600 hover:text-blue-800 font-medium">
-                                        + Nueva categoria
+                                        + Nueva categoría
                                     </button>
                                 @endcan
                             </div>
@@ -47,7 +47,7 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1">Concepto *</label>
                         <input type="text" name="concept" value="{{ old('concept') }}" required
                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                               placeholder="Descripcion del gasto">
+                               placeholder="Descripción del gasto">
                         @error('concept') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
@@ -79,7 +79,7 @@
 
                     @if($doctors->count() > 1 && auth()->user()->isDoctor())
                         <div class="border-t pt-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Atribucion del gasto</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Atribución del gasto</label>
                             <select name="owner_doctor_id"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                                 <option value="">Compartido (se reparte entre todos los doctores)</option>
@@ -107,7 +107,7 @@
             {{-- Quick category creation modal --}}
             <dialog id="quick_category_dialog" class="rounded-lg shadow-xl p-0 backdrop:bg-black/40 max-w-md w-full">
                 <form id="quick_category_form" method="dialog" class="p-6">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Nueva categoria de gasto</h3>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Nueva categoría de gasto</h3>
 
                     <div id="quick_category_errors" class="hidden mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded text-sm"></div>
 
@@ -115,14 +115,14 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
                         <input type="text" name="name" id="qc_name" required maxlength="255"
                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                               placeholder="ej. Suministros, Alquiler, Servicios publicos">
+                               placeholder="ej. Suministros, Alquiler, Servicios públicos">
                     </div>
 
                     <div class="mt-5 flex justify-end gap-2">
                         <button type="button" id="qc_cancel"
                                 class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 text-sm">Cancelar</button>
                         <button type="button" id="qc_submit"
-                                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium">Crear categoria</button>
+                                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium">Crear categoría</button>
                     </div>
                 </form>
             </dialog>
@@ -172,7 +172,7 @@
                                 const data = await res.json().catch(() => ({}));
                                 const messages = data.errors
                                     ? Object.values(data.errors).flat().join(' ')
-                                    : (data.message || 'No se pudo crear la categoria.');
+                                    : (data.message || 'No se pudo crear la categoría.');
                                 errorBox.textContent = messages;
                                 errorBox.classList.remove('hidden');
                                 return;

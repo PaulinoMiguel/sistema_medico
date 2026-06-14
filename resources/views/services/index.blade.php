@@ -2,7 +2,7 @@
     <div class="flex justify-between items-center mb-6">
         <div>
             <h2 class="text-2xl font-bold text-gray-800">Catalogo de Servicios</h2>
-            <p class="text-gray-500 text-sm">Configura los servicios y precios de tu clinica.</p>
+            <p class="text-gray-500 text-sm">Configura los servicios y precios de tu clínica.</p>
         </div>
         <a href="{{ route('services.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm font-medium">
             + Nuevo servicio
@@ -12,7 +12,7 @@
     <div class="bg-white rounded-lg shadow overflow-hidden">
         @if($services->isEmpty())
             <div class="p-8 text-center text-gray-500">
-                <p class="mb-4">No hay servicios configurados para esta clinica.</p>
+                <p class="mb-4">No hay servicios configurados para esta clínica.</p>
                 <a href="{{ route('services.create') }}" class="text-blue-600 hover:underline">Crear el primer servicio</a>
             </div>
         @else
@@ -20,7 +20,7 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Servicio</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Descripcion</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Descripción</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Precio</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>

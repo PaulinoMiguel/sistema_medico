@@ -2,8 +2,8 @@
 
 @if(!empty($sd['neuro_symptoms']))
     <div>
-        <span class="font-medium text-gray-700">Sintomas neurologicos:</span>
-        @foreach(['headache'=>'Cefalea','seizures'=>'Convulsiones','paresthesia'=>'Parestesias','weakness'=>'Debilidad','tremor'=>'Temblor','dizziness'=>'Vertigo','speech_disorder'=>'Trast. habla','visual_disorder'=>'Trast. visual','memory_loss'=>'Perdida memoria','gait_disorder'=>'Trast. marcha','numbness'=>'Entumecimiento','syncope'=>'Sincope'] as $k => $l)
+        <span class="font-medium text-gray-700">Síntomas neurológicos:</span>
+        @foreach(['headache'=>'Cefalea','seizures'=>'Convulsiones','paresthesia'=>'Parestesias','weakness'=>'Debilidad','tremor'=>'Temblor','dizziness'=>'Vértigo','speech_disorder'=>'Trast. habla','visual_disorder'=>'Trast. visual','memory_loss'=>'Perdida memoria','gait_disorder'=>'Trast. marcha','numbness'=>'Entumecimiento','syncope'=>'Síncope'] as $k => $l)
             @if(!empty($sd['neuro_symptoms'][$k])) <span style="background-color:#ede9fe;color:#5b21b6;" class="inline-block px-2 py-0.5 rounded text-xs mr-1 mb-1">{{ $l }}</span> @endif
         @endforeach
         @if(!empty($sd['glasgow_score'])) <span class="ml-2 text-gray-600">Glasgow: {{ $sd['glasgow_score'] }}</span> @endif

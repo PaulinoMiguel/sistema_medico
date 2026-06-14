@@ -18,7 +18,7 @@
     @endphp
 
     <div class="mb-6">
-        <a href="{{ route('consultations.index') }}" class="text-blue-600 hover:underline text-sm">&larr; Volver a consultas</a>
+        <a href="{{ route('patients.consultations', $consultation->patient_id) }}" class="text-blue-600 hover:underline text-sm">&larr; Volver al expediente</a>
     </div>
 
     <div class="flex justify-between items-start mb-6">
@@ -33,6 +33,11 @@
             </p>
         </div>
         <div class="flex items-center gap-2">
+            @can('consultations.create')
+            <a href="{{ route('consultations.edit', $consultation) }}" class="border border-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50">
+                Editar
+            </a>
+            @endcan
             <form action="{{ route('prescriptions.from-consultation', $consultation) }}" method="POST">
                 @csrf
                 <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700">
@@ -97,7 +102,7 @@
         {{-- A --}}
         <div class="bg-white rounded-lg shadow">
             <div style="background-color:#fef3c7;" class="px-6 py-3 rounded-t-lg border-b">
-                <h3 class="font-semibold text-gray-800">A - Evaluacion</h3>
+                <h3 class="font-semibold text-gray-800">A - Evaluación</h3>
             </div>
             <div class="p-6 space-y-3 text-sm">
                 @if($consultation->assessment) <div>{{ $consultation->assessment }}</div> @endif
@@ -111,9 +116,9 @@
             </div>
             <div class="p-6 space-y-3 text-sm">
                 @if($consultation->treatment_plan) <div><span class="font-medium text-gray-700">Tratamiento:</span> {{ $consultation->treatment_plan }}</div> @endif
-                @if($consultation->diagnostic_orders) <div><span class="font-medium text-gray-700">Ordenes:</span> {{ $consultation->diagnostic_orders }}</div> @endif
-                @if($consultation->surgical_recommendation) <div><span class="font-medium text-gray-700">Recomendacion quirurgica:</span> {{ $consultation->surgical_recommendation }}</div> @endif
-                @if($consultation->follow_up_days) <div><span class="font-medium text-gray-700">Proxima cita:</span> {{ $consultation->follow_up_days }} dias</div> @endif
+                @if($consultation->diagnostic_orders) <div><span class="font-medium text-gray-700">Órdenes:</span> {{ $consultation->diagnostic_orders }}</div> @endif
+                @if($consultation->surgical_recommendation) <div><span class="font-medium text-gray-700">Recomendación quirúrgica:</span> {{ $consultation->surgical_recommendation }}</div> @endif
+                @if($consultation->follow_up_days) <div><span class="font-medium text-gray-700">Próxima cita:</span> {{ $consultation->follow_up_days }} días</div> @endif
                 @if($consultation->referrals) <div><span class="font-medium text-gray-700">Referencias:</span> {{ $consultation->referrals }}</div> @endif
             </div>
         </div>

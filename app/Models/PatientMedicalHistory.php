@@ -18,6 +18,7 @@ class PatientMedicalHistory extends Model
             'surgical_history' => 'json',
             'current_medications' => 'json',
             'habits' => 'json',
+            'general_habits' => 'json',
             'urological_history' => 'json',
             'obstetric_gynecological' => 'json',
             'immunizations' => 'json',

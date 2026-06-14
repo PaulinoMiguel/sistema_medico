@@ -15,31 +15,31 @@
 
 return [
     'urology' => [
-        'label' => 'Urologia',
+        'label' => 'Urología',
         'consultation_types' => [
             'initial' => 'Consulta inicial',
             'follow_up' => 'Control',
-            'pre_operative' => 'Pre-quirurgico',
-            'post_operative' => 'Post-quirurgico',
+            'pre_operative' => 'Pre-quirúrgico',
+            'post_operative' => 'Post-quirúrgico',
             'urodynamic' => 'Urodinamia',
-            'flowmetry' => 'Flujometria',
+            'flowmetry' => 'Flujometría',
             'procedure' => 'Procedimiento',
         ],
     ],
 
     'pediatrics' => [
-        'label' => 'Pediatria',
+        'label' => 'Pediatría',
         'consultation_types' => [
             'initial' => 'Consulta inicial',
             'follow_up' => 'Control',
-            'well_child' => 'Nino sano',
-            'vaccination' => 'Vacunacion',
+            'well_child' => 'Niño sano',
+            'vaccination' => 'Vacunación',
             'emergency' => 'Urgencia',
         ],
     ],
 
     'neurology' => [
-        'label' => 'Neurologia',
+        'label' => 'Neurología',
         'consultation_types' => [
             'initial' => 'Consulta inicial',
             'follow_up' => 'Control',

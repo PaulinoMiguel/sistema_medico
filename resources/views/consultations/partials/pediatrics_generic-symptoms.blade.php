@@ -1,11 +1,11 @@
 @php $sd = $consultation->specialty_data ?? []; @endphp
 
-{{-- Growth / antropometria --}}
+{{-- Growth / antropometría --}}
 <div class="border border-gray-200 rounded-lg p-4" id="anthro_block"
      data-calc-url="{{ route('patients.measurements.calculate', $consultation->patient) }}">
     <div class="flex items-center justify-between mb-3">
-        <h4 class="text-sm font-semibold text-gray-700">Antropometria</h4>
-        <span class="text-xs text-gray-500">Al guardar la consulta se registra una medicion.</span>
+        <h4 class="text-sm font-semibold text-gray-700">Antropometría</h4>
+        <span class="text-xs text-gray-500">Al guardar la consulta se registra una medición.</span>
     </div>
     <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
         <div>
@@ -23,7 +23,7 @@
                    class="w-full px-3 py-1 border border-gray-300 rounded-md text-sm">
         </div>
         <div>
-            <label class="block text-xs text-gray-500 mb-1">Perimetro cefalico (cm)</label>
+            <label class="block text-xs text-gray-500 mb-1">Perímetro cefálico (cm)</label>
             <input type="number" step="0.1" min="25" max="65"
                    name="specialty_data[head_circumference_cm]" id="anthro_hc"
                    value="{{ $sd['head_circumference_cm'] ?? '' }}"
@@ -97,7 +97,7 @@
             'walks' => 'Camina',
             'speaks_words' => 'Dice palabras',
             'speaks_sentences' => 'Forma oraciones',
-            'sphincter_control' => 'Control esfinteres',
+            'sphincter_control' => 'Control esfínteres',
             'social_smile' => 'Sonrisa social',
         ] as $key => $label)
             <label class="flex items-center text-sm">
@@ -117,27 +117,27 @@
 
 {{-- Feeding --}}
 <div class="border border-gray-200 rounded-lg p-4">
-    <h4 class="text-sm font-semibold text-gray-700 mb-3">Alimentacion</h4>
+    <h4 class="text-sm font-semibold text-gray-700 mb-3">Alimentación</h4>
     <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
         <div>
-            <label class="block text-xs text-gray-500 mb-1">Tipo de alimentacion</label>
+            <label class="block text-xs text-gray-500 mb-1">Tipo de alimentación</label>
             <select name="specialty_data[feeding_type]"
                     class="w-full px-3 py-1 border border-gray-300 rounded-md text-sm">
                 <option value="">Seleccionar...</option>
-                @foreach(['breastfeeding' => 'Lactancia materna', 'formula' => 'Formula', 'mixed' => 'Mixta', 'complementary' => 'Complementaria', 'family_diet' => 'Dieta familiar'] as $k => $l)
+                @foreach(['breastfeeding' => 'Lactancia materna', 'formula' => 'Fórmula', 'mixed' => 'Mixta', 'complementary' => 'Complementaria', 'family_diet' => 'Dieta familiar'] as $k => $l)
                     <option value="{{ $k }}" {{ ($sd['feeding_type'] ?? '') === $k ? 'selected' : '' }}>{{ $l }}</option>
                 @endforeach
             </select>
         </div>
         <div>
-            <label class="block text-xs text-gray-500 mb-1">Inicio solidos (meses)</label>
+            <label class="block text-xs text-gray-500 mb-1">Inicio sólidos (meses)</label>
             <input type="number" name="specialty_data[solids_start_months]"
                    value="{{ $sd['solids_start_months'] ?? '' }}"
                    class="w-full px-3 py-1 border border-gray-300 rounded-md text-sm">
         </div>
     </div>
     <div class="mt-3">
-        <label class="block text-xs text-gray-500 mb-1">Observaciones alimentacion</label>
+        <label class="block text-xs text-gray-500 mb-1">Observaciones alimentación</label>
         <textarea name="specialty_data[feeding_notes]" rows="2"
                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">{{ $sd['feeding_notes'] ?? '' }}</textarea>
     </div>
@@ -145,17 +145,17 @@
 
 {{-- Vaccination --}}
 <div class="border border-gray-200 rounded-lg p-4">
-    <h4 class="text-sm font-semibold text-gray-700 mb-3">Vacunacion</h4>
+    <h4 class="text-sm font-semibold text-gray-700 mb-3">Vacunación</h4>
     <div class="flex items-center gap-4">
         <label class="flex items-center text-sm">
             <input type="checkbox" name="specialty_data[vaccines_up_to_date]" value="1"
                    {{ !empty($sd['vaccines_up_to_date']) ? 'checked' : '' }}
                    class="rounded border-gray-300 text-blue-600 mr-2">
-            Esquema de vacunacion al dia
+            Esquema de vacunación al día
         </label>
     </div>
     <div class="mt-3">
-        <label class="block text-xs text-gray-500 mb-1">Observaciones vacunacion</label>
+        <label class="block text-xs text-gray-500 mb-1">Observaciones vacunación</label>
         <textarea name="specialty_data[vaccination_notes]" rows="2"
                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">{{ $sd['vaccination_notes'] ?? '' }}</textarea>
     </div>

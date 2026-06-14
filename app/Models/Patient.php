@@ -44,6 +44,11 @@ class Patient extends Model
         return $this->hasMany(Prescription::class);
     }
 
+    public function consultations(): HasMany
+    {
+        return $this->hasMany(Consultation::class);
+    }
+
     public function pediatricMeasurements(): HasMany
     {
         return $this->hasMany(PediatricMeasurement::class)->orderBy('measured_at');

@@ -28,11 +28,11 @@ class RoleController extends Controller
         'services' => 'Servicios',
         'cash-register' => 'Caja',
         'expenses' => 'Gastos',
-        'expense-categories' => 'Categorias de gasto',
-        'clinics' => 'Clinicas',
+        'expense-categories' => 'Categorías de gasto',
+        'clinics' => 'Clínicas',
         'staff' => 'Personal',
         'roles' => 'Roles',
-        'settings' => 'Configuracion',
+        'settings' => 'Configuración',
     ];
 
     /** Permission name → Spanish label. */
@@ -41,7 +41,7 @@ class RoleController extends Controller
         'patients.create' => 'Crear pacientes',
         'patients.update' => 'Editar pacientes',
         'patients.delete' => 'Eliminar pacientes',
-        'patients.view-history' => 'Ver historial clinico',
+        'patients.view-history' => 'Ver historial clínico',
         'patients.transfer' => 'Transferir pacientes',
 
         'appointments.view' => 'Ver turnos',
@@ -74,14 +74,14 @@ class RoleController extends Controller
         'expenses.update' => 'Editar gastos',
         'expenses.delete' => 'Eliminar gastos',
         'expenses.view-summary' => 'Ver resumen financiero',
-        'expense-categories.manage' => 'Gestionar categorias de gasto',
+        'expense-categories.manage' => 'Gestionar categorías de gasto',
 
-        'clinics.view' => 'Ver clinicas',
-        'clinics.manage' => 'Gestionar clinicas',
+        'clinics.view' => 'Ver clínicas',
+        'clinics.manage' => 'Gestionar clínicas',
         'staff.view' => 'Ver personal',
         'staff.manage' => 'Gestionar personal',
         'roles.manage' => 'Gestionar roles',
-        'settings.manage' => 'Gestionar configuracion',
+        'settings.manage' => 'Gestionar configuración',
     ];
 
     /** Spanish labels for role names. */
@@ -141,7 +141,7 @@ class RoleController extends Controller
             'permissions.*' => 'string|exists:permissions,name',
         ], [
             'name.required' => 'El nombre del rol es obligatorio.',
-            'name.regex' => 'El nombre solo puede contener letras minusculas, numeros y guiones bajos.',
+            'name.regex' => 'El nombre solo puede contener letras minúsculas, números y guiones bajos.',
             'name.unique' => 'Ya existe un rol con ese nombre.',
             'permissions.required' => 'Debes seleccionar al menos un permiso.',
             'permissions.min' => 'Debes seleccionar al menos un permiso.',
@@ -158,7 +158,7 @@ class RoleController extends Controller
 
     public function edit(Role $role)
     {
-        abort_if(in_array($role->name, self::SYSTEM_ROLES), 403, 'Los roles de doctor no se pueden editar desde aqui.');
+        abort_if(in_array($role->name, self::SYSTEM_ROLES), 403, 'Los roles de doctor no se pueden editar desde aquí.');
 
         $groupedPermissions = $this->groupedPermissions();
         $rolePermissions = $role->permissions->pluck('name')->toArray();
@@ -184,7 +184,7 @@ class RoleController extends Controller
         }
 
         $validated = $request->validate($rules, [
-            'name.regex' => 'El nombre solo puede contener letras minusculas, numeros y guiones bajos.',
+            'name.regex' => 'El nombre solo puede contener letras minúsculas, números y guiones bajos.',
             'name.unique' => 'Ya existe un rol con ese nombre.',
             'permissions.required' => 'Debes seleccionar al menos un permiso.',
         ]);
@@ -220,7 +220,7 @@ class RoleController extends Controller
 
     public function assignRole(Request $request, User $user)
     {
-        abort_if($user->isDoctor(), 403, 'No se puede cambiar el rol de un doctor desde aqui.');
+        abort_if($user->isDoctor(), 403, 'No se puede cambiar el rol de un doctor desde aquí.');
 
         $validated = $request->validate([
             'role' => ['required', 'string', Rule::exists('roles', 'name')->where('guard_name', 'web')],

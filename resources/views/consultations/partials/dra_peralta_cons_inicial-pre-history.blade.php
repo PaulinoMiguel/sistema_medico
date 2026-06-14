@@ -38,4 +38,10 @@
         <textarea name="medical_history[habits]" rows="2"
                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500">{{ old('medical_history.habits', $mhFlat($mh?->habits)) }}</textarea>
     </div>
+
+    <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Habitos generales</label>
+        <textarea name="medical_history[general_habits]" rows="2"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500">{{ old('medical_history.general_habits', $mhFlat($mh?->general_habits)) }}</textarea>
+    </div>
 </div>

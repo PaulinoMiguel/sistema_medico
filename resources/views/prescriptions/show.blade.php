@@ -1,6 +1,6 @@
 <x-layouts.tenant :title="'Receta - ' . $prescription->prescription_number">
     <div class="mb-6 flex justify-between items-center">
-        <a href="{{ route('prescriptions.index') }}" class="text-blue-600 hover:underline text-sm">&larr; Volver a recetas</a>
+        <a href="{{ route('patients.prescriptions', $prescription->patient_id) }}" class="text-blue-600 hover:underline text-sm">&larr; Volver al expediente</a>
         <div class="space-x-2">
             <a href="{{ route('prescriptions.edit', $prescription) }}" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-md text-sm hover:bg-gray-200">Editar</a>
             <a href="{{ route('prescriptions.pdf', $prescription) }}" target="_blank" class="bg-green-600 text-white px-4 py-2 rounded-md text-sm hover:bg-green-700">Imprimir PDF</a>
@@ -57,20 +57,22 @@
                                     <span class="text-gray-500">Dosis:</span>
                                     <span class="text-gray-800">{{ $item->dosage }}</span>
                                 </div>
+                                @if($item->frequency)
                                 <div>
                                     <span class="text-gray-500">Frecuencia:</span>
                                     <span class="text-gray-800">{{ $item->frequency }}</span>
                                 </div>
+                                @endif
                                 @if($item->duration)
                                 <div>
-                                    <span class="text-gray-500">Duracion:</span>
+                                    <span class="text-gray-500">Duración:</span>
                                     <span class="text-gray-800">{{ $item->duration }}</span>
                                 </div>
                                 @endif
                                 <div>
-                                    <span class="text-gray-500">Via:</span>
+                                    <span class="text-gray-500">Vía:</span>
                                     @php
-                                        $routeLabels = ['oral'=>'Oral','sublingual'=>'Sublingual','topical'=>'Topica','intramuscular'=>'Intramuscular','intravenous'=>'Intravenosa','rectal'=>'Rectal','ophthalmic'=>'Oftalmica','otic'=>'Otica','nasal'=>'Nasal','inhaled'=>'Inhalada'];
+                                        $routeLabels = ['oral'=>'Oral','sublingual'=>'Sublingual','topical'=>'Tópica','intramuscular'=>'Intramuscular','intravenous'=>'Intravenosa','rectal'=>'Rectal','ophthalmic'=>'Oftálmica','otic'=>'Ótica','nasal'=>'Nasal','inhaled'=>'Inhalada'];
                                     @endphp
                                     <span class="text-gray-800">{{ $routeLabels[$item->route] ?? $item->route }}</span>
                                 </div>

@@ -11,6 +11,7 @@ use App\Http\Controllers\ClinicController;
 use App\Http\Controllers\ConsultationController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\PediatricMeasurementController;
+use App\Http\Controllers\MedicationController;
 use App\Http\Controllers\PrescriptionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CashRegisterController;
@@ -89,6 +90,12 @@ Route::middleware('auth')->group(function () {
         Route::middleware('permission:patients.view')->group(function () {
             Route::resource('patients', PatientController::class);
             Route::get('/patients/{patient}/history', [PatientController::class, 'history'])->name('patients.history');
+
+            // Expediente del paciente: pestañas Consultas / Recetas (cada una con su permiso).
+            Route::get('/patients/{patient}/consultas', [PatientController::class, 'consultations'])
+                ->middleware('permission:consultations.view')->name('patients.consultations');
+            Route::get('/patients/{patient}/recetas', [PatientController::class, 'prescriptions'])
+                ->middleware(['module:prescriptions', 'permission:prescriptions.view'])->name('patients.prescriptions');
             Route::post('/patients/{patient}/photo', [PatientController::class, 'updatePhoto'])->name('patients.photo');
             Route::delete('/patients/{patient}/photo', [PatientController::class, 'deletePhoto'])->name('patients.photo.delete');
             Route::post('/patients/{patient}/associate', [PatientController::class, 'associate'])->name('patients.associate');
@@ -106,6 +113,7 @@ Route::middleware('auth')->group(function () {
         Route::middleware('permission:appointments.view')->group(function () {
             Route::resource('appointments', AppointmentController::class);
             Route::patch('/appointments/{appointment}/status', [AppointmentController::class, 'updateStatus'])->name('appointments.status');
+            Route::patch('/appointments/{appointment}/type', [AppointmentController::class, 'updateType'])->name('appointments.type');
         });
 
         // Installation branding + module toggles
@@ -179,6 +187,7 @@ Route::middleware('auth')->group(function () {
             Route::post('/consultations', [ConsultationController::class, 'store'])->name('consultations.store');
             Route::get('/consultations/{consultation}/edit', [ConsultationController::class, 'edit'])->name('consultations.edit');
             Route::put('/consultations/{consultation}', [ConsultationController::class, 'update'])->name('consultations.update');
+            Route::patch('/consultations/{consultation}/type', [ConsultationController::class, 'updateType'])->name('consultations.update-type');
             Route::post('/appointments/{appointment}/consultation', [ConsultationController::class, 'createFromAppointment'])->name('consultations.from-appointment');
         });
 
@@ -196,6 +205,11 @@ Route::middleware('auth')->group(function () {
                 Route::put('/prescriptions/{prescription}', [PrescriptionController::class, 'update'])->name('prescriptions.update');
                 Route::delete('/prescriptions/{prescription}', [PrescriptionController::class, 'destroy'])->name('prescriptions.destroy');
                 Route::post('/consultations/{consultation}/prescription', [PrescriptionController::class, 'createFromConsultation'])->name('prescriptions.from-consultation');
+
+                // Banco de medicamentos (plantillas por doctor)
+                Route::post('/medications/bulk', [MedicationController::class, 'bulkStore'])->name('medications.bulk');
+                Route::resource('medications', MedicationController::class)
+                    ->only(['index', 'store', 'update', 'destroy']);
             });
         });
     });

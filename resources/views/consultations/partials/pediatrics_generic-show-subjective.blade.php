@@ -6,7 +6,7 @@
     @endphp
     @if($anthroMeasurement || !empty($sd['weight_kg']) || !empty($sd['height_cm']) || !empty($sd['head_circumference_cm']))
     <div class="bg-gray-50 border border-gray-200 rounded p-3">
-        <span class="font-medium text-gray-700 block mb-1">Antropometria</span>
+        <span class="font-medium text-gray-700 block mb-1">Antropometría</span>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
             @if($anthroMeasurement?->weight_kg)
                 <div><span class="text-gray-500">Peso:</span> {{ $anthroMeasurement->weight_kg }}kg
@@ -51,15 +51,15 @@
 
     @if(!empty($sd['feeding_type']))
     <div>
-        <span class="font-medium text-gray-700">Alimentacion:</span>
-        <span class="text-gray-600">{{ ['breastfeeding'=>'Lactancia materna','formula'=>'Formula','mixed'=>'Mixta','complementary'=>'Complementaria','family_diet'=>'Dieta familiar'][$sd['feeding_type']] ?? $sd['feeding_type'] }}</span>
+        <span class="font-medium text-gray-700">Alimentación:</span>
+        <span class="text-gray-600">{{ ['breastfeeding'=>'Lactancia materna','formula'=>'Fórmula','mixed'=>'Mixta','complementary'=>'Complementaria','family_diet'=>'Dieta familiar'][$sd['feeding_type']] ?? $sd['feeding_type'] }}</span>
     </div>
     @endif
 
     @if(!empty($sd['vaccines_up_to_date']))
     <div>
-        <span class="font-medium text-gray-700">Vacunacion:</span>
-        <span style="background-color:#dcfce7;color:#166534;" class="inline-block px-2 py-0.5 rounded text-xs">Esquema al dia</span>
+        <span class="font-medium text-gray-700">Vacunación:</span>
+        <span style="background-color:#dcfce7;color:#166534;" class="inline-block px-2 py-0.5 rounded text-xs">Esquema al día</span>
     </div>
     @endif
 @endif

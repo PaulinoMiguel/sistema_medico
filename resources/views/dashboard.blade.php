@@ -84,8 +84,8 @@
                                     $types = [
                                         'first_visit' => 'Primera vez',
                                         'follow_up' => 'Control',
-                                        'pre_operative' => 'Pre-quirurgico',
-                                        'post_operative' => 'Post-quirurgico',
+                                        'pre_operative' => 'Pre-quirúrgico',
+                                        'post_operative' => 'Post-quirúrgico',
                                         'urodynamic_study' => 'Urodinamia',
                                         'procedure' => 'Procedimiento',
                                         'emergency' => 'Urgencia',

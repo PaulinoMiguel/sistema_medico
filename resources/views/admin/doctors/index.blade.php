@@ -20,7 +20,7 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Email</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Especialidad</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Rol</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Clinica(s)</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Clínica(s)</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Estado</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Acciones</th>
                     </tr>
@@ -50,7 +50,7 @@
                                     {{ $clinic->name }}
                                 </span>
                             @empty
-                                <span class="text-gray-500">Sin clinicas</span>
+                                <span class="text-gray-500">Sin clínicas</span>
                             @endforelse
                         </td>
                         <td class="px-6 py-4">

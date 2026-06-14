@@ -30,14 +30,14 @@
                     @error('specialty') <p class="mt-1 text-sm text-red-400">{{ $message }}</p> @enderror
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-300 mb-1">Correo electronico *</label>
+                    <label class="block text-sm font-medium text-gray-300 mb-1">Correo electrónico *</label>
                     <input type="email" name="email" value="{{ old('email') }}" required
                            class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:ring-blue-500 focus:border-blue-500"
-                           placeholder="Este sera su usuario para ingresar">
+                           placeholder="Este será su usuario para ingresar">
                     @error('email') <p class="mt-1 text-sm text-red-400">{{ $message }}</p> @enderror
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-300 mb-1">Telefono</label>
+                    <label class="block text-sm font-medium text-gray-300 mb-1">Teléfono</label>
                     <input type="tel" name="phone" value="{{ old('phone') }}"
                            class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:ring-blue-500 focus:border-blue-500">
                 </div>
@@ -53,14 +53,14 @@
                         <option value="doctor_admin" {{ old('role') === 'doctor_admin' ? 'selected' : '' }}>Doctor Admin</option>
                         <option value="doctor_associate" {{ old('role') === 'doctor_associate' ? 'selected' : '' }}>Doctor Asociado</option>
                     </select>
-                    <p class="mt-1 text-xs text-gray-400">Admin: gestiona staff y configuracion. Asociado: solo atencion clinica y financiera.</p>
+                    <p class="mt-1 text-xs text-gray-400">Admin: gestiona staff y configuración. Asociado: solo atención clínica y financiera.</p>
                     @error('role') <p class="mt-1 text-sm text-red-400">{{ $message }}</p> @enderror
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-300 mb-1">Plantilla de consulta</label>
                     <select name="consultation_template" id="consultation_template"
                             class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">Generico de la especialidad</option>
+                        <option value="">Genérico de la especialidad</option>
                         @foreach($templates as $slug => $tpl)
                             <option value="{{ $slug }}" data-specialty="{{ $tpl['specialty'] }}"
                                     {{ old('consultation_template') === $slug ? 'selected' : '' }}>
@@ -68,18 +68,18 @@
                             </option>
                         @endforeach
                     </select>
-                    <p class="mt-1 text-xs text-gray-400">Se filtra automaticamente segun la especialidad seleccionada.</p>
+                    <p class="mt-1 text-xs text-gray-400">Se filtra automáticamente según la especialidad seleccionada.</p>
                     @error('consultation_template') <p class="mt-1 text-sm text-red-400">{{ $message }}</p> @enderror
                 </div>
             </div>
         </div>
 
         <div class="bg-gray-800 rounded-lg shadow p-6 mb-6">
-            <h3 class="text-lg font-semibold text-white mb-4">Asignar a clinica(s) *</h3>
-            <p class="text-sm text-gray-400 mb-4">Selecciona en que clinica(s) trabajara este doctor. La primera seleccionada sera su clinica principal.</p>
+            <h3 class="text-lg font-semibold text-white mb-4">Asignar a clínica(s) *</h3>
+            <p class="text-sm text-gray-400 mb-4">Selecciona en qué clínica(s) trabajará este doctor. La primera seleccionada será su clínica principal.</p>
             @if($clinics->isEmpty())
                 <div class="p-4 bg-yellow-900/30 border border-yellow-700 rounded-md">
-                    <p class="text-yellow-300 text-sm">No hay clinicas registradas. <a href="{{ route('admin.clinics.create') }}" class="underline">Crea una clinica primero.</a></p>
+                    <p class="text-yellow-300 text-sm">No hay clínicas registradas. <a href="{{ route('admin.clinics.create') }}" class="underline">Crea una clínica primero.</a></p>
                 </div>
             @else
                 <div class="space-y-2">
@@ -100,13 +100,13 @@
             <h3 class="text-lg font-semibold text-white mb-4">Credenciales de acceso</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-300 mb-1">Contrasena *</label>
+                    <label class="block text-sm font-medium text-gray-300 mb-1">Contraseña *</label>
                     <input type="password" name="password" required
                            class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:ring-blue-500 focus:border-blue-500">
                     @error('password') <p class="mt-1 text-sm text-red-400">{{ $message }}</p> @enderror
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-300 mb-1">Confirmar contrasena *</label>
+                    <label class="block text-sm font-medium text-gray-300 mb-1">Confirmar contraseña *</label>
                     <input type="password" name="password_confirmation" required
                            class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:ring-blue-500 focus:border-blue-500">
                 </div>

@@ -36,7 +36,7 @@ class AdminClinicController extends Controller
         Clinic::create($validated);
 
         return redirect()->route('admin.clinics.index')
-            ->with('success', 'Clinica creada exitosamente.');
+            ->with('success', 'Clínica creada exitosamente.');
     }
 
     public function edit(Clinic $clinic)
@@ -61,6 +61,6 @@ class AdminClinicController extends Controller
         $clinic->update($validated);
 
         return redirect()->route('admin.clinics.index')
-            ->with('success', 'Clinica actualizada exitosamente.');
+            ->with('success', 'Clínica actualizada exitosamente.');
     }
 }

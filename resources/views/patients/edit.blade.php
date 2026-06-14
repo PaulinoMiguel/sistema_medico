@@ -24,7 +24,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Foto del paciente</label>
                     <input type="file" name="photo" id="photo-input" accept="image/jpeg,image/png,image/webp"
                            class="text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-                    <p class="text-xs text-gray-500 mt-1">JPG, PNG o WEBP. Maximo 2MB. Dejar vacio para mantener la foto actual.</p>
+                    <p class="text-xs text-gray-500 mt-1">JPG, PNG o WEBP. Máximo 2MB. Dejar vacío para mantener la foto actual.</p>
                 </div>
             </div>
 
@@ -50,7 +50,7 @@
                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Genero *</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Género *</label>
                     <select name="gender" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                         <option value="male" {{ old('gender', $patient->gender) == 'male' ? 'selected' : '' }}>Masculino</option>
                         <option value="female" {{ old('gender', $patient->gender) == 'female' ? 'selected' : '' }}>Femenino</option>
@@ -63,7 +63,7 @@
                            value="{{ old('gestational_age_weeks', $patient->gestational_age_weeks) }}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                            placeholder="40">
-                    <p class="mt-1 text-xs text-gray-500">Solo pediatria. &lt;37 usa edad corregida en curvas.</p>
+                    <p class="mt-1 text-xs text-gray-500">Solo pediatría. &lt;37 usa edad corregida en curvas.</p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Peso al nacer (kg)</label>
@@ -74,13 +74,13 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de documento</label>
                     <select name="document_type" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                        <option value="cedula" {{ old('document_type', $patient->document_type) == 'cedula' ? 'selected' : '' }}>Cedula</option>
+                        <option value="cedula" {{ old('document_type', $patient->document_type) == 'cedula' ? 'selected' : '' }}>Cédula</option>
                         <option value="passport" {{ old('document_type', $patient->document_type) == 'passport' ? 'selected' : '' }}>Pasaporte</option>
                         <option value="other" {{ old('document_type', $patient->document_type) == 'other' ? 'selected' : '' }}>Otro</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Numero de documento</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Número de documento</label>
                     <input type="text" name="document_number" value="{{ old('document_number', $patient->document_number) }}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                 </div>
@@ -100,22 +100,22 @@
             <h3 class="text-lg font-semibold text-gray-800 mb-4">Contacto</h3>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Telefono</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
                     <input type="tel" name="phone" value="{{ old('phone', $patient->phone) }}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Telefono secundario</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono secundario</label>
                     <input type="tel" name="secondary_phone" value="{{ old('secondary_phone', $patient->secondary_phone) }}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Correo electronico</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Correo electrónico</label>
                     <input type="email" name="email" value="{{ old('email', $patient->email) }}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div class="md:col-span-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Direccion</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
                     <input type="text" name="address" value="{{ old('address', $patient->address) }}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                 </div>
@@ -130,7 +130,7 @@
                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Codigo postal</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Código postal</label>
                     <input type="text" name="zip_code" value="{{ old('zip_code', $patient->zip_code) }}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                 </div>
@@ -138,7 +138,7 @@
         </div>
 
         <div class="bg-white rounded-lg shadow p-6 mb-6">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">Informacion adicional</h3>
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Información adicional</h3>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Contacto de emergencia</label>
@@ -151,7 +151,7 @@
                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Ocupacion</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Ocupación</label>
                     <input type="text" name="occupation" value="{{ old('occupation', $patient->occupation) }}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                 </div>
@@ -161,7 +161,7 @@
                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">No. poliza</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">No. póliza</label>
                     <input type="text" name="insurance_policy_number" value="{{ old('insurance_policy_number', $patient->insurance_policy_number) }}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                 </div>

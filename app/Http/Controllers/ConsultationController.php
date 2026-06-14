@@ -75,7 +75,31 @@ class ConsultationController extends Controller
             ->orderBy('last_name')
             ->get();
 
-        return view('consultations.create', compact('patients'));
+        // Atajo desde un turno: la consulta queda ligada a ese turno y el paciente
+        // y el tipo vienen precargados, para que el doctor no tenga que caminar el
+        // turno por los estados intermedios.
+        $appointment = null;
+        $defaultType = null;
+        if ($appointmentId = $request->get('appointment_id')) {
+            $appointment = Appointment::find($appointmentId);
+            if ($appointment) {
+                // Si ya hay una consulta para este turno, continuar esa en vez de crear otra.
+                $existing = Consultation::where('appointment_id', $appointment->id)->first();
+                if ($existing) {
+                    return redirect()->route('consultations.edit', $existing);
+                }
+                $defaultType = $this->mapAppointmentType($appointment->type);
+            }
+        }
+
+        // Cuando se entra desde el expediente del paciente (o desde un turno), el
+        // paciente viene fijo. Se resuelve directamente (respetando el scope del
+        // doctor) para no depender de que esté en la lista filtrada por clínica.
+        $selectedPatientId = $appointment?->patient_id ?? $request->get('patient_id');
+        $selectedPatient = $selectedPatientId ? Patient::find($selectedPatientId) : null;
+        $appointmentId = $appointment?->id;
+
+        return view('consultations.create', compact('patients', 'selectedPatientId', 'selectedPatient', 'appointmentId', 'defaultType'));
     }
 
     public function store(Request $request)
@@ -83,20 +107,31 @@ class ConsultationController extends Controller
         $validated = $request->validate([
             'patient_id' => 'required|exists:patients,id',
             'type' => 'required|in:initial,follow_up,pre_operative,post_operative,emergency,urodynamic,flowmetry,procedure',
+            'appointment_id' => 'nullable|exists:appointments,id',
         ]);
 
         $doctor = $request->user();
         $template = $this->resolveTemplate($doctor);
 
+        $appointment = !empty($validated['appointment_id'])
+            ? Appointment::find($validated['appointment_id'])
+            : null;
+
         $consultation = Consultation::create([
             'patient_id' => $validated['patient_id'],
             'doctor_id' => $doctor->id,
-            'clinic_id' => session('active_clinic_id'),
+            'clinic_id' => $appointment?->clinic_id ?? session('active_clinic_id'),
+            'appointment_id' => $appointment?->id,
             'consultation_date' => now(),
             'type' => $validated['type'],
             'consultation_template' => $template,
             'status' => 'in_progress',
         ]);
+
+        // Si la consulta nace de un turno, avanzar el turno a "en consulta".
+        if ($appointment && $appointment->status !== 'completed') {
+            $appointment->update(['status' => 'in_progress']);
+        }
 
         return redirect()->route('consultations.edit', $consultation);
     }
@@ -118,11 +153,9 @@ class ConsultationController extends Controller
 
     public function edit(Consultation $consultation)
     {
-        if ($consultation->isSigned()) {
-            return redirect()->route('consultations.show', $consultation)
-                ->with('error', 'Esta consulta ya fue firmada y no puede editarse.');
-        }
-
+        // Las consultas firmadas SÍ se pueden reabrir para corregir errores
+        // (instalación mono-doctor: la doctora es la dueña del expediente). El
+        // editor muestra un aviso y, al guardar, la consulta sigue firmada.
         $consultation->load(['patient.medicalHistory', 'doctor', 'clinic']);
 
         // Previous consultations
@@ -135,11 +168,50 @@ class ConsultationController extends Controller
         return view('consultations.edit', compact('consultation', 'previousConsultations'));
     }
 
+    /**
+     * Cambia solo el tipo de consulta. El tipo (heredado del turno que pudo crear
+     * la secretaria) determina el formato del editor, así que la doctora debe poder
+     * corregirlo sin perder la consulta.
+     */
+    public function updateType(Request $request, Consultation $consultation)
+    {
+        // También se permite corregir el tipo en consultas firmadas.
+        $allowed = array_keys($this->resolveConsultationTypes($consultation));
+
+        $validated = $request->validate([
+            'type' => ['required', \Illuminate\Validation\Rule::in($allowed)],
+        ]);
+
+        $consultation->update(['type' => $validated['type']]);
+
+        return redirect()->route('consultations.edit', $consultation)
+            ->with('success', 'Tipo de consulta actualizado.');
+    }
+
+    /**
+     * Tipos de consulta disponibles para la especialidad de esta consulta,
+     * como [valor => etiqueta]. Misma lógica de resolución que usa el editor.
+     */
+    private function resolveConsultationTypes(Consultation $consultation): array
+    {
+        $slug = $consultation->consultation_template;
+        if (! $slug) {
+            $sk = strtolower(str_replace(' ', '_', $consultation->doctor->specialty ?? 'general'));
+            $sm = ['urologia' => 'urology', 'pediatria' => 'pediatrics', 'neurologia' => 'neurology', 'medicina_general' => 'general'];
+            $slug = ($sm[$sk] ?? $sk) . '_generic';
+        }
+        $specialtyKey = config("consultation_templates.{$slug}.specialty", 'general');
+        $specialtyConfig = config("specialties.{$specialtyKey}", config('specialties.general'));
+
+        return $specialtyConfig['consultation_types'] ?? [];
+    }
+
     public function update(Request $request, Consultation $consultation)
     {
-        if ($consultation->isSigned()) {
-            return redirect()->back()->with('error', 'Consulta firmada, no se puede modificar.');
-        }
+        // Nota: una consulta firmada puede guardarse de nuevo para corregir. Si
+        // ya estaba firmada y la acción es "save", conserva su estado firmado
+        // (sólo "sign" cambia/renueva la firma más abajo).
+        $wasSigned = $consultation->isSigned();
 
         $validated = $request->validate([
             // Subjective
@@ -186,10 +258,10 @@ class ConsultationController extends Controller
             );
         }
 
-        // Si el doctor es pediatra y la consulta trae antropometria, sincroniza
+        // Si el doctor es pediatra y la consulta trae antropometría, sincroniza
         // la tabla pediatric_measurements (crea una o actualiza la que ya exista
         // para esta consulta). Asi los gastos de crecimiento se nutren de la
-        // consulta automaticamente.
+        // consulta automáticamente.
         $this->syncPediatricMeasurement($consultation, $request);
 
         $action = $request->input('action', 'save');
@@ -209,12 +281,14 @@ class ConsultationController extends Controller
                 ->with('success', 'Consulta firmada exitosamente.');
         }
 
-        return redirect()->back()->with('success', 'Consulta guardada.');
+        return redirect()->back()->with('success', $wasSigned
+            ? 'Correcciones guardadas (la consulta sigue firmada).'
+            : 'Consulta guardada.');
     }
 
     /**
      * Si la especialidad del doctor es pediatria y la consulta trae peso/talla/PC
-     * en specialty_data, crea o actualiza la medicion pediatrica vinculada.
+     * en specialty_data, crea o actualiza la medición pediatrica vinculada.
      */
     private function syncPediatricMeasurement(Consultation $consultation, Request $request): void
     {

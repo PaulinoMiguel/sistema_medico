@@ -62,7 +62,7 @@ class PatientController extends Controller
         $clinicId = session('active_clinic_id');
         if (!$clinicId) {
             return redirect()->route('dashboard')
-                ->with('warning', 'No tienes clinicas asignadas. Contacta al administrador.');
+                ->with('warning', 'No tienes clínicas asignadas. Contacta al administrador.');
         }
 
         $isAdult = false;
@@ -165,7 +165,7 @@ class PatientController extends Controller
         $alreadyLinked = $patient->doctors()->where('doctor_id', $doctorId)->exists();
         if ($alreadyLinked) {
             return redirect()->route('patients.show', $patient)
-                ->with('info', 'Este paciente ya esta asociado a este doctor.');
+                ->with('info', 'Este paciente ya está asociado a este doctor.');
         }
 
         $patient->doctors()->attach($doctorId, ['is_primary' => false]);
@@ -303,6 +303,33 @@ class PatientController extends Controller
             ->get();
 
         return view('patients.history', compact('patient', 'consultations', 'prescriptions'));
+    }
+
+    /**
+     * Consultas tab inside the patient record. Scoped by MedicalRecordScope:
+     * a doctor sees only their own consultations for this patient.
+     */
+    public function consultations(Patient $patient)
+    {
+        $consultations = $patient->consultations()
+            ->with('doctor')
+            ->orderByDesc('consultation_date')
+            ->get();
+
+        return view('patients.consultations', compact('patient', 'consultations'));
+    }
+
+    /**
+     * Recetas tab inside the patient record. Scoped by MedicalRecordScope.
+     */
+    public function prescriptions(Patient $patient)
+    {
+        $prescriptions = $patient->prescriptions()
+            ->with('items')
+            ->orderByDesc('prescription_date')
+            ->get();
+
+        return view('patients.prescriptions', compact('patient', 'prescriptions'));
     }
 
     public function updatePhoto(Request $request, Patient $patient)

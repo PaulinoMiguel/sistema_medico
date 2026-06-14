@@ -51,7 +51,7 @@
                     @endphp
                     @if($dx->isNotEmpty())
                         <div class="mb-2">
-                            <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Diagnosticos:</span>
+                            <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Diagnósticos:</span>
                             <div class="flex flex-wrap gap-1 mt-1">
                                 @foreach($dx as $d)
                                     @php
@@ -122,7 +122,7 @@
         @endif
     </div>
 
-    {{-- Antecedentes medicos --}}
+    {{-- Antecedentes médicos --}}
     @php
         $mh = $patient->medicalHistory;
         $hasBackground = $mh && (
@@ -134,11 +134,11 @@
 
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow mb-6">
         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Antecedentes medicos</h3>
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Antecedentes médicos</h3>
         </div>
         @if(!$hasBackground)
             <div class="p-6 text-center text-gray-500 dark:text-gray-400">
-                Sin antecedentes medicos registrados.
+                Sin antecedentes médicos registrados.
             </div>
         @else
             <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -147,10 +147,10 @@
                         'allergies' => 'Alergias',
                         'chronic_conditions' => 'Condiciones cronicas',
                         'current_medications' => 'Medicamentos actuales',
-                        'surgical_history' => 'Historial quirurgico',
+                        'surgical_history' => 'Historial quirúrgico',
                         'family_history' => 'Historial familiar',
                         'habits' => 'Habitos',
-                        'urological_history' => 'Historial urologico',
+                        'urological_history' => 'Historial urológico',
                         'obstetric_gynecological' => 'Gineco-obstetrico',
                         'immunizations' => 'Inmunizaciones',
                     ];

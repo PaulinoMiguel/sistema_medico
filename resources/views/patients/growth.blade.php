@@ -18,13 +18,13 @@
         </div>
     </div>
 
-    {{-- Form rapido nueva medicion --}}
+    {{-- Form rápido nueva medición --}}
     @if(session('success'))
         <div class="bg-green-50 border border-green-200 text-green-700 rounded p-3 mb-4 text-sm">{{ session('success') }}</div>
     @endif
 
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-5 mb-6">
-        <h3 class="text-base font-semibold text-gray-800 dark:text-gray-100 mb-3">Registrar medicion</h3>
+        <h3 class="text-base font-semibold text-gray-800 dark:text-gray-100 mb-3">Registrar medición</h3>
         <form method="POST" action="{{ route('patients.measurements.store', $patient) }}" id="measureForm">
             @csrf
             <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
@@ -44,7 +44,7 @@
                            class="w-full px-2 py-1 border rounded text-sm">
                 </div>
                 <div>
-                    <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">P. Cefalico (cm)</label>
+                    <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">P. Cefálico (cm)</label>
                     <input type="number" name="head_circumference_cm" id="m_hc" step="0.1" min="25" max="65"
                            class="w-full px-2 py-1 border rounded text-sm">
                 </div>
@@ -66,14 +66,14 @@
                     <p class="font-mono text-base"><span class="z">-</span> · P<span class="p">-</span></p>
                 </div>
                 <div data-key="head_circumference" class="bg-gray-50 dark:bg-gray-900 rounded p-2">
-                    <p class="text-gray-500">P. Cefalico</p>
+                    <p class="text-gray-500">P. Cefálico</p>
                     <p class="font-mono text-base"><span class="z">-</span> · P<span class="p">-</span></p>
                 </div>
                 <div data-key="bmi" class="bg-gray-50 dark:bg-gray-900 rounded p-2">
                     <p class="text-gray-500">IMC <span class="text-gray-400">(≥2a)</span></p>
                     <p class="font-mono text-base"><span class="z">-</span> · P<span class="p">-</span></p>
                 </div>
-                <div data-key="weight_for_length" class="bg-gray-50 dark:bg-gray-900 rounded p-2" title="Peso para la talla: indicador clinico clave en lactantes (<2 anos)">
+                <div data-key="weight_for_length" class="bg-gray-50 dark:bg-gray-900 rounded p-2" title="Peso para la talla: indicador clínico clave en lactantes (<2 años)">
                     <p class="text-gray-500">Peso/Talla <span class="text-gray-400">(&lt;2a)</span></p>
                     <p class="font-mono text-base"><span class="z">-</span> · P<span class="p">-</span></p>
                 </div>
@@ -93,13 +93,13 @@
         </div>
         @if($curves['head_circumference_for_age'])
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-            <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-2">Perimetro cefalico (0-36 meses)</h3>
+            <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-2">Perímetro cefálico (0-36 meses)</h3>
             <canvas id="chart_hc" height="280"></canvas>
         </div>
         @endif
         @if($curves['bmi_for_age'])
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-            <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-2">IMC para la edad (2-18 anos)</h3>
+            <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-2">IMC para la edad (2-18 años)</h3>
             <canvas id="chart_bmi" height="280"></canvas>
         </div>
         @endif
@@ -119,9 +119,9 @@
                             <th class="text-right py-2">Edad (m)</th>
                             <th class="text-right py-2">Peso (kg)</th>
                             <th class="text-right py-2">Talla (cm)</th>
-                            <th class="text-right py-2" title="Perimetro Cefalico">PC (cm)</th>
+                            <th class="text-right py-2" title="Perímetro Cefálico">PC (cm)</th>
                             <th class="text-right py-2">IMC (kg/m²)</th>
-                            <th class="text-left py-2 pl-3" title="Z-scores: Peso-edad / Talla-edad / Perimetro Cefalico-edad / IMC-edad / Peso-para-Talla">Z (P/T/PC/IMC/PpT)</th>
+                            <th class="text-left py-2 pl-3" title="Z-scores: Peso-edad / Talla-edad / Perímetro Cefálico-edad / IMC-edad / Peso-para-Talla">Z (P/T/PC/IMC/PpT)</th>
                             <th class="py-2"></th>
                         </tr>
                     </thead>
@@ -144,7 +144,7 @@
                             </td>
                             <td class="py-2 text-right">
                                 <form method="POST" action="{{ route('patients.measurements.destroy', [$patient, $m]) }}" class="inline"
-                                      onsubmit="return confirm('Eliminar esta medicion?')">
+                                      onsubmit="return confirm('Eliminar esta medición?')">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="text-red-600 text-xs hover:underline">Eliminar</button>
                                 </form>

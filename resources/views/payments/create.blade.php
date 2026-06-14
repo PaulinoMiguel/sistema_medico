@@ -88,7 +88,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Concepto *</label>
                     <input type="text" name="concept" id="concept_input" value="{{ old('concept') }}" required
                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                           placeholder="Descripcion del cobro">
+                           placeholder="Descripción del cobro">
                     @error('concept') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
 
@@ -150,7 +150,7 @@
                         </div>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Descripcion (opcional)</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Descripción (opcional)</label>
                         <textarea name="description" id="qs_description" rows="2" maxlength="500"
                                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"></textarea>
                     </div>

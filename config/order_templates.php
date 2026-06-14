@@ -21,10 +21,10 @@
 
 return [
     'pre_quirurgicas' => [
-        'label' => 'Pre-quirurgicas',
+        'label' => 'Pre-quirúrgicas',
         'templates' => [
             'pre_anestesica' => [
-                'label' => 'Evaluacion Pre-Anestesica',
+                'label' => 'Evaluación Pre-Anestésica',
                 'lines' => [
                     '> Piso M',
                     '',
@@ -34,9 +34,9 @@ return [
                 ],
             ],
             'pre_operatoria' => [
-                'label' => 'Evaluacion Pre-Operatoria',
+                'label' => 'Evaluación Pre-Operatoria',
                 'lines' => [
-                    'Medico: ___________________________________',
+                    'Médico: ___________________________________',
                     'Consultorio: _______________________________',
                     '',
                     'Plan: ______________________________________',
@@ -45,7 +45,7 @@ return [
                 ],
             ],
             'rx_torax' => [
-                'label' => 'Rx Torax',
+                'label' => 'Rx Tórax PA',
                 'lines' => [
                     'Eval. Pre-Operatoria',
                 ],
@@ -57,69 +57,68 @@ return [
         'label' => 'Laboratorios',
         'templates' => [
             'analitica_quirofano' => [
-                'label' => 'Analitica Quirofano',
+                'label' => 'Analíticas para cirugía',
                 'lines' => [
                     'Hemograma',
-                    'Glicosilada',
-                    'Triglicéridos',
-                    'VDRL',
                     'Orina',
-                    'AST',
                     'Urea',
-                    'ACT',
                     'Creatinina',
-                    'TP',
                     'Glicemia',
-                    'TPT',
-                    'Hemoglobina Glico',
-                    'HIV',
+                    'Hemoglobina Glicosilada',
                     'Colesterol',
+                    'Triglicéridos',
+                    'ALT',
+                    'AST',
+                    'VDRL',
+                    'HIV',
                     'Hep B',
                     'Hep C',
+                    'TP',
+                    'TPT',
                 ],
             ],
             'analitica_hombre' => [
-                'label' => 'Analitica concreta hombre',
+                'label' => 'Analíticas concretas hombre',
                 'lines' => [
                     'Hemograma',
                     'Orina',
                     'Urea',
                     'Creatinina',
                     'Glicemia',
-                    'Hemograma glicosilada',
+                    'Hemoglobina glicosilada',
                     'PSA Total',
                     'PSA Libre',
                     '% PSA',
                 ],
             ],
             'analitica_normal' => [
-                'label' => 'Analitica consulta normal',
+                'label' => 'Analíticas consulta normal',
                 'lines' => [
                     'Hemograma',
                     'Orina',
                     'Urea',
                     'Creatinina',
                     'Glicemia',
-                    'Hemograma glicosilada',
+                    'Hemoglobina glicosilada',
                 ],
             ],
         ],
     ],
 
     'imagenologia' => [
-        'label' => 'Imagenologia',
+        'label' => 'Imagenología',
         'templates' => [
             'sonografia_masculino' => [
-                'label' => 'Sonografia Abdomen Pelvica (Masculino)',
+                'label' => 'Sonografía Abdomen Pélvica (Masculino)',
                 'lines' => [
-                    'Medir volumen prostatico',
-                    'Medir volumen pre o post miccion',
+                    'Medir volumen prostático',
+                    'Medir volumen pre o post micción',
                 ],
             ],
             'sonografia_femenino' => [
-                'label' => 'Sonografia Abdomen Pelvica (Femenino)',
+                'label' => 'Sonografía Abdomen Pélvica (Femenino)',
                 'lines' => [
-                    'Medir volumen pre o post miccion',
+                    'Medir volumen pre o post micción',
                 ],
             ],
         ],

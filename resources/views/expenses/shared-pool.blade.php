@@ -3,11 +3,11 @@
         <div>
             <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Gastos compartidos</h2>
             <p class="text-gray-500 dark:text-gray-400 text-sm">
-                Pool de egresos sin dueño asignado &mdash; se reparte entre los doctores de la clinica.
+                Pool de egresos sin dueño asignado &mdash; se reparte entre los doctores de la clínica.
             </p>
         </div>
         <div class="text-right">
-            <p class="text-xs text-gray-500 dark:text-gray-400 uppercase">Metodo de split</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 uppercase">Método de split</p>
             <p class="text-sm font-medium text-gray-800 dark:text-gray-200">
                 {{ ['equal' => 'Partes iguales', 'percentage' => 'Porcentajes', 'by_income' => 'Por ingresos'][$split_method] ?? $split_method }}
             </p>
@@ -40,7 +40,7 @@
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-5">
             <h3 class="text-base font-semibold text-gray-800 dark:text-gray-100 mb-3">Reparto por doctor</h3>
             @if($by_doctor->isEmpty())
-                <p class="text-sm text-gray-500">No hay doctores asociados a esta clinica.</p>
+                <p class="text-sm text-gray-500">No hay doctores asociados a esta clínica.</p>
             @else
                 <table class="w-full text-sm">
                     <thead class="text-xs text-gray-500 uppercase border-b border-gray-200 dark:border-gray-700">
@@ -67,9 +67,9 @@
             @endif
         </div>
 
-        {{-- Por categoria --}}
+        {{-- Por categoría --}}
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-5">
-            <h3 class="text-base font-semibold text-gray-800 dark:text-gray-100 mb-3">Por categoria</h3>
+            <h3 class="text-base font-semibold text-gray-800 dark:text-gray-100 mb-3">Por categoría</h3>
             @if($by_category->isEmpty())
                 <p class="text-sm text-gray-500">Sin gastos compartidos en el periodo.</p>
             @else
@@ -77,7 +77,7 @@
                     <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                         @foreach($by_category as $name => $amount)
                             <tr>
-                                <td class="py-2 text-gray-800 dark:text-gray-200">{{ $name ?? 'Sin categoria' }}</td>
+                                <td class="py-2 text-gray-800 dark:text-gray-200">{{ $name ?? 'Sin categoría' }}</td>
                                 <td class="py-2 text-right font-mono text-red-700 dark:text-red-400">
                                     ${{ number_format($amount, 2) }}
                                 </td>
@@ -99,7 +99,7 @@
                 <thead class="text-xs text-gray-500 uppercase border-b border-gray-200 dark:border-gray-700">
                     <tr>
                         <th class="text-left py-2">Fecha</th>
-                        <th class="text-left py-2">Categoria</th>
+                        <th class="text-left py-2">Categoría</th>
                         <th class="text-left py-2">Concepto</th>
                         <th class="text-left py-2">Registrado por</th>
                         <th class="text-right py-2">Monto</th>

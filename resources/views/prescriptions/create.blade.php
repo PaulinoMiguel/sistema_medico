@@ -1,9 +1,14 @@
 <x-layouts.tenant title="Nueva Receta">
+    @php
+        $backUrl = $selectedPatientId
+            ? route('patients.prescriptions', $selectedPatientId)
+            : route('patients.index');
+    @endphp
     <div class="mb-6">
         @if(isset($consultationId) && $consultationId)
             <a href="{{ route('consultations.edit', $consultationId) }}" class="text-blue-600 hover:underline text-sm">&larr; Volver a la consulta</a>
         @else
-            <a href="{{ route('prescriptions.index') }}" class="text-blue-600 hover:underline text-sm">&larr; Volver a recetas</a>
+            <a href="{{ $backUrl }}" class="text-blue-600 hover:underline text-sm">&larr; Volver</a>
         @endif
     </div>
 
@@ -32,7 +37,7 @@
                             </option>
                         @endforeach
                     </select>
-                    {{-- Ultima consulta --}}
+                    {{-- Última consulta --}}
                     <div id="last-consultation-panel" class="hidden mt-2">
                         <div id="last-consultation-loading" class="text-xs text-blue-600 hidden">Cargando...</div>
                         <p id="last-consultation-empty" class="text-xs text-gray-500 hidden">Este paciente no tiene consultas previas.</p>
@@ -65,7 +70,7 @@
         </div>
 
         <div class="flex justify-end space-x-3">
-            <a href="{{ route('prescriptions.index') }}" class="bg-gray-100 text-gray-700 px-6 py-2 rounded-md text-sm hover:bg-gray-200">Cancelar</a>
+            <a href="{{ $backUrl }}" class="bg-gray-100 text-gray-700 px-6 py-2 rounded-md text-sm hover:bg-gray-200">Cancelar</a>
             <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-md text-sm font-medium hover:bg-blue-700">Guardar Receta</button>
         </div>
     </form>
@@ -74,12 +79,12 @@
         $routeOptions = [
             'oral' => 'Oral',
             'sublingual' => 'Sublingual',
-            'topical' => 'Topica',
+            'topical' => 'Tópica',
             'intramuscular' => 'Intramuscular',
             'intravenous' => 'Intravenosa',
             'rectal' => 'Rectal',
-            'ophthalmic' => 'Oftalmica',
-            'otic' => 'Otica',
+            'ophthalmic' => 'Oftálmica',
+            'otic' => 'Ótica',
             'nasal' => 'Nasal',
             'inhaled' => 'Inhalada',
         ];
@@ -91,9 +96,25 @@
                 <h4 class="font-medium text-gray-700">Medicamento <span class="med-number"></span></h4>
                 <button type="button" onclick="removeMedication(this)" class="text-red-500 hover:text-red-700 text-sm">Eliminar</button>
             </div>
+            @if($medications->isNotEmpty())
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Elegir del banco</label>
+                <select class="med-bank-select w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm bg-blue-50">
+                    <option value="">— Elegir un medicamento guardado —</option>
+                    @foreach($medications as $m)
+                        <option value="{{ $m->id }}"
+                                data-name="{{ $m->name }}"
+                                data-dosage="{{ $m->dosage }}"
+                                data-duration="{{ $m->duration }}"
+                                data-route="{{ $m->route }}"
+                                data-instructions="{{ $m->instructions }}">{{ $m->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            @endif
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Nombre del medicamento *</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Medicamento *</label>
                     <input type="text" data-name="medication_name" required
                            class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"
                            placeholder="Ej: Tamsulosina">
@@ -105,19 +126,13 @@
                            placeholder="Ej: 0.4mg">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Frecuencia *</label>
-                    <input type="text" data-name="frequency" required
-                           class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"
-                           placeholder="Ej: Cada 24 horas">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Duracion</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Duración</label>
                     <input type="text" data-name="duration"
                            class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"
-                           placeholder="Ej: 30 dias">
+                           placeholder="Ej: 30 días">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Via de administracion *</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Vía *</label>
                     <select data-name="route" required
                             class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
                         @foreach($routeOptions as $value => $label)
@@ -125,17 +140,11 @@
                         @endforeach
                     </select>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Cantidad</label>
-                    <input type="number" data-name="quantity" min="1"
-                           class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"
-                           placeholder="Ej: 30">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Indicaciones adicionales</label>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Observación</label>
                     <input type="text" data-name="instructions"
                            class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"
-                           placeholder="Ej: Tomar despues de cenar">
+                           placeholder="Ej: Tomar después de cenar">
                 </div>
             </div>
         </div>
@@ -189,13 +198,13 @@
                     } else {
                         const c = json.consultation;
                         link.href = c.is_signed ? consultationUrl + c.id : consultationUrl + c.id + '/edit';
-                        linkText.textContent = 'Ultima consulta: ' + c.date;
+                        linkText.textContent = 'Última consulta: ' + c.date;
                         link.style.display = 'inline-flex';
                     }
                 } catch (e) {
                     if (e.name === 'AbortError') return;
                     hideAll();
-                    empty.textContent = 'No se pudo cargar la informacion.';
+                    empty.textContent = 'No se pudo cargar la información.';
                     empty.classList.remove('hidden');
                 }
             }
@@ -205,6 +214,17 @@
         })();
 
         let medicationCount = 0;
+
+        // Rellenar la fila desde el banco de medicamentos
+        document.getElementById('medications-container').addEventListener('change', function (e) {
+            if (!e.target.classList.contains('med-bank-select')) return;
+            const opt = e.target.selectedOptions[0];
+            if (!opt || !opt.value) return;
+            const row = e.target.closest('.medication-row');
+            // Solo se rellena el nombre; la doctora completa dosis/duración/vía/observación.
+            const nameEl = row.querySelector('[data-name="medication_name"]');
+            if (nameEl) nameEl.value = opt.dataset.name ?? '';
+        });
 
         function addMedication() {
             const container = document.getElementById('medications-container');

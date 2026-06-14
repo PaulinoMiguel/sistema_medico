@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $title ?? 'MediApp' }} - Sistema Medico</title>
+    <title>{{ $title ?? 'MediApp' }} - Sistema Médico</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>
@@ -14,7 +14,7 @@
         <aside class="w-64 bg-white border-r border-gray-200 fixed h-full z-10">
             <div class="p-4 border-b border-gray-200">
                 <h1 class="text-xl font-bold text-blue-600">MediApp</h1>
-                <p class="text-xs text-gray-500">Sistema Medico</p>
+                <p class="text-xs text-gray-500">Sistema Médico</p>
             </div>
 
             {{-- Clinic Selector --}}
@@ -22,7 +22,7 @@
             <div class="p-4 border-b border-gray-200">
                 <form action="{{ route('clinic.select') }}" method="POST">
                     @csrf
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Clinica activa</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Clínica activa</label>
                     <select name="clinic_id" onchange="this.form.submit()"
                             class="w-full text-sm border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                         @foreach(auth()->user()->clinics as $clinic)
@@ -76,7 +76,7 @@
                     </a>
                     <form action="{{ route('logout') }}" method="POST">
                         @csrf
-                        <button type="submit" class="text-gray-400 hover:text-gray-600" title="Cerrar sesion">
+                        <button type="submit" class="text-gray-400 hover:text-gray-600" title="Cerrar sesión">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
                         </button>
                     </form>

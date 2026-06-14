@@ -16,7 +16,7 @@
                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Duracion (min)</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Duración (min)</label>
                     <select name="duration_minutes" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                         @foreach([15,30,45,60,90,120] as $d)
                             <option value="{{ $d }}" {{ old('duration_minutes', $appointment->duration_minutes) == $d ? 'selected' : '' }}>{{ $d }} min</option>
@@ -51,7 +51,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tipo *</label>
                     <select name="type" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                        @foreach(['first_visit'=>'Primera vez','follow_up'=>'Control','pre_operative'=>'Pre-quirurgico','post_operative'=>'Post-quirurgico','urodynamic_study'=>'Urodinamia','procedure'=>'Procedimiento','surgical'=>'Cirugia','emergency'=>'Urgencia'] as $val => $label)
+                        @foreach(['first_visit'=>'Primera vez','follow_up'=>'Control','pre_operative'=>'Pre-quirúrgico','post_operative'=>'Post-quirúrgico','urodynamic_study'=>'Urodinamia','procedure'=>'Procedimiento','surgical'=>'Cirugía','emergency'=>'Urgencia'] as $val => $label)
                             <option value="{{ $val }}" {{ old('type', $appointment->type) == $val ? 'selected' : '' }}>{{ $label }}</option>
                         @endforeach
                     </select>

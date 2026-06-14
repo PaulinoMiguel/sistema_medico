@@ -1,8 +1,8 @@
-<x-layouts.tenant :title="'Categorias de Gastos'">
+<x-layouts.tenant :title="'Categorías de Gastos'">
     <div class="flex justify-between items-center mb-6">
         <div>
-            <h2 class="text-2xl font-bold text-gray-800">Categorias de Gastos</h2>
-            <p class="text-gray-500 text-sm">Organiza los gastos de tu clinica por categoria.</p>
+            <h2 class="text-2xl font-bold text-gray-800">Categorías de Gastos</h2>
+            <p class="text-gray-500 text-sm">Organiza los gastos de tu clínica por categoría.</p>
         </div>
     </div>
 
@@ -10,7 +10,7 @@
         {{-- Create form --}}
         <div>
             <div class="bg-white rounded-lg shadow p-6">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">Nueva categoria</h3>
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Nueva categoría</h3>
                 <form method="POST" action="{{ route('expense-categories.store') }}">
                     @csrf
                     <div class="mb-4">
@@ -21,7 +21,7 @@
                         @error('name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <button type="submit" class="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium">
-                        Crear categoria
+                        Crear categoría
                     </button>
                 </form>
             </div>
@@ -32,14 +32,14 @@
             <div class="bg-white rounded-lg shadow overflow-hidden">
                 @if($categories->isEmpty())
                     <div class="p-8 text-center text-gray-500">
-                        <p>No hay categorias creadas.</p>
-                        <p class="text-sm mt-2">Crea categorias como: Renta, Servicios, Insumos medicos, Nomina, etc.</p>
+                        <p>No hay categorías creadas.</p>
+                        <p class="text-sm mt-2">Crea categorías como: Renta, Servicios, Insumos médicos, Nomina, etc.</p>
                     </div>
                 @else
                     <table class="w-full">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Categoria</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Categoría</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Gastos</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>

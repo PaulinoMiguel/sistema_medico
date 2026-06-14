@@ -35,7 +35,7 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Expediente</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Edad</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Telefono</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Teléfono</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Seguro</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
                     </tr>

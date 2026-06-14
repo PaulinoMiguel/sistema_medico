@@ -16,7 +16,7 @@ class PediatricMeasurementController extends Controller
     }
 
     /**
-     * Guarda una nueva medicion para un paciente. Calcula Z-scores y los cachea.
+     * Guarda una nueva medición para un paciente. Calcula Z-scores y los cachea.
      */
     public function store(Request $request, Patient $patient)
     {
@@ -68,7 +68,7 @@ class PediatricMeasurementController extends Controller
             'notes' => $validated['notes'] ?? null,
         ]);
 
-        return back()->with('success', 'Medicion registrada.');
+        return back()->with('success', 'Medición registrada.');
     }
 
     /**
@@ -84,7 +84,7 @@ class PediatricMeasurementController extends Controller
         $measurements = $patient->pediatricMeasurements()->get();
         $isPreterm = $patient->isPreterm();
 
-        // Rango etario del paciente para las curvas (hasta 18 anos = 216 meses).
+        // Rango etario del paciente para las curvas (hasta 18 años = 216 meses).
         $maxAge = min(216, $patient->ageInMonthsAt(now()));
         $rangeEnd = max(6, ceil($maxAge * 1.1)); // un poco mas alla del paciente
 
@@ -106,7 +106,7 @@ class PediatricMeasurementController extends Controller
     {
         abort_unless($measurement->patient_id === $patient->id, 404);
         $measurement->delete();
-        return back()->with('success', 'Medicion eliminada.');
+        return back()->with('success', 'Medición eliminada.');
     }
 
     /**

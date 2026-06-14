@@ -6,7 +6,7 @@
 
     @if(auth()->user()->clinics()->count() === 0)
         <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
-            <p class="text-yellow-800">No tienes clinicas asignadas. Contacta al administrador para que te asigne una clinica.</p>
+            <p class="text-yellow-800">No tienes clínicas asignadas. Contacta al administrador para que te asigne una clínica.</p>
         </div>
     @else
         <form method="POST" action="{{ route('secretaries.store') }}">
@@ -21,24 +21,24 @@
                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Telefono</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
                         <input type="tel" name="phone" value="{{ old('phone') }}"
                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Correo electronico *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Correo electrónico *</label>
                         <input type="email" name="email" value="{{ old('email') }}" required
                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                               placeholder="Este sera su usuario para ingresar">
+                               placeholder="Este será su usuario para ingresar">
                     </div>
                     <div></div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Contrasena *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Contraseña *</label>
                         <input type="password" name="password" required
                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Confirmar contrasena *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Confirmar contraseña *</label>
                         <input type="password" name="password_confirmation" required
                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                     </div>
@@ -46,8 +46,8 @@
             </div>
 
             <div class="bg-white rounded-lg shadow p-6 mb-6">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">Asignar a clinica(s)</h3>
-                <p class="text-sm text-gray-500 mb-4">Selecciona en que clinica(s) trabajara esta secretaria. Solo podra ver los pacientes y turnos de sus clinicas asignadas.</p>
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Asignar a clínica(s)</h3>
+                <p class="text-sm text-gray-500 mb-4">Selecciona en que clínica(s) trabajará esta secretaria. Solo podrá ver los pacientes y turnos de sus clínicas asignadas.</p>
                 <div class="space-y-3">
                     @foreach($clinics as $clinic)
                         <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">

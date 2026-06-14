@@ -1,16 +1,16 @@
-<x-layouts.admin :title="'Clinicas'">
+<x-layouts.admin :title="'Clínicas'">
     <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold text-white">Clinicas</h2>
+        <h2 class="text-2xl font-bold text-white">Clínicas</h2>
         <a href="{{ route('admin.clinics.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm font-medium">
-            + Nueva clinica
+            + Nueva clínica
         </a>
     </div>
 
     <div class="bg-gray-800 rounded-lg shadow overflow-hidden">
         @if($clinics->isEmpty())
             <div class="p-8 text-center text-gray-400">
-                <p class="mb-4">No hay clinicas registradas.</p>
-                <a href="{{ route('admin.clinics.create') }}" class="text-blue-400 hover:underline">Crear la primera clinica</a>
+                <p class="mb-4">No hay clínicas registradas.</p>
+                <a href="{{ route('admin.clinics.create') }}" class="text-blue-400 hover:underline">Crear la primera clínica</a>
             </div>
         @else
             <table class="w-full">

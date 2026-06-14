@@ -75,12 +75,12 @@
                 <div class="name">{{ $index + 1 }}. {{ $item->medication_name }}</div>
                 <div class="details">
                     @php
-                        $routeLabels = ['oral'=>'Oral','sublingual'=>'Sublingual','topical'=>'Topica','intramuscular'=>'Intramuscular','intravenous'=>'Intravenosa','rectal'=>'Rectal','ophthalmic'=>'Oftalmica','otic'=>'Otica','nasal'=>'Nasal','inhaled'=>'Inhalada'];
+                        $routeLabels = ['oral'=>'Oral','sublingual'=>'Sublingual','topical'=>'Tópica','intramuscular'=>'Intramuscular','intravenous'=>'Intravenosa','rectal'=>'Rectal','ophthalmic'=>'Oftálmica','otic'=>'Ótica','nasal'=>'Nasal','inhaled'=>'Inhalada'];
                     @endphp
                     <span><strong>Dosis:</strong> {{ $item->dosage }}</span>
-                    <span><strong>Frecuencia:</strong> {{ $item->frequency }}</span>
-                    <span><strong>Via:</strong> {{ $routeLabels[$item->route] ?? $item->route }}</span>
-                    @if($item->duration)<span><strong>Duracion:</strong> {{ $item->duration }}</span>@endif
+                    @if($item->frequency)<span><strong>Frecuencia:</strong> {{ $item->frequency }}</span>@endif
+                    <span><strong>Vía:</strong> {{ $routeLabels[$item->route] ?? $item->route }}</span>
+                    @if($item->duration)<span><strong>Duración:</strong> {{ $item->duration }}</span>@endif
                     @if($item->quantity)<span><strong>Cantidad:</strong> {{ $item->quantity }}</span>@endif
                 </div>
                 @if($item->instructions)
@@ -99,7 +99,7 @@
     <div class="footer">
         <div class="signature-line">
             <p>Dr. {{ $prescription->doctor->name }}</p>
-            <p>Medico Tratante</p>
+            <p>Médico Tratante</p>
         </div>
         <div class="footer-info">
             <p>{{ $prescription->clinic->name }} | Receta generada el {{ now()->format('d/m/Y H:i') }}</p>

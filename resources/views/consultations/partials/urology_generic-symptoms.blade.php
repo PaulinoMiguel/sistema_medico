@@ -1,12 +1,12 @@
 {{-- Urinary symptoms (IPSS-based) --}}
 <div class="border border-gray-200 rounded-lg p-4">
-    <h4 class="text-sm font-semibold text-gray-700 mb-3">Sintomas urinarios</h4>
+    <h4 class="text-sm font-semibold text-gray-700 mb-3">Síntomas urinarios</h4>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
         @foreach([
             'frequency' => 'Frecuencia',
             'urgency' => 'Urgencia',
             'nocturia' => 'Nocturia',
-            'weak_stream' => 'Chorro debil',
+            'weak_stream' => 'Chorro débil',
             'intermittency' => 'Intermitencia',
             'straining' => 'Esfuerzo',
             'incomplete_emptying' => 'Vaciado incompleto',
@@ -40,13 +40,13 @@
 
 {{-- Sexual function --}}
 <div class="border border-gray-200 rounded-lg p-4">
-    <h4 class="text-sm font-semibold text-gray-700 mb-3">Funcion sexual</h4>
+    <h4 class="text-sm font-semibold text-gray-700 mb-3">Función sexual</h4>
     <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
         @foreach([
-            'erectile_dysfunction' => 'Disfuncion erectil',
+            'erectile_dysfunction' => 'Disfunción eréctil',
             'decreased_libido' => 'Libido disminuida',
-            'premature_ejaculation' => 'Eyaculacion precoz',
-            'painful_ejaculation' => 'Eyaculacion dolorosa',
+            'premature_ejaculation' => 'Eyaculación precoz',
+            'painful_ejaculation' => 'Eyaculación dolorosa',
             'hematospermia' => 'Hematospermia',
         ] as $key => $label)
             <label class="flex items-center text-sm">

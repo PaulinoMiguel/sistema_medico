@@ -14,7 +14,7 @@
                 <input type="text" name="name" value="{{ old('name') }}" required
                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                        placeholder="ej: asistente_medico" pattern="[a-z][a-z0-9_]*">
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Solo letras minusculas, numeros y guiones bajos. Ejemplo: asistente_medico</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Solo letras minúsculas, números y guiones bajos. Ejemplo: asistente_medico</p>
             </div>
         </div>
 

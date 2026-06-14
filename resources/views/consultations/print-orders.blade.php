@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Ordenes - {{ $consultation->patient->full_name }}</title>
+    <title>Órdenes - {{ $consultation->patient->full_name }}</title>
     <style>
         @page {
             size: letter;
@@ -32,8 +32,8 @@
             gap: 16px;
         }
         .header .logo {
-            max-width: 100px;
-            max-height: 80px;
+            max-width: 210px;
+            max-height: 160px;
             flex-shrink: 0;
         }
         .header .info {
@@ -161,7 +161,7 @@
 </head>
 <body>
     <div class="print-bar">
-        <span>Vista previa de ordenes — {{ count($selected) }} {{ count($selected) === 1 ? 'pagina' : 'paginas' }}</span>
+        <span>Vista previa de órdenes — {{ count($selected) }} {{ count($selected) === 1 ? 'página' : 'páginas' }}</span>
         <button onclick="window.print()">Imprimir</button>
     </div>
 
@@ -183,13 +183,9 @@
                     @if($doctor->print_extra_header)
                         <p class="extra-header">{{ $doctor->print_extra_header }}</p>
                     @endif
-                    <p class="doctor-info">
-                        @if($doctor->phone){{ $doctor->phone }}@endif
-                        @if($doctor->phone && $doctor->email) | @endif
-                        @if($doctor->email){{ $doctor->email }}@endif
-                        @if(($doctor->phone || $doctor->email) && $doctor->print_website) | @endif
-                        @if($doctor->print_website){{ $doctor->print_website }}@endif
-                    </p>
+                    @if($doctor->phone)
+                        <p class="doctor-info">{{ $doctor->phone }}</p>
+                    @endif
                     @if($address)
                         <p class="clinic-info">{{ $address }}</p>
                     @endif
@@ -204,7 +200,7 @@
                 <div class="row" style="margin-top: 4px;">
                     <div><label>Edad:</label> {{ $consultation->patient->age }} años</div>
                     @if($consultation->patient->document_number)
-                        <div><label>Cedula:</label> {{ $consultation->patient->document_number }}</div>
+                        <div><label>Cédula:</label> {{ $consultation->patient->document_number }}</div>
                     @endif
                     <div><label>Sexo:</label> {{ $consultation->patient->gender === 'male' ? 'Masculino' : ($consultation->patient->gender === 'female' ? 'Femenino' : 'Otro') }}</div>
                 </div>

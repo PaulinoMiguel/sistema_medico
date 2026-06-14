@@ -21,40 +21,74 @@
     {{-- Header --}}
     <div class="flex justify-between items-start mb-6">
         <div>
-            <a href="{{ route('consultations.index') }}" class="text-blue-600 hover:underline text-sm">&larr; Volver a consultas</a>
+            <a href="{{ route('patients.consultations', $consultation->patient_id) }}" class="text-blue-600 hover:underline text-sm">&larr; Volver al expediente</a>
             <h2 class="text-2xl font-bold text-gray-800 mt-1">{{ $consultation->patient->full_name }}</h2>
-            <p class="text-gray-500 text-sm">
-                {{ $typeLabels[$consultation->type] ?? $consultation->type }} |
-                Expediente: {{ $consultation->patient->medical_record_number }} |
-                {{ $consultation->patient->age }} años |
-                {{ $consultation->consultation_date->format('d/m/Y H:i') }}
-            </p>
+            @php
+                $typeOptions = $typeLabels;
+                if (!array_key_exists($consultation->type, $typeOptions)) {
+                    $typeOptions = [$consultation->type => ($typeLabels[$consultation->type] ?? \Illuminate\Support\Str::headline($consultation->type))] + $typeOptions;
+                }
+            @endphp
+            <div class="flex items-center flex-wrap gap-x-2 gap-y-1 text-gray-500 text-sm mt-1">
+                {{-- El tipo es editable: la secretaria pudo elegir uno equivocado al crear el
+                     turno, y el tipo define el formato del editor. Cambiarlo recarga el form. --}}
+                <form method="POST" action="{{ route('consultations.update-type', $consultation) }}" class="inline">
+                    @csrf @method('PATCH')
+                    <select name="type" title="Tipo de consulta" data-current="{{ $consultation->type }}"
+                            onchange="if(confirm('Cambiar el tipo recargará el formulario y se perderán los cambios no guardados. ¿Continuar?')){this.form.submit();}else{this.value=this.dataset.current;}"
+                            class="text-sm border-gray-300 rounded-md py-1 pl-2 pr-8 focus:ring-blue-500 focus:border-blue-500">
+                        @foreach($typeOptions as $val => $label)
+                            <option value="{{ $val }}" @selected($consultation->type === $val)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </form>
+                <span>Expediente: {{ $consultation->patient->medical_record_number }} | {{ $consultation->patient->age }} años | {{ $consultation->consultation_date->format('d/m/Y H:i') }}</span>
+            </div>
         </div>
+        @if($consultation->isSigned())
+        <span style="background-color:#dcfce7;color:#166534;" class="px-3 py-1 text-sm font-semibold rounded-full">
+            Firmada
+        </span>
+        @else
         <span style="background-color:#dbeafe;color:#1e40af;" class="px-3 py-1 text-sm font-semibold rounded-full">
             En progreso
         </span>
+        @endif
     </div>
+
+    @if($consultation->isSigned())
+        <div class="mb-6 p-4 bg-amber-50 border border-amber-200 text-amber-800 rounded-md text-sm flex items-start gap-2">
+            <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M5.07 19H19a2 2 0 001.74-2.99l-7-12a2 2 0 00-3.48 0l-7 12A2 2 0 005.07 19z"/></svg>
+            <span>Esta consulta está <strong>firmada</strong>. La estás editando para corregir un error; al guardar seguirá firmada.</span>
+        </div>
+    @endif
 
     @if($consultation->type !== 'initial')
         {{-- Consulta no-inicial: solo textarea de notas. La doctora prefiere
-             un formato simple para controles, pre/post-quirurgicos, etc. --}}
+             un formato simple para controles, pre/post-quirúrgicos, etc. --}}
         <form method="POST" action="{{ route('consultations.update', $consultation) }}">
             @csrf @method('PUT')
             <div class="bg-white rounded-lg shadow p-6 max-w-4xl mx-auto">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Notas de la consulta</label>
                 <textarea name="notes" rows="20" autofocus
                           class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
-                          placeholder="Escriba aqui los apuntes de la consulta...">{{ old('notes', $consultation->notes) }}</textarea>
+                          placeholder="Escriba aquí los apuntes de la consulta...">{{ old('notes', $consultation->notes) }}</textarea>
                 <div class="flex justify-between items-center mt-4">
-                    <a href="{{ route('consultations.index') }}" class="text-gray-500 hover:underline text-sm">Cancelar</a>
+                    <a href="{{ route('patients.consultations', $consultation->patient_id) }}" class="text-gray-500 hover:underline text-sm">Cancelar</a>
                     <div class="flex gap-3">
+                        @if($consultation->isSigned())
+                        <button type="submit" name="action" value="save" style="background-color:#2563eb;color:#fff;" class="px-6 py-2 rounded-md text-sm font-medium">
+                            Guardar correcciones
+                        </button>
+                        @else
                         <button type="submit" name="action" value="save" style="background-color:#2563eb;color:#fff;" class="px-6 py-2 rounded-md text-sm font-medium">
                             Guardar borrador
                         </button>
                         <button type="submit" name="action" value="sign" style="background-color:#16a34a;color:#fff;" class="px-6 py-2 rounded-md text-sm font-medium"
-                                onclick="return confirm('Al firmar la consulta se cierra y no podra modificarse. Continuar?')">
+                                onclick="return confirm('Al firmar la consulta se cierra y no podrá modificarse. Continuar?')">
                             Firmar y cerrar
                         </button>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -76,7 +110,7 @@
                     <div class="p-6 space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Motivo de consulta</label>
-                            <textarea name="chief_complaint" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Ej: Dolor al orinar desde hace 3 dias...">{{ old('chief_complaint', $consultation->chief_complaint) }}</textarea>
+                            <textarea name="chief_complaint" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Ej: Dolor al orinar desde hace 3 días...">{{ old('chief_complaint', $consultation->chief_complaint) }}</textarea>
                         </div>
 
                         {{-- Template-specific pre-history (antecedentes capturados en consulta inicial) --}}
@@ -84,7 +118,7 @@
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Historia de la enfermedad actual</label>
-                            <textarea name="history_present_illness" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Inicio, duracion, intensidad, factores agravantes/atenuantes...">{{ old('history_present_illness', $consultation->history_present_illness) }}</textarea>
+                            <textarea name="history_present_illness" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Inicio, duración, intensidad, factores agravantes/atenuantes...">{{ old('history_present_illness', $consultation->history_present_illness) }}</textarea>
                         </div>
 
                         {{-- Specialty-specific symptoms --}}
@@ -96,7 +130,7 @@
                 <div class="bg-white rounded-lg shadow">
                     <div style="background-color:#dcfce7;" class="px-6 py-3 rounded-t-lg border-b">
                         <h3 class="font-semibold text-gray-800">O - Objetivo</h3>
-                        <p class="text-xs text-gray-500">Hallazgos del examen fisico</p>
+                        <p class="text-xs text-gray-500">Hallazgos del examen físico</p>
                     </div>
                     <div class="p-6 space-y-4">
                         {{-- Vital signs --}}
@@ -154,13 +188,13 @@
                 {{-- A - ASSESSMENT --}}
                 <div class="bg-white rounded-lg shadow">
                     <div style="background-color:#fef3c7;" class="px-6 py-3 rounded-t-lg border-b">
-                        <h3 class="font-semibold text-gray-800">A - Evaluacion</h3>
-                        <p class="text-xs text-gray-500">Diagnosticos e impresion clinica</p>
+                        <h3 class="font-semibold text-gray-800">A - Evaluación</h3>
+                        <p class="text-xs text-gray-500">Diagnósticos e impresión clínica</p>
                     </div>
                     <div class="p-6 space-y-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Impresion diagnostica</label>
-                            <textarea name="assessment" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Analisis e impresion clinica...">{{ old('assessment', $consultation->assessment) }}</textarea>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Impresión diagnostica</label>
+                            <textarea name="assessment" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Análisis e impresión clínica...">{{ old('assessment', $consultation->assessment) }}</textarea>
                         </div>
 
                     </div>
@@ -174,7 +208,7 @@
                     </div>
                     <div class="p-6 space-y-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Plan de tratamiento</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Plan a seguir</label>
                             <textarea name="treatment_plan" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Medicamentos, indicaciones, medidas generales...">{{ old('treatment_plan', $consultation->treatment_plan) }}</textarea>
                         </div>
                         <div>
@@ -183,8 +217,8 @@
                         </div>
 
                         {{-- Plantillas de ordenes para imprimir y entregar al paciente.
-                             No persiste seleccion: es utilidad de impresion.
-                             Por ahora solo urologia (las plantillas son urologicas). Cuando
+                             No persiste selección: es utilidad de impresión.
+                             Por ahora solo urología (las plantillas son urológicas). Cuando
                              el set se generalice o haya sets por especialidad, abrir este gate. --}}
                         @if ($specialtyKey === 'urology')
                         <div class="border border-gray-200 rounded-lg p-4">
@@ -222,12 +256,12 @@
                         @endif
                         @if ($specialtyKey === 'urology')
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Recomendacion quirurgica</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Recomendación quirúrgica</label>
                             <textarea name="surgical_recommendation" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Procedimiento recomendado, si aplica...">{{ old('surgical_recommendation', $consultation->surgical_recommendation) }}</textarea>
                         </div>
                         @endif
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Proxima cita en (dias)</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Próxima cita en (días)</label>
                             <input type="number" name="follow_up_days" value="{{ old('follow_up_days', $consultation->follow_up_days) }}"
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
                         </div>
@@ -242,7 +276,7 @@
                 <div class="bg-white rounded-lg shadow">
                     <div style="background-color:#f3f4f6;" class="px-6 py-3 rounded-t-lg border-b">
                         <h3 class="font-semibold text-gray-800">Notas privadas</h3>
-                        <p class="text-xs text-gray-500">Solo visibles para el medico</p>
+                        <p class="text-xs text-gray-500">Solo visibles para el médico</p>
                     </div>
                     <div class="p-6">
                         <textarea name="private_notes" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Notas personales, recordatorios...">{{ old('private_notes', $consultation->private_notes) }}</textarea>
@@ -251,7 +285,7 @@
 
                 {{-- Action buttons --}}
                 <div class="flex justify-between items-center">
-                    <a href="{{ route('consultations.index') }}" class="text-gray-500 hover:underline text-sm">Cancelar</a>
+                    <a href="{{ route('patients.consultations', $consultation->patient_id) }}" class="text-gray-500 hover:underline text-sm">Cancelar</a>
                     <div class="flex gap-3">
                         @can('prescriptions.create')
                         <a href="{{ route('prescriptions.create', ['patient_id' => $consultation->patient_id, 'consultation_id' => $consultation->id]) }}"
@@ -260,13 +294,19 @@
                             Crear receta
                         </a>
                         @endcan
+                        @if($consultation->isSigned())
+                        <button type="submit" name="action" value="save" style="background-color:#2563eb;color:#fff;" class="px-6 py-2 rounded-md text-sm font-medium">
+                            Guardar correcciones
+                        </button>
+                        @else
                         <button type="submit" name="action" value="save" style="background-color:#2563eb;color:#fff;" class="px-6 py-2 rounded-md text-sm font-medium">
                             Guardar borrador
                         </button>
                         <button type="submit" name="action" value="sign" style="background-color:#16a34a;color:#fff;" class="px-6 py-2 rounded-md text-sm font-medium"
-                                onclick="return confirm('Al firmar la consulta se cierra y no podra modificarse. Continuar?')">
+                                onclick="return confirm('Al firmar la consulta se cierra y no podrá modificarse. Continuar?')">
                             Firmar y cerrar
                         </button>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -279,12 +319,12 @@
                     <dl class="space-y-2 text-sm">
                         <div><dt class="text-gray-500">Nombre</dt><dd class="font-medium">{{ $consultation->patient->full_name }}</dd></div>
                         <div><dt class="text-gray-500">Edad</dt><dd>{{ $consultation->patient->age }} años</dd></div>
-                        <div><dt class="text-gray-500">Genero</dt><dd>{{ $consultation->patient->gender === 'male' ? 'Masculino' : ($consultation->patient->gender === 'female' ? 'Femenino' : 'Otro') }}</dd></div>
+                        <div><dt class="text-gray-500">Género</dt><dd>{{ $consultation->patient->gender === 'male' ? 'Masculino' : ($consultation->patient->gender === 'female' ? 'Femenino' : 'Otro') }}</dd></div>
                         @if($consultation->patient->blood_type)
                             <div><dt class="text-gray-500">Sangre</dt><dd>{{ $consultation->patient->blood_type }}</dd></div>
                         @endif
                         @if($consultation->patient->document_number)
-                            <div><dt class="text-gray-500">Cedula</dt><dd>{{ $consultation->patient->document_number }}</dd></div>
+                            <div><dt class="text-gray-500">Cédula</dt><dd>{{ $consultation->patient->document_number }}</dd></div>
                         @endif
                     </dl>
                     <a href="{{ route('patients.show', ['patient' => $consultation->patient, 'from' => 'consultation', 'consultation_id' => $consultation->id]) }}" class="block mt-3 text-xs text-blue-600 hover:underline">Ver ficha completa</a>
@@ -300,7 +340,7 @@
                                 <div><dt class="text-red-600 font-semibold">Alergias</dt><dd>{{ is_array($mh->allergies) ? implode(', ', $mh->allergies) : $mh->allergies }}</dd></div>
                             @endif
                             @if(!empty($mh->chronic_conditions))
-                                <div><dt class="text-gray-500 font-semibold">Cronicos</dt><dd>{{ is_array($mh->chronic_conditions) ? implode(', ', $mh->chronic_conditions) : $mh->chronic_conditions }}</dd></div>
+                                <div><dt class="text-gray-500 font-semibold">Crónicos</dt><dd>{{ is_array($mh->chronic_conditions) ? implode(', ', $mh->chronic_conditions) : $mh->chronic_conditions }}</dd></div>
                             @endif
                             @if(!empty($mh->current_medications))
                                 <div><dt class="text-gray-500 font-semibold">Medicamentos</dt><dd>{{ is_array($mh->current_medications) ? implode(', ', $mh->current_medications) : $mh->current_medications }}</dd></div>

@@ -15,7 +15,7 @@
                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Duracion (minutos)</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Duración (minutos)</label>
                     <select name="duration_minutes" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                         <option value="15">15 min</option>
                         <option value="30" selected>30 min</option>
@@ -56,11 +56,11 @@
                     <select name="type" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                         <option value="first_visit" {{ old('type') == 'first_visit' ? 'selected' : '' }}>Primera vez</option>
                         <option value="follow_up" {{ old('type') == 'follow_up' ? 'selected' : '' }}>Control</option>
-                        <option value="pre_operative" {{ old('type') == 'pre_operative' ? 'selected' : '' }}>Pre-quirurgico</option>
-                        <option value="post_operative" {{ old('type') == 'post_operative' ? 'selected' : '' }}>Post-quirurgico</option>
-                        <option value="urodynamic_study" {{ old('type') == 'urodynamic_study' ? 'selected' : '' }}>Estudio urodinamico</option>
+                        <option value="pre_operative" {{ old('type') == 'pre_operative' ? 'selected' : '' }}>Pre-quirúrgico</option>
+                        <option value="post_operative" {{ old('type') == 'post_operative' ? 'selected' : '' }}>Post-quirúrgico</option>
+                        <option value="urodynamic_study" {{ old('type') == 'urodynamic_study' ? 'selected' : '' }}>Estudio urodinámico</option>
                         <option value="procedure" {{ old('type') == 'procedure' ? 'selected' : '' }}>Procedimiento</option>
-                        <option value="surgical" {{ old('type') == 'surgical' ? 'selected' : '' }}>Cirugia</option>
+                        <option value="surgical" {{ old('type') == 'surgical' ? 'selected' : '' }}>Cirugía</option>
                         <option value="emergency" {{ old('type') == 'emergency' ? 'selected' : '' }}>Urgencia</option>
                     </select>
                 </div>

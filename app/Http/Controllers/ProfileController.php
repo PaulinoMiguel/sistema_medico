@@ -82,7 +82,7 @@ class ProfileController extends Controller
         $request->user()->update($validated);
 
         return redirect()->route('profile.print')
-            ->with('success', 'Perfil de impresion actualizado.');
+            ->with('success', 'Perfil de impresión actualizado.');
     }
 
     public function updatePrintLogo(Request $request)
@@ -127,12 +127,12 @@ class ProfileController extends Controller
         $user = $request->user();
 
         if (! Hash::check($validated['current_password'], $user->password)) {
-            return back()->withErrors(['current_password' => 'La contrasena actual no es correcta.']);
+            return back()->withErrors(['current_password' => 'La contraseña actual no es correcta.']);
         }
 
         $user->update(['password' => Hash::make($validated['password'])]);
 
         return redirect()->route('profile.edit')
-            ->with('success', 'Contrasena actualizada exitosamente.');
+            ->with('success', 'Contraseña actualizada exitosamente.');
     }
 }

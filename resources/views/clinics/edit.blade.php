@@ -1,6 +1,6 @@
-<x-layouts.tenant :title="'Editar Clinica'">
+<x-layouts.tenant :title="'Editar Clínica'">
     <div class="mb-6">
-        <a href="{{ route('clinics.index') }}" class="text-blue-600 hover:underline text-sm">&larr; Volver a clinicas</a>
+        <a href="{{ route('clinics.index') }}" class="text-blue-600 hover:underline text-sm">&larr; Volver a clínicas</a>
         <h2 class="text-2xl font-bold text-gray-800 mt-2">Editar: {{ $clinic->name }}</h2>
     </div>
 
@@ -20,11 +20,11 @@
                     <select name="type" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                         <option value="office" {{ old('type', $clinic->type) == 'office' ? 'selected' : '' }}>Consultorio</option>
                         <option value="hospital" {{ old('type', $clinic->type) == 'hospital' ? 'selected' : '' }}>Hospital</option>
-                        <option value="surgical_center" {{ old('type', $clinic->type) == 'surgical_center' ? 'selected' : '' }}>Centro quirurgico</option>
+                        <option value="surgical_center" {{ old('type', $clinic->type) == 'surgical_center' ? 'selected' : '' }}>Centro quirúrgico</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Telefono</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
                     <input type="tel" name="phone" value="{{ old('phone', $clinic->phone) }}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                 </div>
@@ -39,7 +39,7 @@
                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Direccion</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
                     <input type="text" name="address" value="{{ old('address', $clinic->address) }}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                 </div>
@@ -58,7 +58,7 @@
                         <input type="hidden" name="is_active" value="0">
                         <input type="checkbox" name="is_active" value="1" {{ old('is_active', $clinic->is_active) ? 'checked' : '' }}
                                class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                        <span class="ml-2 text-sm text-gray-700">Clinica activa</span>
+                        <span class="ml-2 text-sm text-gray-700">Clínica activa</span>
                     </label>
                 </div>
             </div>
@@ -72,11 +72,11 @@
             <div class="bg-white rounded-lg shadow p-6 mb-6">
                 <h3 class="text-lg font-semibold text-gray-800 mb-2">Reparto de gastos compartidos</h3>
                 <p class="text-sm text-gray-500 mb-4">
-                    Define como se reparte el pool de gastos compartidos entre los doctores de la clinica.
+                    Define cómo se reparte el pool de gastos compartidos entre los doctores de la clínica.
                 </p>
 
                 <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Metodo</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Método</label>
                     <select name="expense_split_method" id="split_method"
                             class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                         <option value="equal" {{ old('expense_split_method', $clinic->expense_split_method) == 'equal' ? 'selected' : '' }}>Partes iguales (reparte entre doctores activos)</option>

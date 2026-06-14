@@ -32,7 +32,7 @@ class ExpenseCategoryController extends Controller
         ]);
 
         return redirect()->route('expense-categories.index')
-            ->with('success', 'Categoria creada exitosamente.');
+            ->with('success', 'Categoría creada exitosamente.');
     }
 
     /**
@@ -68,7 +68,7 @@ class ExpenseCategoryController extends Controller
         $expenseCategory->update($validated);
 
         return redirect()->route('expense-categories.index')
-            ->with('success', 'Categoria actualizada.');
+            ->with('success', 'Categoría actualizada.');
     }
 
     public function toggle(ExpenseCategory $expenseCategory)
@@ -80,6 +80,6 @@ class ExpenseCategoryController extends Controller
         $status = $expenseCategory->is_active ? 'activada' : 'desactivada';
 
         return redirect()->route('expense-categories.index')
-            ->with('success', "Categoria {$status}.");
+            ->with('success', "Categoría {$status}.");
     }
 }

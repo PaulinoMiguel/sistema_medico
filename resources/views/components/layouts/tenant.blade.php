@@ -46,7 +46,7 @@
                     @if($userClinics->count() > 1)
                         <form action="{{ route('clinic.select') }}" method="POST">
                             @csrf
-                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Clinica activa</label>
+                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Clínica activa</label>
                             <select name="clinic_id" onchange="this.form.submit()"
                                     class="w-full text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                                 @foreach($userClinics as $clinic)
@@ -62,7 +62,7 @@
                                 <svg class="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
                             </div>
                             <div>
-                                <p class="text-xs text-gray-500 dark:text-gray-400">Clinica</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Clínica</p>
                                 <p class="text-sm font-medium text-gray-800 dark:text-gray-200">{{ $activeClinic?->name ?? $userClinics->first()->name }}</p>
                             </div>
                         </div>
@@ -88,6 +88,7 @@
                     // Per-permission visibility flags (driven by spatie permissions)
                     $canConsultations = $u->can('consultations.view') || $u->can('consultations.create');
                     $canPrescriptions = $modPrescriptions && ($u->can('prescriptions.view') || $u->can('prescriptions.create'));
+                    $canMedicationBank = $modPrescriptions && $u->can('prescriptions.create');
                     $showClinical = $canConsultations || $canPrescriptions;
 
                     $canPayments = $u->can('payments.view');
@@ -105,16 +106,16 @@
                     $canStaffManage = $u->can('staff.manage');
                     $canRolesManage = $u->can('roles.manage');
                     $canSettings = $u->can('settings.manage');
-                    $showAdmin = $canStaffManage || $canRolesManage || $canSettings;
+                    $showAdmin = $canStaffManage || $canRolesManage || $canSettings || $canMedicationBank;
 
                     $canCashRegister = $modCashRegister && $u->can('cash-register.view');
 
                     // Detect which group should be auto-expanded based on current route
-                    $clinicalOpen = request()->routeIs('consultations.*') || request()->routeIs('prescriptions.*');
+                    $clinicalOpen = request()->routeIs('consultations.*') || request()->routeIs('prescriptions.*') || request()->routeIs('medications.*');
                     $ingresosOpen = request()->routeIs('payments.*') || request()->routeIs('services.*');
                     $isDirectChannel = request()->query('channel') === 'doctor_direct';
                     $egresosOpen = request()->routeIs('expenses.*') || request()->routeIs('expense-categories.*');
-                    $adminOpen = request()->routeIs('secretaries.*') || request()->routeIs('roles.*');
+                    $adminOpen = request()->routeIs('secretaries.*') || request()->routeIs('roles.*') || request()->routeIs('medications.*');
                 @endphp
 
                 {{-- Always visible --}}
@@ -143,32 +144,9 @@
                 </a>
                 @endcan
 
-                {{-- Clinico --}}
-                @if($showClinical)
-                    <details class="mt-2" {{ $clinicalOpen ? 'open' : '' }}>
-                        <summary class="{{ $groupSummaryClass }}">
-                            <span class="flex items-center">
-                                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                                Clinico
-                            </span>
-                            <svg class="chevron w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                        </summary>
-                        <div class="mt-1 space-y-1">
-                            @if($canConsultations)
-                            <a href="{{ route('consultations.index') }}"
-                               class="{{ $childItemClass }} {{ request()->routeIs('consultations.*') ? $activeClass : $inactiveClass }}">
-                                Consultas
-                            </a>
-                            @endif
-                            @if($canPrescriptions)
-                            <a href="{{ route('prescriptions.index') }}"
-                               class="{{ $childItemClass }} {{ request()->routeIs('prescriptions.*') ? $activeClass : $inactiveClass }}">
-                                Recetas
-                            </a>
-                            @endif
-                        </div>
-                    </details>
-                @endif
+                {{-- Consultas y Recetas ya no viven aquí: se gestionan dentro del
+                     expediente de cada paciente (pestañas). Banco de medicamentos
+                     se movió al grupo Administración. --}}
 
                 {{-- Corte de Caja (top-level: operacion diaria de cierre) --}}
                 @if($canCashRegister)
@@ -232,7 +210,7 @@
                             @if($canExpenseCategories)
                             <a href="{{ route('expense-categories.index') }}"
                                class="{{ $childItemClass }} {{ request()->routeIs('expense-categories.*') ? $activeClass : $inactiveClass }}">
-                                Categorias
+                                Categorías
                             </a>
                             @endif
                             @if($canMySummary)
@@ -250,7 +228,7 @@
                             @if($canExpenseSummary)
                             <a href="{{ route('expenses.summary') }}"
                                class="{{ $childItemClass }} {{ request()->routeIs('expenses.summary') ? $activeClass : $inactiveClass }}">
-                                Resumen clinica
+                                Resumen clínica
                             </a>
                             @endif
                         </div>
@@ -284,12 +262,18 @@
                             @if($canSettings)
                             <a href="{{ route('settings.edit') }}"
                                class="{{ $childItemClass }} {{ request()->routeIs('settings.*') ? $activeClass : $inactiveClass }}">
-                                Configuracion
+                                Configuración
+                            </a>
+                            @endif
+                            @if($canMedicationBank)
+                            <a href="{{ route('medications.index') }}"
+                               class="{{ $childItemClass }} {{ request()->routeIs('medications.*') ? $activeClass : $inactiveClass }}">
+                                Banco de medicamentos
                             </a>
                             @endif
                             <a href="{{ route('profile.print') }}"
                                class="{{ $childItemClass }} {{ request()->routeIs('profile.print*') ? $activeClass : $inactiveClass }}">
-                                Mi perfil de impresion
+                                Mi perfil de impresión
                             </a>
                         </div>
                     </details>
@@ -330,7 +314,7 @@
                         {{-- Logout --}}
                         <form action="{{ route('logout') }}" method="POST">
                             @csrf
-                            <button type="submit" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" title="Cerrar sesion">
+                            <button type="submit" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" title="Cerrar sesión">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
                             </button>
                         </form>
