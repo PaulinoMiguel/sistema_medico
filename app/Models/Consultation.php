@@ -26,6 +26,7 @@ class Consultation extends Model
             'sexual_function' => 'json',
             'specialty_data' => 'json',
             'diagnoses' => 'json',
+            'clinical_summary' => 'json',
         ];
     }
 

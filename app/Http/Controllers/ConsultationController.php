@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Appointment;
 use App\Models\Consultation;
+use App\Models\Insurer;
 use App\Models\Patient;
+use App\Models\Procedure;
 use App\Models\PediatricMeasurement;
 use App\Services\GrowthService;
 use Illuminate\Http\Request;
@@ -165,7 +167,23 @@ class ConsultationController extends Controller
             ->limit(5)
             ->get();
 
-        return view('consultations.edit', compact('consultation', 'previousConsultations'));
+        // Datos para el panel de Resumen clínico: aseguradoras (para el dropdown)
+        // y procedimientos con su código/simón/monto por aseguradora (para que al
+        // elegir la aseguradora se resuelva el código de cada procedimiento).
+        $insurers = Insurer::where('is_active', true)->orderBy('name')->get();
+        $proceduresJs = Procedure::where('is_active', true)
+            ->with(['insurers' => fn ($q) => $q->where('is_active', true)])
+            ->orderBy('name')
+            ->get()
+            ->map(fn ($p) => [
+                'id' => $p->id,
+                'name' => $p->name,
+                'byInsurer' => $p->insurers->mapWithKeys(fn ($i) => [
+                    (string) $i->id => ['code' => $i->pivot->code, 'simon' => $i->pivot->simon, 'monto' => $i->pivot->monto],
+                ]),
+            ])->values();
+
+        return view('consultations.edit', compact('consultation', 'previousConsultations', 'insurers', 'proceduresJs'));
     }
 
     /**
@@ -244,12 +262,30 @@ class ConsultationController extends Controller
             // Notes
             'private_notes' => 'nullable|string',
             'notes' => 'nullable|string',
+            // Resumen clínico (referencia/interconsulta)
+            'clinical_summary' => 'nullable|array',
+            'clinical_summary.insurer_id' => 'nullable|exists:insurers,id',
+            'clinical_summary.procedure_ids' => 'nullable|array',
+            'clinical_summary.procedure_ids.*' => 'integer|exists:procedures,id',
+            'clinical_summary.summary' => 'nullable|string',
+            'clinical_summary.diagnosis' => 'nullable|string',
+            'clinical_summary.diagnosis_type' => 'nullable|in:presuntivo,definitivo',
+            'clinical_summary.studies_done' => 'nullable|string',
+            'clinical_summary.previous_treatments' => 'nullable|string',
         ]);
 
         $medicalHistoryData = $validated['medical_history'] ?? null;
         unset($validated['medical_history']);
 
+        // El Resumen clínico se transforma a snapshot aparte (ver helper).
+        $clinicalSummary = $validated['clinical_summary'] ?? null;
+        unset($validated['clinical_summary']);
+
         $consultation->update($validated);
+
+        if ($clinicalSummary !== null) {
+            $this->saveClinicalSummary($consultation, $clinicalSummary);
+        }
 
         if ($medicalHistoryData !== null) {
             $consultation->patient->medicalHistory()->updateOrCreate(
@@ -284,6 +320,58 @@ class ConsultationController extends Controller
         return redirect()->back()->with('success', $wasSigned
             ? 'Correcciones guardadas (la consulta sigue firmada).'
             : 'Consulta guardada.');
+    }
+
+    /**
+     * Guarda el Resumen clínico como snapshot: resuelve los códigos elegidos a
+     * {id, code, description} para que el documento impreso no cambie aunque
+     * luego se edite el catálogo. Si no hay nada útil, guarda null.
+     */
+    private function saveClinicalSummary(Consultation $consultation, array $cs): void
+    {
+        $insurer = ! empty($cs['insurer_id']) ? Insurer::find($cs['insurer_id']) : null;
+
+        // Resuelve cada procedimiento elegido al código/simón/monto de la
+        // aseguradora seleccionada y lo guarda como snapshot.
+        $procedureIds = array_filter($cs['procedure_ids'] ?? []);
+        $procedures = [];
+        if ($procedureIds) {
+            $procs = Procedure::with(['insurers' => fn ($q) => $insurer
+                ? $q->where('insurers.id', $insurer->id)
+                : $q->whereRaw('1 = 0')])
+                ->whereIn('id', $procedureIds)
+                ->orderBy('name')
+                ->get();
+
+            foreach ($procs as $p) {
+                $pivot = $p->insurers->first()?->pivot;
+                $procedures[] = [
+                    'id' => $p->id,
+                    'name' => $p->name,
+                    'code' => $pivot?->code,
+                    'simon' => $pivot?->simon,
+                    'monto' => $pivot?->monto,
+                ];
+            }
+        }
+
+        $texts = [
+            'summary' => trim($cs['summary'] ?? '') ?: null,
+            'diagnosis' => trim($cs['diagnosis'] ?? '') ?: null,
+            'studies_done' => trim($cs['studies_done'] ?? '') ?: null,
+            'previous_treatments' => trim($cs['previous_treatments'] ?? '') ?: null,
+        ];
+
+        $hasContent = $insurer || count($procedures) || array_filter($texts);
+
+        $consultation->update([
+            'clinical_summary' => $hasContent ? array_merge([
+                'insurer_id' => $insurer?->id,
+                'insurer_name' => $insurer?->name,
+                'diagnosis_type' => $cs['diagnosis_type'] ?? null,
+                'procedures' => $procedures,
+            ], $texts) : null,
+        ]);
     }
 
     /**
@@ -341,6 +429,22 @@ class ConsultationController extends Controller
                 'bmi_z' => $bmi ? $growth->zScore('bmi_for_age', $patient->gender, $zAge, $bmi) : null,
             ],
         );
+    }
+
+    /**
+     * Documento imprimible "Resumen clínico" (referencia/interconsulta) a partir
+     * de lo guardado en clinical_summary + datos del paciente y del doctor.
+     */
+    public function clinicalSummaryPrint(Consultation $consultation)
+    {
+        if (empty($consultation->clinical_summary)) {
+            return redirect()->route('consultations.edit', $consultation)
+                ->with('error', 'Esta consulta aún no tiene Resumen clínico guardado para imprimir.');
+        }
+
+        $consultation->load(['patient', 'doctor', 'clinic']);
+
+        return view('consultations.resumen-clinico', compact('consultation'));
     }
 
     public function printOrders(Request $request, Consultation $consultation)

@@ -34,6 +34,11 @@ class Patient extends Model
         return $this->hasOne(PatientMedicalHistory::class);
     }
 
+    public function insurer(): BelongsTo
+    {
+        return $this->belongsTo(Insurer::class);
+    }
+
     public function appointments(): HasMany
     {
         return $this->hasMany(Appointment::class);

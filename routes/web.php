@@ -19,6 +19,8 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ExpenseCategoryController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\InstallationSettingController;
+use App\Http\Controllers\InsurerController;
+use App\Http\Controllers\ProcedureController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SecretaryController;
 use App\Http\Controllers\ServiceController;
@@ -78,6 +80,26 @@ Route::middleware('auth')->group(function () {
         Route::middleware('permission:staff.manage')->group(function () {
             Route::resource('secretaries', SecretaryController::class);
             Route::patch('/secretaries/{secretary}/toggle', [SecretaryController::class, 'toggle'])->name('secretaries.toggle');
+        });
+
+        // Catálogo de procedimientos y aseguradoras (lo mantiene la secretaria)
+        Route::middleware('permission:insurers.manage')->group(function () {
+            // Aseguradoras
+            Route::get('/insurers', [InsurerController::class, 'index'])->name('insurers.index');
+            Route::post('/insurers', [InsurerController::class, 'store'])->name('insurers.store');
+            Route::put('/insurers/{insurer}', [InsurerController::class, 'update'])->name('insurers.update');
+            Route::patch('/insurers/{insurer}/toggle', [InsurerController::class, 'toggle'])->name('insurers.toggle');
+            Route::delete('/insurers/{insurer}', [InsurerController::class, 'destroy'])->name('insurers.destroy');
+
+            // Procedimientos + matriz de códigos por aseguradora + import CSV
+            Route::get('/procedures', [ProcedureController::class, 'index'])->name('procedures.index');
+            Route::post('/procedures', [ProcedureController::class, 'store'])->name('procedures.store');
+            Route::post('/procedures/import', [ProcedureController::class, 'import'])->name('procedures.import');
+            Route::get('/procedures/{procedure}', [ProcedureController::class, 'show'])->name('procedures.show');
+            Route::put('/procedures/{procedure}', [ProcedureController::class, 'update'])->name('procedures.update');
+            Route::put('/procedures/{procedure}/matrix', [ProcedureController::class, 'updateMatrix'])->name('procedures.matrix');
+            Route::patch('/procedures/{procedure}/toggle', [ProcedureController::class, 'toggle'])->name('procedures.toggle');
+            Route::delete('/procedures/{procedure}', [ProcedureController::class, 'destroy'])->name('procedures.destroy');
         });
 
         // Roles & permissions management
@@ -181,6 +203,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/consultations', [ConsultationController::class, 'index'])->name('consultations.index');
             Route::get('/consultations/{consultation}', [ConsultationController::class, 'show'])->name('consultations.show');
             Route::get('/consultations/{consultation}/print-orders', [ConsultationController::class, 'printOrders'])->name('consultations.print-orders');
+            Route::get('/consultations/{consultation}/resumen-clinico', [ConsultationController::class, 'clinicalSummaryPrint'])->name('consultations.resumen-clinico');
         });
         Route::middleware('permission:consultations.create')->group(function () {
             Route::get('/consultations-create', [ConsultationController::class, 'create'])->name('consultations.create');

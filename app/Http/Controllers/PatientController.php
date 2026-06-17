@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Insurer;
 use App\Models\Patient;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -52,7 +53,9 @@ class PatientController extends Controller
                 ->get();
         }
 
-        return view('patients.create', compact('doctors'));
+        $insurers = Insurer::where('is_active', true)->orderBy('name')->get();
+
+        return view('patients.create', compact('doctors', 'insurers'));
     }
 
     public function store(Request $request)
@@ -91,7 +94,7 @@ class PatientController extends Controller
             'zip_code' => 'nullable|string|max:10',
             'emergency_contact_name' => 'nullable|string|max:255',
             'emergency_contact_phone' => 'nullable|string|max:50',
-            'insurance_provider' => 'nullable|string|max:255',
+            'insurer_id' => 'nullable|exists:insurers,id',
             'insurance_policy_number' => 'nullable|string|max:100',
             'occupation' => 'nullable|string|max:100',
             'referred_by' => 'nullable|string|max:255',
@@ -132,6 +135,12 @@ class PatientController extends Controller
 
         $validated['registered_by'] = $user->id;
         unset($validated['doctor_id']);
+
+        // Denormaliza el nombre de la aseguradora desde el catálogo (para mostrar
+        // y compatibilidad con vistas que leen insurance_provider).
+        $validated['insurance_provider'] = !empty($validated['insurer_id'])
+            ? Insurer::find($validated['insurer_id'])?->name
+            : null;
 
         if ($request->hasFile('photo')) {
             $validated['photo_path'] = $request->file('photo')->store('patient-photos', 'public');
@@ -222,7 +231,9 @@ class PatientController extends Controller
 
     public function edit(Patient $patient)
     {
-        return view('patients.edit', compact('patient'));
+        $insurers = Insurer::where('is_active', true)->orderBy('name')->get();
+
+        return view('patients.edit', compact('patient', 'insurers'));
     }
 
     public function update(Request $request, Patient $patient)
@@ -253,7 +264,7 @@ class PatientController extends Controller
             'zip_code' => 'nullable|string|max:10',
             'emergency_contact_name' => 'nullable|string|max:255',
             'emergency_contact_phone' => 'nullable|string|max:50',
-            'insurance_provider' => 'nullable|string|max:255',
+            'insurer_id' => 'nullable|exists:insurers,id',
             'insurance_policy_number' => 'nullable|string|max:100',
             'occupation' => 'nullable|string|max:100',
             'referred_by' => 'nullable|string|max:255',
@@ -271,6 +282,11 @@ class PatientController extends Controller
             $validated['photo_path'] = $request->file('photo')->store('patient-photos', 'public');
         }
         unset($validated['photo']);
+
+        // Mantiene insurance_provider (texto) sincronizado con el catálogo.
+        $validated['insurance_provider'] = !empty($validated['insurer_id'])
+            ? Insurer::find($validated['insurer_id'])?->name
+            : null;
 
         $patient->update($validated);
 

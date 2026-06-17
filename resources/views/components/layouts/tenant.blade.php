@@ -18,6 +18,7 @@
         details > summary::-webkit-details-marker { display: none; }
         details[open] > summary .chevron { transform: rotate(180deg); }
         .chevron { transition: transform 0.15s ease; }
+        [x-cloak] { display: none !important; }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors">
@@ -106,7 +107,8 @@
                     $canStaffManage = $u->can('staff.manage');
                     $canRolesManage = $u->can('roles.manage');
                     $canSettings = $u->can('settings.manage');
-                    $showAdmin = $canStaffManage || $canRolesManage || $canSettings || $canMedicationBank;
+                    $canInsurers = $u->can('insurers.manage');
+                    $showAdmin = $canStaffManage || $canRolesManage || $canSettings || $canMedicationBank || $canInsurers;
 
                     $canCashRegister = $modCashRegister && $u->can('cash-register.view');
 
@@ -115,7 +117,7 @@
                     $ingresosOpen = request()->routeIs('payments.*') || request()->routeIs('services.*');
                     $isDirectChannel = request()->query('channel') === 'doctor_direct';
                     $egresosOpen = request()->routeIs('expenses.*') || request()->routeIs('expense-categories.*');
-                    $adminOpen = request()->routeIs('secretaries.*') || request()->routeIs('roles.*') || request()->routeIs('medications.*');
+                    $adminOpen = request()->routeIs('secretaries.*') || request()->routeIs('roles.*') || request()->routeIs('medications.*') || request()->routeIs('insurers.*') || request()->routeIs('procedures.*');
                 @endphp
 
                 {{-- Always visible --}}
@@ -269,6 +271,16 @@
                             <a href="{{ route('medications.index') }}"
                                class="{{ $childItemClass }} {{ request()->routeIs('medications.*') ? $activeClass : $inactiveClass }}">
                                 Banco de medicamentos
+                            </a>
+                            @endif
+                            @if($canInsurers)
+                            <a href="{{ route('procedures.index') }}"
+                               class="{{ $childItemClass }} {{ request()->routeIs('procedures.*') ? $activeClass : $inactiveClass }}">
+                                Procedimientos
+                            </a>
+                            <a href="{{ route('insurers.index') }}"
+                               class="{{ $childItemClass }} {{ request()->routeIs('insurers.*') ? $activeClass : $inactiveClass }}">
+                                Aseguradoras
                             </a>
                             @endif
                             <a href="{{ route('profile.print') }}"

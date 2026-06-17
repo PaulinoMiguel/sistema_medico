@@ -44,6 +44,12 @@
                     + Receta
                 </button>
             </form>
+            @if(!empty($consultation->clinical_summary))
+            <a href="{{ route('consultations.resumen-clinico', $consultation) }}" target="_blank"
+               class="border border-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50">
+                Resumen clínico
+            </a>
+            @endif
             <span style="background-color:#dcfce7;color:#166534;" class="px-3 py-1 text-sm font-semibold rounded-full">
                 {{ $consultation->status === 'signed' ? 'Firmada' : 'En progreso' }}
             </span>

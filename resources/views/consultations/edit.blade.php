@@ -269,6 +269,100 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">Referencia / Interconsulta</label>
                             <textarea name="referrals" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500">{{ old('referrals', $consultation->referrals) }}</textarea>
                         </div>
+
+                        {{-- Resumen clínico (referencia / interconsulta imprimible) --}}
+                        @php
+                            $cs = $consultation->clinical_summary ?? [];
+                            $csInsurerId = old('clinical_summary.insurer_id', $cs['insurer_id'] ?? $consultation->patient->insurer_id);
+                            $csProcedureIds = array_map('intval', (array) old('clinical_summary.procedure_ids', collect($cs['procedures'] ?? [])->pluck('id')->all()));
+                            $csSummaryDefault = $cs['summary'] ?? $consultation->history_present_illness;
+                            $csDiagnosisDefault = $cs['diagnosis'] ?? collect((array) $consultation->diagnoses)
+                                ->map(fn ($d) => is_array($d) ? trim(($d['description'] ?? '') . (!empty($d['code']) ? ' (' . $d['code'] . ')' : '')) : $d)
+                                ->filter()->implode(', ');
+                            $dtype = old('clinical_summary.diagnosis_type', $cs['diagnosis_type'] ?? '');
+                            $inputClass = 'w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500';
+                        @endphp
+                        <details class="border border-gray-200 rounded-md" {{ !empty($cs) ? 'open' : '' }}>
+                            <summary class="cursor-pointer px-4 py-3 text-sm font-medium text-gray-700 bg-gray-50 rounded-md flex items-center justify-between">
+                                <span>Resumen clínico (referencia / interconsulta)</span>
+                                <svg class="chevron w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                            </summary>
+                            <div class="p-4 space-y-4"
+                                 x-data="{
+                                    procedures: {{ \Illuminate\Support\Js::from($proceduresJs) }},
+                                    insurerId: '{{ $csInsurerId }}',
+                                    selected: {{ \Illuminate\Support\Js::from($csProcedureIds) }},
+                                    filter: '',
+                                    get filtered() { const f = this.filter.trim().toLowerCase(); return f ? this.procedures.filter(p => p.name.toLowerCase().includes(f)) : this.procedures; },
+                                    codeFor(p) { if (!this.insurerId) return ''; const b = p.byInsurer[this.insurerId]; return (b && b.code) ? b.code : 'sin código'; }
+                                 }">
+                                @if(!empty($cs))
+                                <div class="flex justify-end">
+                                    <a href="{{ route('consultations.resumen-clinico', $consultation) }}" target="_blank"
+                                       class="inline-flex items-center gap-1 text-sm px-3 py-1.5 border border-green-300 text-green-700 rounded-md hover:bg-green-50">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                                        Imprimir Resumen clínico
+                                    </a>
+                                </div>
+                                @endif
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Historia breve de la enfermedad actual</label>
+                                    <textarea name="clinical_summary[summary]" rows="3" class="{{ $inputClass }}">{{ old('clinical_summary.summary', $csSummaryDefault) }}</textarea>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                                    <div class="md:col-span-3">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Diagnóstico</label>
+                                        <input type="text" name="clinical_summary[diagnosis]" value="{{ old('clinical_summary.diagnosis', $csDiagnosisDefault) }}" class="{{ $inputClass }}">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
+                                        <select name="clinical_summary[diagnosis_type]" class="{{ $inputClass }}">
+                                            <option value="">—</option>
+                                            <option value="presuntivo" @selected($dtype === 'presuntivo')>Presuntivo</option>
+                                            <option value="definitivo" @selected($dtype === 'definitivo')>Definitivo</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Estudios realizados</label>
+                                        <textarea name="clinical_summary[studies_done]" rows="2" class="{{ $inputClass }}">{{ old('clinical_summary.studies_done', $cs['studies_done'] ?? '') }}</textarea>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Tratamientos previos</label>
+                                        <textarea name="clinical_summary[previous_treatments]" rows="2" class="{{ $inputClass }}">{{ old('clinical_summary.previous_treatments', $cs['previous_treatments'] ?? '') }}</textarea>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Aseguradora</label>
+                                    <select name="clinical_summary[insurer_id]" x-model="insurerId" class="{{ $inputClass }} md:w-1/2">
+                                        <option value="">Seleccionar...</option>
+                                        @foreach($insurers as $i)
+                                            <option value="{{ $i->id }}">{{ $i->name }}</option>
+                                        @endforeach
+                                    </select>
+                                    <p class="text-xs text-gray-500 mt-1" x-show="!insurerId" x-cloak>Elige la aseguradora para ver el código de cada procedimiento.</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Procedimiento / Estudio solicitado (uno o más)</label>
+                                    <input type="text" x-model="filter" placeholder="Buscar procedimiento..." class="{{ $inputClass }} mb-2">
+                                    <div class="space-y-1 max-h-56 overflow-y-auto border border-gray-200 rounded-md p-2">
+                                        <template x-for="p in filtered" :key="p.id">
+                                            <label class="flex items-center justify-between gap-2 text-sm py-0.5">
+                                                <span class="flex items-start gap-2">
+                                                    <input type="checkbox" name="clinical_summary[procedure_ids][]" :value="p.id" x-model="selected" class="mt-0.5 rounded border-gray-300 text-blue-600">
+                                                    <span x-text="p.name"></span>
+                                                </span>
+                                                <span class="text-xs text-gray-500 whitespace-nowrap" x-show="insurerId" x-text="codeFor(p)"></span>
+                                            </label>
+                                        </template>
+                                        <template x-if="filtered.length === 0">
+                                            <p class="text-xs text-gray-500">Sin resultados.</p>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                        </details>
                     </div>
                 </div>
 

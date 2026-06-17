@@ -69,6 +69,9 @@ class RolesAndPermissionsSeeder extends Seeder
         'staff.manage',
         'roles.manage',
         'settings.manage',
+
+        // Catálogo de aseguradoras y códigos (lo mantiene la secretaria)
+        'insurers.manage',
     ];
 
     public function run(): void
@@ -130,6 +133,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'cash-register.open',
             'cash-register.close',
             'clinics.view',
+            'insurers.manage',
         ]);
 
         // === secretary_full ===

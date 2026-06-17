@@ -93,6 +93,23 @@
                         @endforeach
                     </select>
                 </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Aseguradora</label>
+                    <select name="insurer_id" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">Particular / Sin seguro</option>
+                        @foreach($insurers as $ins)
+                            <option value="{{ $ins->id }}" {{ old('insurer_id', $patient->insurer_id) == $ins->id ? 'selected' : '' }}>{{ $ins->name }}</option>
+                        @endforeach
+                    </select>
+                    @if(!$patient->insurer_id && $patient->insurance_provider)
+                        <p class="mt-1 text-xs text-amber-600">Antes: "{{ $patient->insurance_provider }}" (texto). Elige la aseguradora del catálogo.</p>
+                    @endif
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">No. póliza</label>
+                    <input type="text" name="insurance_policy_number" value="{{ old('insurance_policy_number', $patient->insurance_policy_number) }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
             </div>
         </div>
 
@@ -153,16 +170,6 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Ocupación</label>
                     <input type="text" name="occupation" value="{{ old('occupation', $patient->occupation) }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Aseguradora</label>
-                    <input type="text" name="insurance_provider" value="{{ old('insurance_provider', $patient->insurance_provider) }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">No. póliza</label>
-                    <input type="text" name="insurance_policy_number" value="{{ old('insurance_policy_number', $patient->insurance_policy_number) }}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div>
