@@ -66,7 +66,7 @@
     @if($consultation->type !== 'initial')
         {{-- Consulta no-inicial: solo textarea de notas. La doctora prefiere
              un formato simple para controles, pre/post-quirúrgicos, etc. --}}
-        <form method="POST" action="{{ route('consultations.update', $consultation) }}">
+        <form method="POST" action="{{ route('consultations.update', $consultation) }}" data-keep-scroll>
             @csrf @method('PUT')
             <div class="bg-white rounded-lg shadow p-6 max-w-4xl mx-auto">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Notas de la consulta</label>
@@ -496,5 +496,24 @@
     </script>
     @endif
     @endif
+
+    {{-- Al guardar el borrador, conserva la posición de scroll para no volver
+         arriba y tener que buscar de nuevo el formulario / botón de imprimir. --}}
+    <script>
+        (function () {
+            var key = 'consult-scroll-{{ $consultation->id }}';
+            var y = sessionStorage.getItem(key);
+            if (y !== null) {
+                sessionStorage.removeItem(key);
+                window.scrollTo(0, parseInt(y, 10));
+            }
+            document.querySelectorAll('form[data-keep-scroll]').forEach(function (f) {
+                f.addEventListener('submit', function (e) {
+                    if (e.submitter && e.submitter.value === 'sign') return;
+                    sessionStorage.setItem(key, String(window.scrollY));
+                });
+            });
+        })();
+    </script>
 
 </x-layouts.tenant>

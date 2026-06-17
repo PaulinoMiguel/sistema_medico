@@ -149,9 +149,8 @@
             <table class="codes">
                 <thead>
                     <tr>
-                        <th style="width:55%">Procedimiento</th>
+                        <th style="width:75%">Procedimiento</th>
                         <th>Código</th>
-                        <th>Simón</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -159,7 +158,6 @@
                     <tr>
                         <td>{{ $p['name'] ?? '' }}</td>
                         <td>{{ $p['code'] ?? '' }}</td>
-                        <td>{{ $p['simon'] ?? '' }}</td>
                     </tr>
                     @endforeach
                 </tbody>
