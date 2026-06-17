@@ -296,15 +296,16 @@
                                     get filtered() { const f = this.filter.trim().toLowerCase(); return f ? this.procedures.filter(p => p.name.toLowerCase().includes(f)) : this.procedures; },
                                     codeFor(p) { if (!this.insurerId) return ''; const b = p.byInsurer[this.insurerId]; return (b && b.code) ? b.code : 'sin código'; }
                                  }">
-                                @if(!empty($cs))
-                                <div class="flex justify-end">
+                                <div class="flex justify-end items-center gap-2">
+                                    @if(empty($cs))
+                                        <span class="text-xs text-gray-400">Guarda la consulta para imprimir el resumen</span>
+                                    @endif
                                     <a href="{{ route('consultations.resumen-clinico', $consultation) }}" target="_blank"
-                                       class="inline-flex items-center gap-1 text-sm px-3 py-1.5 border border-green-300 text-green-700 rounded-md hover:bg-green-50">
+                                       class="inline-flex items-center gap-1 text-sm px-3 py-1.5 border border-green-300 text-green-700 rounded-md hover:bg-green-50 {{ empty($cs) ? 'opacity-40 pointer-events-none' : '' }}">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                                         Imprimir Resumen clínico
                                     </a>
                                 </div>
-                                @endif
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Historia breve de la enfermedad actual</label>
                                     <textarea name="clinical_summary[summary]" rows="3" class="{{ $inputClass }}">{{ old('clinical_summary.summary', $csSummaryDefault) }}</textarea>
