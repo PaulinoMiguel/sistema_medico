@@ -45,15 +45,24 @@
                 <span>Expediente: {{ $consultation->patient->medical_record_number }} | {{ $consultation->patient->age }} años | {{ $consultation->consultation_date->format('d/m/Y H:i') }}</span>
             </div>
         </div>
-        @if($consultation->isSigned())
-        <span style="background-color:#dcfce7;color:#166534;" class="px-3 py-1 text-sm font-semibold rounded-full">
-            Firmada
-        </span>
-        @else
-        <span style="background-color:#dbeafe;color:#1e40af;" class="px-3 py-1 text-sm font-semibold rounded-full">
-            En progreso
-        </span>
-        @endif
+        <div class="flex flex-col items-end gap-2">
+            @if($consultation->isSigned())
+            <span style="background-color:#dcfce7;color:#166534;" class="px-3 py-1 text-sm font-semibold rounded-full">
+                Firmada
+            </span>
+            @else
+            <span style="background-color:#dbeafe;color:#1e40af;" class="px-3 py-1 text-sm font-semibold rounded-full">
+                En progreso
+            </span>
+            @endif
+            @if(!empty($consultation->clinical_summary))
+            <a href="{{ route('consultations.resumen-clinico', $consultation) }}" target="_blank"
+               class="inline-flex items-center gap-1 text-sm px-3 py-1.5 bg-green-600 text-white rounded-md hover:bg-green-700 whitespace-nowrap">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                Imprimir Resumen clínico
+            </a>
+            @endif
+        </div>
     </div>
 
     @if($consultation->isSigned())
@@ -66,7 +75,7 @@
     @if($consultation->type !== 'initial')
         {{-- Consulta no-inicial: solo textarea de notas. La doctora prefiere
              un formato simple para controles, pre/post-quirúrgicos, etc. --}}
-        <form method="POST" action="{{ route('consultations.update', $consultation) }}" data-keep-scroll>
+        <form method="POST" action="{{ route('consultations.update', $consultation) }}">
             @csrf @method('PUT')
             <div class="bg-white rounded-lg shadow p-6 max-w-4xl mx-auto">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Notas de la consulta</label>
@@ -496,24 +505,5 @@
     </script>
     @endif
     @endif
-
-    {{-- Al guardar el borrador, conserva la posición de scroll para no volver
-         arriba y tener que buscar de nuevo el formulario / botón de imprimir. --}}
-    <script>
-        (function () {
-            var key = 'consult-scroll-{{ $consultation->id }}';
-            var y = sessionStorage.getItem(key);
-            if (y !== null) {
-                sessionStorage.removeItem(key);
-                window.scrollTo(0, parseInt(y, 10));
-            }
-            document.querySelectorAll('form[data-keep-scroll]').forEach(function (f) {
-                f.addEventListener('submit', function (e) {
-                    if (e.submitter && e.submitter.value === 'sign') return;
-                    sessionStorage.setItem(key, String(window.scrollY));
-                });
-            });
-        })();
-    </script>
 
 </x-layouts.tenant>
