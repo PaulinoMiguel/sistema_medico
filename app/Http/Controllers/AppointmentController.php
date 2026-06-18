@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use App\Models\Patient;
+use App\Models\Service;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -148,9 +149,15 @@ class AppointmentController extends Controller
 
     public function show(Appointment $appointment)
     {
-        $appointment->load(['patient', 'doctor', 'clinic']);
+        $appointment->load(['patient', 'doctor', 'clinic', 'consultation']);
 
-        return view('appointments.show', compact('appointment'));
+        // Servicios del doctor del turno, para el cobro rápido desde aquí.
+        $services = Service::where('doctor_id', $appointment->doctor_id)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
+
+        return view('appointments.show', compact('appointment', 'services'));
     }
 
     public function edit(Request $request, Appointment $appointment)

@@ -179,6 +179,9 @@ Route::middleware('auth')->group(function () {
             ->middleware('permission:payments.create')->name('payments.create');
         Route::post('/payments', [PaymentController::class, 'store'])
             ->middleware('permission:payments.create')->name('payments.store');
+        // Cobro rápido desde la pantalla del turno (vuelve al turno).
+        Route::post('/appointments/{appointment}/payment', [PaymentController::class, 'storeForAppointment'])
+            ->middleware('permission:payments.create')->name('appointments.payment');
         Route::get('/payments', [PaymentController::class, 'index'])
             ->middleware('permission:payments.view')->name('payments.index');
         Route::get('/payments/{payment}', [PaymentController::class, 'show'])

@@ -142,6 +142,55 @@ class PaymentController extends Controller
     }
 
     /**
+     * Cobro rápido desde la pantalla del turno: el paciente, turno y doctor ya
+     * se conocen, así que la secretaria solo ingresa servicio/concepto/monto y
+     * vuelve al turno (sin pasar por Caja). Canal cash_register (personal).
+     */
+    public function storeForAppointment(Request $request, Appointment $appointment)
+    {
+        $user = $request->user();
+        abort_if($user->isDoctor(), 403, 'Los cobros de caja son exclusivos del personal.');
+
+        $clinicId = session('active_clinic_id');
+
+        if ($appointment->is_paid) {
+            return redirect()->route('appointments.show', $appointment)
+                ->with('info', 'Este turno ya fue cobrado.');
+        }
+
+        $validated = $request->validate([
+            'service_id' => 'nullable|exists:services,id',
+            'amount' => 'required|numeric|min:0.01',
+            'concept' => 'required|string|max:255',
+            'notes' => 'nullable|string|max:500',
+        ]);
+
+        $cashRegisterId = CashRegister::where('clinic_id', $clinicId)
+            ->where('status', 'open')
+            ->value('id');
+
+        $payment = Payment::create([
+            'patient_id' => $appointment->patient_id,
+            'service_id' => $validated['service_id'] ?? null,
+            'appointment_id' => $appointment->id,
+            'amount' => $validated['amount'],
+            'concept' => $validated['concept'],
+            'notes' => $validated['notes'] ?? null,
+            'clinic_id' => $clinicId,
+            'doctor_id' => $appointment->doctor_id,
+            'channel' => 'cash_register',
+            'received_by' => $user->id,
+            'cash_register_id' => $cashRegisterId,
+            'receipt_number' => $this->generateReceiptNumber($clinicId),
+        ]);
+
+        $appointment->update(['is_paid' => true]);
+
+        return redirect()->route('appointments.show', $appointment)
+            ->with('success', "Cobro registrado. Recibo: {$payment->receipt_number}");
+    }
+
+    /**
      * Determine which doctor owns this payment based on available context.
      * Returns null if no doctor can be resolved.
      */

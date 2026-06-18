@@ -168,6 +168,68 @@
                     @endif
                 </div>
             </div>
+
+            {{-- Cobro rápido: la secretaria registra el cobro desde aquí, sin ir a
+                 Caja, una vez que la doctora guardó la consulta. --}}
+            @can('payments.create')
+            @if(!auth()->user()->isDoctor() && $appointment->consultation && !in_array($appointment->status, ['cancelled', 'no_show']))
+            <div class="bg-white rounded-lg shadow p-6 mt-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Cobro</h3>
+                @if($appointment->is_paid)
+                    <div class="flex items-center gap-2 text-green-700 text-sm font-medium">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        Este turno ya fue cobrado.
+                    </div>
+                @else
+                    <form method="POST" action="{{ route('appointments.payment', $appointment) }}" class="space-y-4">
+                        @csrf
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Servicio</label>
+                            <select name="service_id" id="cobro_service" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                <option value="" data-price="">Sin servicio (monto libre)</option>
+                                @foreach($services as $s)
+                                    <option value="{{ $s->id }}" data-price="{{ $s->price }}">{{ $s->name }} - ${{ number_format($s->price, 2) }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Concepto *</label>
+                                <input type="text" name="concept" id="cobro_concept" required value="{{ old('concept', 'Consulta') }}"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Monto *</label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-2 text-gray-500">$</span>
+                                    <input type="number" name="amount" id="cobro_amount" step="0.01" min="0.01" required value="{{ old('amount') }}"
+                                           class="w-full pl-7 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="0.00">
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Notas</label>
+                            <input type="text" name="notes" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Opcional">
+                        </div>
+                        <div class="flex justify-end">
+                            <button type="submit" class="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 font-medium">Registrar cobro</button>
+                        </div>
+                    </form>
+                    <script>
+                        (function () {
+                            var sel = document.getElementById('cobro_service');
+                            var amt = document.getElementById('cobro_amount');
+                            var con = document.getElementById('cobro_concept');
+                            if (sel) sel.addEventListener('change', function () {
+                                var opt = this.options[this.selectedIndex];
+                                if (opt.dataset.price) { amt.value = opt.dataset.price; con.value = opt.text.split(' - ')[0]; }
+                            });
+                        })();
+                    </script>
+                @endif
+            </div>
+            @endif
+            @endcan
         </div>
 
         {{-- Action panel --}}
