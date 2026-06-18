@@ -80,13 +80,15 @@ class AppointmentController extends Controller
             ->orderBy('last_name')
             ->get();
 
-        $showDoctorSelect = !$user->isDoctor();
-        $doctors = $showDoctorSelect
+        $doctors = ! $user->isDoctor()
             ? User::role(['doctor_admin', 'doctor_associate'])
                 ->whereHas('clinics', fn ($q) => $q->where('clinics.id', $clinicId))
                 ->whereIn('status', ['active', 'passive'])
+                ->orderBy('name')
                 ->get()
             : collect();
+        // Con un solo doctor no se pide elegir: se asigna por defecto (hidden).
+        $showDoctorSelect = $doctors->count() > 1;
 
         return view('appointments.create', compact('patients', 'doctors', 'showDoctorSelect'));
     }
@@ -161,13 +163,15 @@ class AppointmentController extends Controller
             ->orderBy('last_name')
             ->get();
 
-        $showDoctorSelect = !$user->isDoctor();
-        $doctors = $showDoctorSelect
+        $doctors = ! $user->isDoctor()
             ? User::role(['doctor_admin', 'doctor_associate'])
                 ->whereHas('clinics', fn ($q) => $q->where('clinics.id', $clinicId))
                 ->whereIn('status', ['active', 'passive'])
+                ->orderBy('name')
                 ->get()
             : collect();
+        // Con un solo doctor no se pide elegir: se asigna por defecto (hidden).
+        $showDoctorSelect = $doctors->count() > 1;
 
         return view('appointments.edit', compact('appointment', 'patients', 'doctors', 'showDoctorSelect'));
     }

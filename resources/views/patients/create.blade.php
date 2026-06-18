@@ -51,7 +51,7 @@
     <form method="POST" action="{{ route('patients.store') }}" enctype="multipart/form-data" id="patient-form">
         @csrf
 
-        @if($doctors->isNotEmpty())
+        @if($doctors->count() > 1)
             <div class="bg-white rounded-lg shadow p-6 mb-6">
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">Doctor responsable</h3>
                 <div>
@@ -68,6 +68,10 @@
                     <p class="text-xs text-gray-500 mt-1">El paciente quedará asignado a este doctor.</p>
                 </div>
             </div>
+        @elseif($doctors->count() === 1)
+            {{-- Un solo doctor: se asigna por defecto, sin pedir selección. El id
+                 sigue disponible (hidden) para el flujo de pacientes duplicados. --}}
+            <input type="hidden" id="doctor_id" name="doctor_id" value="{{ $doctors->first()->id }}">
         @endif
 
         <div class="bg-white rounded-lg shadow p-6 mb-6">

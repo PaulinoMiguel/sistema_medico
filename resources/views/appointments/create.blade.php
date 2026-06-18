@@ -50,6 +50,9 @@
                             @endforeach
                         </select>
                     </div>
+                @elseif(!auth()->user()->isDoctor() && $doctors->isNotEmpty())
+                    {{-- Un solo doctor: se asigna por defecto, sin pedir selección. --}}
+                    <input type="hidden" name="doctor_id" value="{{ $doctors->first()->id }}">
                 @endif
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de turno *</label>

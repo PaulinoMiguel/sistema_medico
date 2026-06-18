@@ -47,6 +47,9 @@
                             @endforeach
                         </select>
                     </div>
+                @elseif(!auth()->user()->isDoctor() && $doctors->isNotEmpty())
+                    {{-- Un solo doctor: se mantiene el asignado, sin pedir selección. --}}
+                    <input type="hidden" name="doctor_id" value="{{ old('doctor_id', $appointment->doctor_id) }}">
                 @endif
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tipo *</label>
