@@ -176,9 +176,18 @@
             <div class="bg-white rounded-lg shadow p-6 mt-6">
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">Cobro</h3>
                 @if($appointment->is_paid)
-                    <div class="flex items-center gap-2 text-green-700 text-sm font-medium">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        Este turno ya fue cobrado.
+                    <div class="flex items-center justify-between gap-2 flex-wrap">
+                        <span class="flex items-center gap-2 text-green-700 text-sm font-medium">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            Este turno ya fue cobrado.
+                        </span>
+                        @if($payment)
+                        <a href="{{ route('payments.show', $payment) }}" target="_blank"
+                           class="inline-flex items-center gap-1 text-sm px-3 py-1.5 bg-gray-800 text-white rounded-md hover:bg-gray-900">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                            Imprimir recibo
+                        </a>
+                        @endif
                     </div>
                 @else
                     <form method="POST" action="{{ route('appointments.payment', $appointment) }}" class="space-y-4">

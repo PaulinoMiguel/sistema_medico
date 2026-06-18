@@ -184,8 +184,10 @@ Route::middleware('auth')->group(function () {
             ->middleware('permission:payments.create')->name('appointments.payment');
         Route::get('/payments', [PaymentController::class, 'index'])
             ->middleware('permission:payments.view')->name('payments.index');
+        // Recibo: lo ve quien puede ver cobros (doctor) o quien los registra
+        // (secretaria). El controlador limita a la secretaria a cobros de caja.
         Route::get('/payments/{payment}', [PaymentController::class, 'show'])
-            ->middleware('permission:payments.view')->name('payments.show');
+            ->middleware('permission:payments.view|payments.create')->name('payments.show');
 
         // Cash register
         Route::middleware(['module:cash_register'])->group(function () {

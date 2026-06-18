@@ -220,6 +220,13 @@ class PaymentController extends Controller
     {
         abort_if($payment->clinic_id != session('active_clinic_id'), 403);
 
+        // El personal sin payments.view (secretaria) solo puede ver recibos de
+        // caja; los cobros directos del doctor (cirugías, etc.) quedan privados.
+        $user = auth()->user();
+        if (! $user->isDoctor() && ! $user->can('payments.view')) {
+            abort_if($payment->channel !== 'cash_register', 403);
+        }
+
         $payment->load(['patient', 'service', 'receivedBy', 'appointment']);
 
         return view('payments.show', compact('payment'));

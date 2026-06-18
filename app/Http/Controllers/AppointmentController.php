@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use App\Models\Patient;
+use App\Models\Payment;
 use App\Models\Service;
 use App\Models\User;
 use Carbon\Carbon;
@@ -157,7 +158,15 @@ class AppointmentController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('appointments.show', compact('appointment', 'services'));
+        // Recibo del cobro de caja de este turno (para imprimirlo).
+        $payment = $appointment->is_paid
+            ? Payment::where('appointment_id', $appointment->id)
+                ->where('channel', 'cash_register')
+                ->latest('id')
+                ->first()
+            : null;
+
+        return view('appointments.show', compact('appointment', 'services', 'payment'));
     }
 
     public function edit(Request $request, Appointment $appointment)
