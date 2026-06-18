@@ -17,6 +17,8 @@ class PaymentController extends Controller
         $clinicId = session('active_clinic_id');
         $channel = $request->query('channel');
         $user = $request->user();
+        $from = $request->query('from');
+        $to = $request->query('to');
 
         $query = Payment::where('clinic_id', $clinicId)
             ->with(['patient', 'service', 'receivedBy']);
@@ -33,10 +35,19 @@ class PaymentController extends Controller
             }
         }
 
+        // Filtro por rango de fechas (sobre la fecha del cobro).
+        if ($from) {
+            $query->whereDate('created_at', '>=', $from);
+        }
+        if ($to) {
+            $query->whereDate('created_at', '<=', $to);
+        }
+
         $total = (clone $query)->sum('amount');
+        $count = (clone $query)->count();
         $payments = $query->latest()->paginate(20);
 
-        return view('payments.index', compact('payments', 'channel', 'total'));
+        return view('payments.index', compact('payments', 'channel', 'total', 'count', 'from', 'to'));
     }
 
     public function create(Request $request)
