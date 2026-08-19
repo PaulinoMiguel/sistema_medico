@@ -88,6 +88,8 @@
             'nasal' => 'Nasal',
             'inhaled' => 'Inhalada',
         ];
+
+        $frequencyOptions = ['Cada 24 horas', 'Cada 12 horas', 'Cada 8 horas', 'Libre'];
     @endphp
 
     <template id="medication-template">
@@ -124,6 +126,16 @@
                     <input type="text" data-name="dosage" required
                            class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"
                            placeholder="Ej: 0.4mg">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Frecuencia</label>
+                    <select data-name="frequency"
+                            class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
+                        <option value="">— Sin especificar —</option>
+                        @foreach($frequencyOptions as $option)
+                            <option value="{{ $option }}">{{ $option }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Duración</label>
