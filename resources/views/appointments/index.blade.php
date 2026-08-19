@@ -102,8 +102,14 @@
                     <div class="border-r last:border-r-0 p-2 {{ $day['isToday'] ? 'bg-blue-50/30 dark:bg-blue-900/20' : '' }}">
                         @foreach($day['appointments'] as $apt)
                             <a href="{{ route('appointments.show', $apt) }}"
-                               class="block mb-1.5 p-2 rounded text-xs {{ $statusColors[$apt->status] ?? 'bg-gray-100' }} hover:opacity-80 transition">
-                                <div class="font-semibold">{{ $apt->scheduled_at->format('H:i') }}</div>
+                               class="block mb-1.5 p-2 rounded text-xs {{ $statusColors[$apt->status] ?? 'bg-gray-100' }} {{ $apt->is_paid ? 'border-l-4 border-emerald-600' : '' }} hover:opacity-80 transition"
+                               @if($apt->is_paid) title="Ya fue cobrado" @endif>
+                                <div class="flex items-center justify-between gap-1">
+                                    <span class="font-semibold">{{ $apt->scheduled_at->format('H:i') }}</span>
+                                    @if($apt->is_paid)
+                                        <svg class="w-3.5 h-3.5 text-emerald-700 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                                    @endif
+                                </div>
                                 <div class="truncate font-medium">{{ $apt->patient->last_name }}</div>
                                 <div class="truncate text-[10px] opacity-75">{{ $typeLabels[$apt->type] ?? $apt->type }}</div>
                             </a>
@@ -145,9 +151,11 @@
 
                         @foreach($day['appointments']->take(3) as $apt)
                             <a href="{{ route('appointments.show', $apt) }}"
-                               class="block mb-1 px-1.5 py-0.5 rounded text-[11px] truncate {{ $statusColors[$apt->status] ?? 'bg-gray-100' }} hover:opacity-80">
+                               class="block mb-1 px-1.5 py-0.5 rounded text-[11px] truncate {{ $statusColors[$apt->status] ?? 'bg-gray-100' }} {{ $apt->is_paid ? 'border-l-4 border-emerald-600' : '' }} hover:opacity-80"
+                               @if($apt->is_paid) title="Ya fue cobrado" @endif>
                                 <span class="font-semibold">{{ $apt->scheduled_at->format('H:i') }}</span>
                                 {{ $apt->patient->last_name }}
+                                @if($apt->is_paid)<span class="text-emerald-700 font-bold">&check;</span>@endif
                             </a>
                         @endforeach
 
@@ -171,5 +179,6 @@
         <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-purple-200"></span> En consulta</span>
         <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-green-200"></span> Completado</span>
         <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-red-200"></span> Cancelado</span>
+        <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-gray-200 border-l-4 border-emerald-600"></span> Ya cobrado</span>
     </div>
 </x-layouts.tenant>
