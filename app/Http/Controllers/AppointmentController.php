@@ -142,6 +142,14 @@ class AppointmentController extends Controller
             $patient->doctors()->attach($validated['doctor_id'], ['is_primary' => false]);
         }
 
+        // Y con la clinica del turno. Sin esto el turno queda visible para la
+        // secretaria (que ve por clinica) pero el paciente no, porque el
+        // paciente se filtra por el pivote clinic_patient. Esa combinacion
+        // dejaba su pantalla de inicio en error 500, sin salida ni al login.
+        if ($patient && !$patient->clinics()->where('clinics.id', $validated['clinic_id'])->exists()) {
+            $patient->clinics()->attach($validated['clinic_id']);
+        }
+
         $appointment = Appointment::create($validated);
 
         return redirect()->route('appointments.index', ['date' => $appointment->scheduled_at->toDateString()])

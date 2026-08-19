@@ -91,7 +91,13 @@
                     <dl class="space-y-3 text-sm">
                         <div class="flex justify-between">
                             <dt class="text-gray-500">Paciente</dt>
-                            <dd><a href="{{ route('patients.show', $appointment->patient) }}" class="text-blue-600 hover:underline font-medium">{{ $appointment->patient->full_name }}</a></dd>
+                            <dd>
+                                @if($appointment->patient)
+                                    <a href="{{ route('patients.show', $appointment->patient) }}" class="text-blue-600 hover:underline font-medium">{{ $appointment->patient->full_name }}</a>
+                                @else
+                                    <span class="text-gray-400 italic">Paciente sin acceso</span>
+                                @endif
+                            </dd>
                         </div>
                         <div class="flex justify-between">
                             <dt class="text-gray-500">Doctor</dt>

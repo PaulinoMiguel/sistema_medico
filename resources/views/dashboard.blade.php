@@ -75,9 +75,16 @@
                                 {{ $appointment->scheduled_at->format('H:i') }}
                             </td>
                             <td class="px-6 py-4 text-sm text-gray-700">
-                                <a href="{{ route('patients.show', $appointment->patient) }}" class="text-blue-600 hover:underline">
-                                    {{ $appointment->patient->full_name }}
-                                </a>
+                                {{-- El paciente puede quedar oculto por el filtro de
+                                     visibilidad aunque el turno si se vea. Se degrada
+                                     el enlace en vez de tumbar la pantalla entera. --}}
+                                @if($appointment->patient)
+                                    <a href="{{ route('patients.show', $appointment->patient) }}" class="text-blue-600 hover:underline">
+                                        {{ $appointment->patient->full_name }}
+                                    </a>
+                                @else
+                                    <span class="text-gray-400 italic">Paciente sin acceso</span>
+                                @endif
                             </td>
                             <td class="px-6 py-4 text-sm text-gray-500">
                                 @php
