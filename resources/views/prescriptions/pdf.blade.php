@@ -7,9 +7,14 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: Arial, sans-serif; font-size: 12px; color: #333; padding: 20px; }
 
+        /* Cabecera del doctor (partials/print-doctor-header). Centrada y sin
+           flexbox: DomPDF no lo soporta. El logo va como bloque propio arriba. */
         .header { text-align: center; border-bottom: 2px solid #2563eb; padding-bottom: 15px; margin-bottom: 20px; }
-        .header h1 { font-size: 18px; color: #2563eb; margin-bottom: 4px; }
-        .header p { font-size: 11px; color: #666; }
+        .header .logo { max-width: 160px; max-height: 90px; margin-bottom: 6px; }
+        .doctor-name { font-size: 16px; font-weight: bold; color: #1e3a5f; margin: 0 0 2px; }
+        .doctor-info { font-size: 11px; color: #444; margin: 2px 0; }
+        .extra-header { font-size: 11px; color: #555; font-style: italic; margin: 2px 0; }
+        .clinic-info { font-size: 11px; color: #555; margin-top: 4px; }
 
         .patient-info { margin-bottom: 20px; padding: 12px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; }
         .patient-info table { width: 100%; }
@@ -35,11 +40,11 @@
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>{{ $prescription->clinic->name }}</h1>
-        <p>{{ $prescription->clinic->address ?? '' }}</p>
-        <p>{{ $prescription->clinic->phone ?? '' }}</p>
-    </div>
+    @include('partials.print-doctor-header', [
+        'doctor' => $prescription->doctor,
+        'clinic' => $prescription->clinic,
+        'pdfMode' => true,
+    ])
 
     <div class="patient-info">
         <table>
@@ -98,7 +103,9 @@
 
     <div class="footer">
         <div class="signature-line">
-            <p>Dr. {{ $prescription->doctor->name }}</p>
+            {{-- El nombre ya viene con su tratamiento desde el perfil (Dr., Dra., ...),
+                 asi que no se antepone nada aqui. --}}
+            <p>{{ $prescription->doctor->name }}</p>
             <p>Médico Tratante</p>
         </div>
         <div class="footer-info">

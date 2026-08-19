@@ -54,12 +54,38 @@
             <p class="text-xs text-gray-500 -mt-2">Tu nombre, exequatur y teléfono se toman de "Mi perfil". Estos campos son adicionales para los documentos impresos.</p>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Dirección del consultorio</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Consultorio o clínica</label>
                 <input type="text" name="print_address" value="{{ old('print_address', $user->print_address) }}" maxlength="255"
-                       placeholder="Ej: Av. Independencia 123, Local 4, Santo Domingo"
+                       placeholder="Ej: HHWC, consultorio 301"
                        class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500">
+                <p class="mt-1 text-xs text-gray-500">Última línea de la cabecera impresa. Escríbelo tal como quieres que aparezca. Si lo dejas vacío se usa el nombre de la clínica.</p>
                 @error('print_address') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
+
+            @if($user->clinics->count() > 1)
+            <div class="border border-gray-200 rounded-lg p-4">
+                <h4 class="text-sm font-semibold text-gray-700">Línea distinta por clínica</h4>
+                <p class="mt-1 mb-3 text-xs text-gray-500">
+                    Si atiendes en varias clínicas y quieres que la receta imprima algo distinto en cada una,
+                    escríbelo aquí. Lo que dejes vacío usa la línea de arriba. Todo lo demás de la cabecera
+                    (logo, nombre, especialidad, correo y teléfonos) es igual en todas.
+                </p>
+                <div class="space-y-3">
+                    @foreach($user->clinics as $clinic)
+                        @php
+                            $overrides = json_decode($clinic->pivot->print_overrides ?? '', true) ?: [];
+                        @endphp
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">{{ $clinic->name }}</label>
+                            <input type="text" name="clinic_print_address[{{ $clinic->id }}]" maxlength="255"
+                                   value="{{ old('clinic_print_address.' . $clinic->id, $overrides['print_address'] ?? '') }}"
+                                   placeholder="Dejar vacío para usar la línea de arriba"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
 
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Sitio web (opcional)</label>

@@ -16,7 +16,7 @@
         .doctor-name { font-size: 16pt; font-weight: bold; margin: 0; }
         .doctor-info { font-size: 10pt; color: #444; margin: 2px 0; }
         .clinic-info { font-size: 9pt; color: #555; margin-top: 4px; }
-        .extra-header { font-size: 10pt; color: #555; font-style: italic; margin: 2px 0; white-space: pre-line; }
+        .extra-header { font-size: 10pt; color: #555; font-style: italic; margin: 2px 0; }
         .doc-title { font-size: 15pt; font-weight: bold; text-align: center; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 16px; }
         .patient-block {
             margin: 0 0 18px; padding: 8px 12px; border: 1px solid #999; border-radius: 4px; font-size: 11pt;
@@ -50,10 +50,8 @@
         $cs = $consultation->clinical_summary ?? [];
         $doctor = $consultation->doctor;
         $patient = $consultation->patient;
-        $address = $doctor->print_address ?? ($consultation->clinic?->address);
         $genderLabel = $patient->gender === 'male' ? 'Masculino' : ($patient->gender === 'female' ? 'Femenino' : 'Otro');
         $insuranceName = $cs['insurer_name'] ?? $patient->insurance_provider;
-        $dtypeLabel = ($cs['diagnosis_type'] ?? '') === 'presuntivo' ? 'Presuntivo' : (($cs['diagnosis_type'] ?? '') === 'definitivo' ? 'Definitivo' : null);
         $procedures = $cs['procedures'] ?? [];
     @endphp
 
@@ -64,26 +62,7 @@
 
     <div class="page">
         {{-- Cabecera del doctor --}}
-        <div class="header">
-            @if($doctor->print_logo_path)
-                <img src="{{ asset('storage/' . $doctor->print_logo_path) }}" alt="Logo" class="logo">
-            @endif
-            <div class="info">
-                <p class="doctor-name">{{ $doctor->name }}</p>
-                @if($doctor->professional_license)
-                    <p class="doctor-info">Exequatur: {{ $doctor->professional_license }}</p>
-                @endif
-                @if($doctor->print_extra_header)
-                    <p class="extra-header">{{ $doctor->print_extra_header }}</p>
-                @endif
-                @if($doctor->phone)
-                    <p class="doctor-info">{{ $doctor->phone }}</p>
-                @endif
-                @if($address)
-                    <p class="clinic-info">{{ $address }}</p>
-                @endif
-            </div>
-        </div>
+        @include('partials.print-doctor-header', ['clinic' => $consultation->clinic])
 
         <div class="doc-title">Resumen clínico</div>
 
@@ -121,8 +100,16 @@
         {{-- Diagnóstico --}}
         @if(!empty($cs['diagnosis']))
         <div class="section">
-            <h3>Diagnóstico @if($dtypeLabel)({{ $dtypeLabel }})@endif</h3>
+            <h3>Diagnóstico</h3>
             <p>{{ $cs['diagnosis'] }}</p>
+        </div>
+        @endif
+
+        {{-- Evolución --}}
+        @if(!empty($cs['evolution']))
+        <div class="section">
+            <h3>Evolución</h3>
+            <p>{{ $cs['evolution'] }}</p>
         </div>
         @endif
 

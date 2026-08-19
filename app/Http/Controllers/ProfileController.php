@@ -68,7 +68,10 @@ class ProfileController extends Controller
 
     public function editPrintProfile(Request $request)
     {
-        return view('profile.print', ['user' => $request->user()]);
+        $user = $request->user();
+        $user->load('clinics');
+
+        return view('profile.print', compact('user'));
     }
 
     public function updatePrintProfile(Request $request)
@@ -77,9 +80,37 @@ class ProfileController extends Controller
             'print_address' => 'nullable|string|max:255',
             'print_website' => 'nullable|string|max:255',
             'print_extra_header' => 'nullable|string|max:1000',
+            'clinic_print_address' => 'nullable|array',
+            'clinic_print_address.*' => 'nullable|string|max:255',
         ]);
 
-        $request->user()->update($validated);
+        $user = $request->user();
+
+        $perClinic = $validated['clinic_print_address'] ?? [];
+        unset($validated['clinic_print_address']);
+
+        $user->update($validated);
+
+        // Se recorren las clinicas del propio doctor, no las que vengan en el
+        // formulario: asi un id ajeno no puede tocar el pivote de otra persona.
+        foreach ($user->clinics as $clinic) {
+            if (! array_key_exists($clinic->id, $perClinic)) {
+                continue;
+            }
+
+            $overrides = json_decode($clinic->pivot->print_overrides ?? '', true) ?: [];
+            $line = trim((string) $perClinic[$clinic->id]);
+
+            if ($line === '') {
+                unset($overrides['print_address']);
+            } else {
+                $overrides['print_address'] = $line;
+            }
+
+            $user->clinics()->updateExistingPivot($clinic->id, [
+                'print_overrides' => $overrides ? json_encode($overrides) : null,
+            ]);
+        }
 
         return redirect()->route('profile.print')
             ->with('success', 'Perfil de impresión actualizado.');

@@ -59,7 +59,6 @@
             color: #555;
             font-style: italic;
             margin: 2px 0;
-            white-space: pre-line;
         }
         .patient-block {
             margin: 16px 0 24px;
@@ -167,30 +166,10 @@
 
     @php
         $doctor = $consultation->doctor;
-        $address = $doctor->print_address ?? ($consultation->clinic?->address);
     @endphp
     @foreach($selected as $tpl)
         <div class="order-page">
-            <div class="header">
-                @if($doctor->print_logo_path)
-                    <img src="{{ asset('storage/' . $doctor->print_logo_path) }}" alt="Logo" class="logo">
-                @endif
-                <div class="info">
-                    <p class="doctor-name">{{ $doctor->name }}</p>
-                    @if($doctor->professional_license)
-                        <p class="doctor-info">Exequatur: {{ $doctor->professional_license }}</p>
-                    @endif
-                    @if($doctor->print_extra_header)
-                        <p class="extra-header">{{ $doctor->print_extra_header }}</p>
-                    @endif
-                    @if($doctor->phone)
-                        <p class="doctor-info">{{ $doctor->phone }}</p>
-                    @endif
-                    @if($address)
-                        <p class="clinic-info">{{ $address }}</p>
-                    @endif
-                </div>
-            </div>
+            @include('partials.print-doctor-header', ['clinic' => $consultation->clinic])
 
             <div class="patient-block">
                 <div class="row">

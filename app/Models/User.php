@@ -53,8 +53,27 @@ class User extends Authenticatable
     public function clinics(): BelongsToMany
     {
         return $this->belongsToMany(Clinic::class, 'clinic_user')
-            ->withPivot('is_primary')
+            ->withPivot('is_primary', 'print_overrides')
             ->withTimestamps();
+    }
+
+    /**
+     * Linea de "Consultorio o clinica" que va en la cabecera impresa para
+     * la clinica indicada. Primero lo que el doctor escribio para esa
+     * clinica, luego lo de su perfil, y como ultimo recurso el nombre de
+     * la clinica, para que la cabecera nunca quede coja.
+     */
+    public function printAddressFor(?Clinic $clinic): ?string
+    {
+        $perClinic = null;
+
+        if ($clinic) {
+            $pivot = $this->clinics->firstWhere('id', $clinic->id)?->pivot;
+            $overrides = json_decode($pivot?->print_overrides ?? '', true);
+            $perClinic = trim($overrides['print_address'] ?? '') ?: null;
+        }
+
+        return $perClinic ?: (trim($this->print_address ?? '') ?: $clinic?->name);
     }
 
     public function patients(): BelongsToMany
