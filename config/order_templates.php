@@ -75,6 +75,7 @@ return [
                     'Hep C',
                     'TP',
                     'TPT',
+                    'Otros',
                 ],
             ],
             'analitica_hombre' => [

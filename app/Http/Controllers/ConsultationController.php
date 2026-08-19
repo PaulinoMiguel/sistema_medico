@@ -269,7 +269,7 @@ class ConsultationController extends Controller
             'clinical_summary.procedure_ids.*' => 'integer|exists:procedures,id',
             'clinical_summary.summary' => 'nullable|string',
             'clinical_summary.diagnosis' => 'nullable|string',
-            'clinical_summary.diagnosis_type' => 'nullable|in:presuntivo,definitivo',
+            'clinical_summary.evolution' => 'nullable|string',
             'clinical_summary.studies_done' => 'nullable|string',
             'clinical_summary.previous_treatments' => 'nullable|string',
         ]);
@@ -358,6 +358,7 @@ class ConsultationController extends Controller
         $texts = [
             'summary' => trim($cs['summary'] ?? '') ?: null,
             'diagnosis' => trim($cs['diagnosis'] ?? '') ?: null,
+            'evolution' => trim($cs['evolution'] ?? '') ?: null,
             'studies_done' => trim($cs['studies_done'] ?? '') ?: null,
             'previous_treatments' => trim($cs['previous_treatments'] ?? '') ?: null,
         ];
@@ -368,7 +369,6 @@ class ConsultationController extends Controller
             'clinical_summary' => $hasContent ? array_merge([
                 'insurer_id' => $insurer?->id,
                 'insurer_name' => $insurer?->name,
-                'diagnosis_type' => $cs['diagnosis_type'] ?? null,
                 'procedures' => $procedures,
             ], $texts) : null,
         ]);
