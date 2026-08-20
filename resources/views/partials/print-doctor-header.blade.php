@@ -22,13 +22,17 @@
 
     // DomPDF resuelve mejor una ruta del disco que una URL: pedirle la imagen
     // por HTTP al propio servidor puede colgarse cuando corre en un solo hilo.
-    $logoSrc = null;
-    if ($doctor->print_logo_path) {
-        $localLogo = public_path('storage/' . $doctor->print_logo_path);
-        $logoSrc = (($pdfMode ?? false) && is_file($localLogo))
-            ? $localLogo
-            : asset('storage/' . $doctor->print_logo_path);
-    }
+    $resolverLogo = function (?string $ruta) use ($pdfMode) {
+        if (! $ruta) {
+            return null;
+        }
+        $local = public_path('storage/' . $ruta);
+
+        return (($pdfMode ?? false) && is_file($local)) ? $local : asset('storage/' . $ruta);
+    };
+
+    $logoSrc = $resolverLogo($doctor->print_logo_path);
+    $logoRightSrc = $resolverLogo($doctor->print_logo_right_path);
 @endphp
 @if($pdfMode ?? false)
     {{-- DomPDF no soporta flexbox. Se usa una tabla, que ademas permite
@@ -46,7 +50,11 @@
             <td class="info-cell">
                 @include('partials.print-doctor-header-info')
             </td>
-            <td class="spacer-cell"></td>
+            <td class="logo-cell logo-cell-right">
+                @if($logoRightSrc)
+                    <img src="{{ $logoRightSrc }}" alt="Logo" class="logo">
+                @endif
+            </td>
         </tr>
     </table>
 @else
@@ -57,5 +65,8 @@
         <div class="info">
             @include('partials.print-doctor-header-info')
         </div>
+        @if($logoRightSrc)
+            <img src="{{ $logoRightSrc }}" alt="Logo" class="logo">
+        @endif
     </div>
 @endif

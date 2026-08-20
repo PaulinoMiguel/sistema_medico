@@ -11,41 +11,55 @@
             </div>
         @endif
 
-        {{-- Logo --}}
-        <div class="bg-white rounded-lg shadow p-6 mb-6">
-            <h3 class="font-semibold text-gray-800 mb-3">Logo</h3>
-            <div class="flex items-start gap-6">
-                <div class="w-32 h-32 border border-gray-300 rounded-md flex items-center justify-center bg-gray-50 overflow-hidden">
-                    @if($user->print_logo_path)
-                        <img src="{{ asset('storage/' . $user->print_logo_path) }}" alt="Logo" class="max-w-full max-h-full">
-                    @else
-                        <span class="text-xs text-gray-400 text-center px-2">Sin logo</span>
-                    @endif
-                </div>
-                <div class="flex-1">
-                    <form method="POST" action="{{ route('profile.print.logo') }}" enctype="multipart/form-data" class="space-y-3">
-                        @csrf
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Subir logo (PNG, JPG, WEBP, SVG. Max 2MB)</label>
-                            <input type="file" name="print_logo" accept="image/*" required
-                                   class="block w-full text-sm border border-gray-300 rounded-md file:bg-blue-50 file:border-0 file:px-4 file:py-2 file:text-sm file:font-medium file:text-blue-700">
-                            @error('print_logo') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+        {{-- Los dos logos de la cabecera impresa: el del doctor a la izquierda
+             y el del hospital o centro a la derecha. Mismo formulario, cambia
+             el lado que se manda en la ruta. --}}
+        @php
+            $logos = [
+                'left' => ['titulo' => 'Logo (izquierda)', 'ayuda' => 'El tuyo. Aparece a la izquierda de la cabecera.', 'ruta' => $user->print_logo_path],
+                'right' => ['titulo' => 'Logo del hospital o centro (derecha)', 'ayuda' => 'Opcional. Aparece a la derecha, al mismo tamaño que el tuyo.', 'ruta' => $user->print_logo_right_path],
+            ];
+        @endphp
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            @foreach($logos as $lado => $logo)
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="font-semibold text-gray-800">{{ $logo['titulo'] }}</h3>
+                    <p class="text-xs text-gray-500 mt-1 mb-3">{{ $logo['ayuda'] }}</p>
+                    <div class="flex items-start gap-6">
+                        <div class="w-32 h-32 flex-shrink-0 border border-gray-300 rounded-md flex items-center justify-center bg-gray-50 overflow-hidden">
+                            @if($logo['ruta'])
+                                <img src="{{ asset('storage/' . $logo['ruta']) }}" alt="Logo" class="max-w-full max-h-full">
+                            @else
+                                <span class="text-xs text-gray-400 text-center px-2">Sin logo</span>
+                            @endif
                         </div>
-                        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium">
-                            Guardar logo
-                        </button>
-                    </form>
-                    @if($user->print_logo_path)
-                        <form method="POST" action="{{ route('profile.print.logo.delete') }}" class="mt-2">
-                            @csrf @method('DELETE')
-                            <button type="submit" onclick="return confirm('Eliminar el logo?')" class="text-sm text-red-600 hover:underline">
-                                Eliminar logo
-                            </button>
-                        </form>
-                    @endif
+                        <div class="flex-1">
+                            <form method="POST" action="{{ route('profile.print.logo', $lado) }}" enctype="multipart/form-data" class="space-y-3">
+                                @csrf
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Subir (PNG, JPG, WEBP, SVG. Max 2MB)</label>
+                                    <input type="file" name="print_logo" accept="image/*" required
+                                           class="block w-full text-sm border border-gray-300 rounded-md file:bg-blue-50 file:border-0 file:px-4 file:py-2 file:text-sm file:font-medium file:text-blue-700">
+                                </div>
+                                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium">
+                                    Guardar logo
+                                </button>
+                            </form>
+                            @if($logo['ruta'])
+                                <form method="POST" action="{{ route('profile.print.logo.delete', $lado) }}" class="mt-2">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" onclick="return confirm('Eliminar este logo?')" class="text-sm text-red-600 hover:underline">
+                                        Eliminar logo
+                                    </button>
+                                </form>
+                            @endif
+                        </div>
+                    </div>
                 </div>
-            </div>
+            @endforeach
         </div>
+        @error('print_logo') <p class="mb-6 text-sm text-red-600">{{ $message }}</p> @enderror
 
         {{-- Datos textuales --}}
         <form method="POST" action="{{ route('profile.print.update') }}" class="bg-white rounded-lg shadow p-6 space-y-4">

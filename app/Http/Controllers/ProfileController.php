@@ -116,32 +116,46 @@ class ProfileController extends Controller
             ->with('success', 'Perfil de impresión actualizado.');
     }
 
-    public function updatePrintLogo(Request $request)
+    /**
+     * La cabecera impresa admite dos logos: el del doctor a la izquierda y
+     * el del hospital o centro a la derecha. Ambos se suben igual, asi que
+     * el lado llega por la ruta y aqui se traduce a su columna.
+     */
+    private function printLogoColumn(string $side): string
+    {
+        abort_unless(in_array($side, ['left', 'right'], true), 404);
+
+        return $side === 'right' ? 'print_logo_right_path' : 'print_logo_path';
+    }
+
+    public function updatePrintLogo(Request $request, string $side = 'left')
     {
         $request->validate([
             'print_logo' => 'required|image|mimes:jpg,jpeg,png,webp,svg|max:2048',
         ]);
 
+        $columna = $this->printLogoColumn($side);
         $user = $request->user();
 
-        if ($user->print_logo_path) {
-            Storage::disk('public')->delete($user->print_logo_path);
+        if ($user->{$columna}) {
+            Storage::disk('public')->delete($user->{$columna});
         }
 
         $path = $request->file('print_logo')->store('print-logos', 'public');
-        $user->update(['print_logo_path' => $path]);
+        $user->update([$columna => $path]);
 
         return redirect()->route('profile.print')
             ->with('success', 'Logo actualizado.');
     }
 
-    public function deletePrintLogo(Request $request)
+    public function deletePrintLogo(Request $request, string $side = 'left')
     {
+        $columna = $this->printLogoColumn($side);
         $user = $request->user();
 
-        if ($user->print_logo_path) {
-            Storage::disk('public')->delete($user->print_logo_path);
-            $user->update(['print_logo_path' => null]);
+        if ($user->{$columna}) {
+            Storage::disk('public')->delete($user->{$columna});
+            $user->update([$columna => null]);
         }
 
         return redirect()->route('profile.print')

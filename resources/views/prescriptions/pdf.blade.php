@@ -17,8 +17,10 @@
            queda simetrica y su eje coincide con el de la hoja. */
         .header { width: 100%; border-collapse: collapse; border-bottom: 2px solid #2563eb; margin-bottom: 20px; }
         .header td { padding: 0 0 15px; }
-        .header .logo-cell, .header .spacer-cell { width: 185px; }
-        .header .logo-cell { vertical-align: middle; }
+        /* Las dos celdas laterales miden igual aunque la derecha vaya vacia:
+           es lo que mantiene la del texto simetrica y centrada en la hoja. */
+        .header .logo-cell { width: 185px; vertical-align: middle; }
+        .header .logo-cell-right { text-align: right; }
         .header .info-cell { vertical-align: middle; text-align: center; }
         /* Con los dos maximos el logo entra sin deformarse tanto si es apaisado
            (lo limita el ancho) como si es alto o cuadrado (lo limita el alto).

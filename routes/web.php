@@ -61,8 +61,9 @@ Route::middleware('auth')->group(function () {
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
     Route::get('/profile/print', [ProfileController::class, 'editPrintProfile'])->name('profile.print');
     Route::put('/profile/print', [ProfileController::class, 'updatePrintProfile'])->name('profile.print.update');
-    Route::post('/profile/print/logo', [ProfileController::class, 'updatePrintLogo'])->name('profile.print.logo');
-    Route::delete('/profile/print/logo', [ProfileController::class, 'deletePrintLogo'])->name('profile.print.logo.delete');
+    // {side}: left = logo del doctor, right = logo del hospital o centro
+    Route::post('/profile/print/logo/{side}', [ProfileController::class, 'updatePrintLogo'])->name('profile.print.logo');
+    Route::delete('/profile/print/logo/{side}', [ProfileController::class, 'deletePrintLogo'])->name('profile.print.logo.delete');
 
     // Clinics are now managed exclusively from the super admin panel.
     // Doctors only see a read-only list of their assigned clinics.
