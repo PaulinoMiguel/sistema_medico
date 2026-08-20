@@ -13,6 +13,11 @@
            no se dibuje por encima del logo. */
         .header { border-bottom: 2px solid #2563eb; padding-bottom: 15px; margin-bottom: 20px; }
         .header .logo { float: left; max-width: 130px; max-height: 80px; margin-right: 14px; }
+        /* El texto va centrado en su propia columna, a la derecha del logo.
+           Se usa margin-left y no solo el flujo del float: si una linea
+           quedara mas abajo que el logo se centraria respecto a toda la
+           pagina y saldria desalineada de las de arriba. */
+        .header .info { margin-left: 150px; text-align: center; }
         .doctor-name { font-size: 16px; font-weight: bold; color: #1e3a5f; margin: 0 0 2px; }
         .doctor-info { font-size: 11px; color: #444; margin: 2px 0; }
         .extra-header { font-size: 11px; color: #555; font-style: italic; margin: 2px 0; }
