@@ -7,14 +7,17 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: Arial, sans-serif; font-size: 12px; color: #333; padding: 20px; }
 
-        /* Cabecera del doctor (partials/print-doctor-header). Centrada y sin
-           flexbox: DomPDF no lo soporta. El logo va como bloque propio arriba. */
-        .header { text-align: center; border-bottom: 2px solid #2563eb; padding-bottom: 15px; margin-bottom: 20px; }
-        .header .logo { max-width: 160px; max-height: 90px; margin-bottom: 6px; }
+        /* Cabecera del doctor (partials/print-doctor-header). El logo va a la
+           izquierda con float y no con flexbox, que DomPDF no soporta. El
+           .clearfix del partial cierra el float para que el borde inferior
+           no se dibuje por encima del logo. */
+        .header { border-bottom: 2px solid #2563eb; padding-bottom: 15px; margin-bottom: 20px; }
+        .header .logo { float: left; max-width: 130px; max-height: 80px; margin-right: 14px; }
         .doctor-name { font-size: 16px; font-weight: bold; color: #1e3a5f; margin: 0 0 2px; }
         .doctor-info { font-size: 11px; color: #444; margin: 2px 0; }
         .extra-header { font-size: 11px; color: #555; font-style: italic; margin: 2px 0; }
         .clinic-info { font-size: 11px; color: #555; margin-top: 4px; }
+        .header .clearfix { clear: both; font-size: 0; line-height: 0; }
 
         .patient-info { margin-bottom: 20px; padding: 12px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; }
         .patient-info table { width: 100%; }

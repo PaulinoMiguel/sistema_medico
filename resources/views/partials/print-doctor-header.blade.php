@@ -49,4 +49,10 @@
             <p class="clinic-info">{{ $locationLine }}</p>
         @endif
     </div>
+    @if($pdfMode ?? false)
+        {{-- En el PDF el logo va flotado a la izquierda; esto cierra el float
+             para que el borde de la cabecera quede debajo de todo. Los otros
+             dos documentos usan flexbox y no lo necesitan. --}}
+        <div class="clearfix"></div>
+    @endif
 </div>
