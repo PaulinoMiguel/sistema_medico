@@ -55,8 +55,12 @@
                 <td>{{ $prescription->prescription_date->format('d/m/Y') }}</td>
             </tr>
             <tr>
-                <td class="label">Expediente:</td>
-                <td>{{ $prescription->patient->medical_record_number }}</td>
+                {{-- La farmacia y el seguro identifican al paciente por su
+                     documento, no por el numero de expediente interno. La
+                     etiqueta se deja fija en "Cédula" aunque el documento
+                     cargado sea un pasaporte. --}}
+                <td class="label">Cédula:</td>
+                <td>{{ $prescription->patient->document_number ?: '—' }}</td>
                 <td class="label">Receta No.:</td>
                 <td>{{ $prescription->prescription_number }}</td>
             </tr>
