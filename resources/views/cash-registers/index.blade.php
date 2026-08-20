@@ -23,17 +23,19 @@
                             <p class="text-xs text-green-600 dark:text-green-400">Monto inicial</p>
                             <p class="text-lg font-mono font-bold text-green-800 dark:text-green-300">${{ number_format($openRegister->opening_amount, 2) }}</p>
                         </div>
-                        <div>
-                            <p class="text-xs text-green-600 dark:text-green-400">Total efectivo</p>
-                            <p class="text-lg font-mono font-bold text-green-800 dark:text-green-300">${{ number_format($openRegister->total_cash, 2) }}</p>
+                        {{-- Los dos subtotales suman el total cobrado. Se separan
+                             con una linea para que se lea como un desglose. --}}
+                        <div class="border-l border-green-300 pl-6">
+                            <p class="text-xs text-green-600 dark:text-green-400">Subtotal efectivo</p>
+                            <p class="text-lg font-mono text-green-800 dark:text-green-300">${{ number_format($openRegister->total_cash, 2) }}</p>
                         </div>
                         <div>
-                            <p class="text-xs text-green-600 dark:text-green-400">Total transferencia</p>
-                            <p class="text-lg font-mono font-bold text-green-800 dark:text-green-300">${{ number_format($openRegister->total_transfer, 2) }}</p>
+                            <p class="text-xs text-green-600 dark:text-green-400">Subtotal transferencia</p>
+                            <p class="text-lg font-mono text-green-800 dark:text-green-300">${{ number_format($openRegister->total_transfer, 2) }}</p>
                         </div>
-                        <div>
-                            <p class="text-xs text-green-600 dark:text-green-400">Total cobrado</p>
-                            <p class="text-lg font-mono font-bold text-green-800 dark:text-green-300">${{ number_format($openRegister->total_collected, 2) }}</p>
+                        <div class="border-t-2 border-green-400 pt-1 self-end">
+                            <p class="text-xs font-semibold text-green-700 dark:text-green-300">Total cobrado</p>
+                            <p class="text-xl font-mono font-bold text-green-900 dark:text-green-200">${{ number_format($openRegister->total_collected, 2) }}</p>
                         </div>
                         <div class="border-l border-green-300 pl-6">
                             {{-- Solo el efectivo: las transferencias no entran a la gaveta. --}}
@@ -90,7 +92,7 @@
                     </thead>
                     <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                         @foreach($allPayments as $payment)
-                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 payment-row" data-doctor-id="{{ $payment->doctor_id }}">
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 payment-row" data-doctor-id="{{ $payment->doctor_id }}" data-method="{{ $payment->payment_method }}">
                             <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{{ $payment->created_at->format('H:i') }}</td>
                             <td class="px-6 py-4 text-sm font-mono text-gray-500 dark:text-gray-400">{{ $payment->receipt_number }}</td>
                             <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-gray-100">{{ $payment->patient->full_name }}</td>
@@ -108,6 +110,14 @@
                     </tbody>
                     <tfoot class="bg-gray-50 dark:bg-gray-700">
                         <tr>
+                            <td colspan="7" class="px-6 py-1 pt-3 text-sm text-gray-600 dark:text-gray-300 text-right">Subtotal efectivo:</td>
+                            <td class="px-6 py-1 pt-3 text-right font-mono text-gray-700 dark:text-gray-300" id="subtotal-cash">${{ number_format($openRegister->total_cash, 2) }}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="7" class="px-6 py-1 text-sm text-gray-600 dark:text-gray-300 text-right">Subtotal transferencia:</td>
+                            <td class="px-6 py-1 text-right font-mono text-gray-700 dark:text-gray-300" id="subtotal-transfer">${{ number_format($openRegister->total_transfer, 2) }}</td>
+                        </tr>
+                        <tr class="border-t-2 border-gray-300 dark:border-gray-600">
                             <td colspan="7" class="px-6 py-3 text-sm font-bold text-gray-800 dark:text-gray-200 text-right" id="total-label">Total cobrado:</td>
                             <td class="px-6 py-3 text-right font-mono font-bold text-lg text-green-700 dark:text-green-400" id="total-amount">${{ number_format($openRegister->total_collected, 2) }}</td>
                         </tr>
@@ -118,18 +128,25 @@
         </div>
 
         <script>
+            const money = n => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
             function filterByDoctor(doctorId) {
                 const rows = document.querySelectorAll('.payment-row');
-                let total = 0;
+                // Los subtotales se recalculan junto al total: si no, al filtrar
+                // por doctor el desglose quedaria mostrando el dia completo.
+                let total = 0, cash = 0, transfer = 0;
                 rows.forEach(row => {
                     const match = !doctorId || row.dataset.doctorId === doctorId;
                     row.style.display = match ? '' : 'none';
-                    if (match) total += parseFloat(row.querySelector('.payment-amount').dataset.amount);
+                    if (!match) return;
+                    const monto = parseFloat(row.querySelector('.payment-amount').dataset.amount);
+                    total += monto;
+                    if (row.dataset.method === 'transfer') { transfer += monto; } else { cash += monto; }
                 });
-                const label = document.getElementById('total-label');
-                const amount = document.getElementById('total-amount');
-                label.textContent = doctorId ? 'Total filtrado:' : 'Total cobrado:';
-                amount.textContent = '$' + total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                document.getElementById('total-label').textContent = doctorId ? 'Total filtrado:' : 'Total cobrado:';
+                document.getElementById('total-amount').textContent = money(total);
+                document.getElementById('subtotal-cash').textContent = money(cash);
+                document.getElementById('subtotal-transfer').textContent = money(transfer);
             }
         </script>
 

@@ -14,12 +14,21 @@
         </div>
         <div class="bg-white rounded-lg shadow p-4">
             <p class="text-xs text-gray-500 uppercase">Cobros</p>
-            <p class="text-lg font-mono font-bold text-green-700">${{ number_format($cashRegister->total_collected, 2) }}</p>
-            <p class="text-xs text-gray-400">{{ $cashRegister->payments->count() }} cobro(s)</p>
-            <p class="text-xs text-gray-500 mt-1">
-                Efectivo ${{ number_format($cashRegister->total_cash, 2) }}<br>
-                Transferencia ${{ number_format($cashRegister->total_transfer, 2) }}
-            </p>
+            <div class="text-sm font-mono text-gray-600 mt-1 space-y-0.5">
+                <div class="flex justify-between gap-3">
+                    <span>Subtotal efectivo</span>
+                    <span>${{ number_format($cashRegister->total_cash, 2) }}</span>
+                </div>
+                <div class="flex justify-between gap-3">
+                    <span>Subtotal transferencia</span>
+                    <span>${{ number_format($cashRegister->total_transfer, 2) }}</span>
+                </div>
+                <div class="flex justify-between gap-3 border-t border-gray-300 pt-1 font-bold text-green-700">
+                    <span>Total cobrado</span>
+                    <span>${{ number_format($cashRegister->total_collected, 2) }}</span>
+                </div>
+            </div>
+            <p class="text-xs text-gray-400 mt-1">{{ $cashRegister->payments->count() }} cobro(s)</p>
         </div>
         <div class="bg-white rounded-lg shadow p-4">
             <p class="text-xs text-gray-500 uppercase">Esperado en caja</p>
@@ -93,7 +102,7 @@
                 </thead>
                 <tbody class="divide-y divide-gray-200">
                     @foreach($allPayments as $payment)
-                    <tr class="hover:bg-gray-50 payment-row" data-doctor-id="{{ $payment->doctor_id }}">
+                    <tr class="hover:bg-gray-50 payment-row" data-doctor-id="{{ $payment->doctor_id }}" data-method="{{ $payment->payment_method }}">
                         <td class="px-6 py-4 text-sm text-gray-500">{{ $payment->created_at->format('H:i') }}</td>
                         <td class="px-6 py-4 text-sm font-mono text-gray-500">{{ $payment->receipt_number }}</td>
                         <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ $payment->patient->full_name }}</td>
@@ -111,6 +120,14 @@
                 </tbody>
                 <tfoot class="bg-gray-50">
                     <tr>
+                        <td colspan="7" class="px-6 py-1 pt-3 text-sm text-gray-600 text-right">Subtotal efectivo:</td>
+                        <td class="px-6 py-1 pt-3 text-right font-mono text-gray-700" id="subtotal-cash">${{ number_format($cashRegister->total_cash, 2) }}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="7" class="px-6 py-1 text-sm text-gray-600 text-right">Subtotal transferencia:</td>
+                        <td class="px-6 py-1 text-right font-mono text-gray-700" id="subtotal-transfer">${{ number_format($cashRegister->total_transfer, 2) }}</td>
+                    </tr>
+                    <tr class="border-t-2 border-gray-300">
                         <td colspan="7" class="px-6 py-3 text-sm font-bold text-gray-800 text-right" id="total-label">Total cobrado:</td>
                         <td class="px-6 py-3 text-right font-mono font-bold text-lg text-green-700" id="total-amount">${{ number_format($cashRegister->total_collected, 2) }}</td>
                     </tr>
@@ -121,16 +138,25 @@
     </div>
 
     <script>
+        const money = n => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
         function filterByDoctor(doctorId) {
             const rows = document.querySelectorAll('.payment-row');
-            let total = 0;
+            // Los subtotales se recalculan junto al total: si no, al filtrar
+            // por doctor el desglose quedaria mostrando la caja completa.
+            let total = 0, cash = 0, transfer = 0;
             rows.forEach(row => {
                 const match = !doctorId || row.dataset.doctorId === doctorId;
                 row.style.display = match ? '' : 'none';
-                if (match) total += parseFloat(row.querySelector('.payment-amount').dataset.amount);
+                if (!match) return;
+                const monto = parseFloat(row.querySelector('.payment-amount').dataset.amount);
+                total += monto;
+                if (row.dataset.method === 'transfer') { transfer += monto; } else { cash += monto; }
             });
             document.getElementById('total-label').textContent = doctorId ? 'Total filtrado:' : 'Total cobrado:';
-            document.getElementById('total-amount').textContent = '$' + total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            document.getElementById('total-amount').textContent = money(total);
+            document.getElementById('subtotal-cash').textContent = money(cash);
+            document.getElementById('subtotal-transfer').textContent = money(transfer);
         }
     </script>
 </x-layouts.tenant>
