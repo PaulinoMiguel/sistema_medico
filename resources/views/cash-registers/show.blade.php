@@ -92,6 +92,7 @@
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hora</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Recibo</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Turno</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Paciente</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Médico</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Concepto</th>
@@ -105,6 +106,14 @@
                     <tr class="hover:bg-gray-50 payment-row" data-doctor-id="{{ $payment->doctor_id }}" data-method="{{ $payment->payment_method }}">
                         <td class="px-6 py-4 text-sm text-gray-500">{{ $payment->created_at->format('H:i') }}</td>
                         <td class="px-6 py-4 text-sm font-mono text-gray-500">{{ $payment->receipt_number }}</td>
+                        <td class="px-6 py-4 text-sm font-mono">
+                            @if($payment->appointment_id)
+                                <a href="{{ route('appointments.show', $payment->appointment_id) }}"
+                                   class="text-blue-600 hover:underline">#{{ $payment->appointment_id }}</a>
+                            @else
+                                <span class="text-gray-400">—</span>
+                            @endif
+                        </td>
                         <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ $payment->patient->full_name }}</td>
                         <td class="px-6 py-4 text-sm text-gray-500">{{ $payment->doctor?->name ?? '-' }}</td>
                         <td class="px-6 py-4 text-sm text-gray-500">{{ $payment->concept }}</td>
@@ -120,15 +129,15 @@
                 </tbody>
                 <tfoot class="bg-gray-50">
                     <tr>
-                        <td colspan="7" class="px-6 py-1 pt-3 text-sm text-gray-600 text-right">Subtotal efectivo:</td>
+                        <td colspan="8" class="px-6 py-1 pt-3 text-sm text-gray-600 text-right">Subtotal efectivo:</td>
                         <td class="px-6 py-1 pt-3 text-right font-mono text-gray-700" id="subtotal-cash">${{ number_format($cashRegister->total_cash, 2) }}</td>
                     </tr>
                     <tr>
-                        <td colspan="7" class="px-6 py-1 text-sm text-gray-600 text-right">Subtotal transferencia:</td>
+                        <td colspan="8" class="px-6 py-1 text-sm text-gray-600 text-right">Subtotal transferencia:</td>
                         <td class="px-6 py-1 text-right font-mono text-gray-700" id="subtotal-transfer">${{ number_format($cashRegister->total_transfer, 2) }}</td>
                     </tr>
                     <tr class="border-t-2 border-gray-300">
-                        <td colspan="7" class="px-6 py-3 text-sm font-bold text-gray-800 text-right" id="total-label">Total cobrado:</td>
+                        <td colspan="8" class="px-6 py-3 text-sm font-bold text-gray-800 text-right" id="total-label">Total cobrado:</td>
                         <td class="px-6 py-3 text-right font-mono font-bold text-lg text-green-700" id="total-amount">${{ number_format($cashRegister->total_collected, 2) }}</td>
                     </tr>
                 </tfoot>
