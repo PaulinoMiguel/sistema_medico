@@ -9,16 +9,7 @@
             'cancelled' => 'bg-red-200 text-red-800 line-through',
             'no_show' => 'bg-red-100 text-red-600',
         ];
-        $typeLabels = [
-            'first_visit' => '1ra vez',
-            'follow_up' => 'Control',
-            'pre_operative' => 'Pre-Qx',
-            'post_operative' => 'Post-Qx',
-            'urodynamic_study' => 'Urodin.',
-            'procedure' => 'Proced.',
-            'emergency' => 'Urgencia',
-            'surgical' => 'Cirugia',
-        ];
+        $typeLabels = \App\Models\Appointment::SHORT_TYPES;
     @endphp
 
     {{-- Header --}}

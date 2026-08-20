@@ -10,6 +10,7 @@ use App\Models\Service;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class AppointmentController extends Controller
@@ -103,7 +104,7 @@ class AppointmentController extends Controller
             'patient_id' => 'required|exists:patients,id',
             'scheduled_at' => 'required|date|after_or_equal:today',
             'duration_minutes' => 'nullable|integer|min:15|max:180',
-            'type' => 'required|in:first_visit,follow_up,pre_operative,post_operative,urodynamic_study,procedure,emergency,surgical',
+            'type' => ['required', Rule::in(array_keys(Appointment::TYPES))],
             'reason' => 'nullable|string',
             'notes' => 'nullable|string',
         ];
@@ -208,7 +209,7 @@ class AppointmentController extends Controller
             'patient_id' => 'required|exists:patients,id',
             'scheduled_at' => 'required|date',
             'duration_minutes' => 'nullable|integer|min:15|max:180',
-            'type' => 'required|in:first_visit,follow_up,pre_operative,post_operative,urodynamic_study,procedure,emergency,surgical',
+            'type' => ['required', Rule::in(array_keys(Appointment::TYPES))],
             'reason' => 'nullable|string',
             'notes' => 'nullable|string',
         ];
@@ -275,7 +276,7 @@ class AppointmentController extends Controller
     public function updateType(Request $request, Appointment $appointment)
     {
         $validated = $request->validate([
-            'type' => 'required|in:first_visit,follow_up,pre_operative,post_operative,urodynamic_study,procedure,emergency,surgical',
+            'type' => ['required', Rule::in(array_keys(Appointment::TYPES))],
         ], [
             'type.required' => 'Debes seleccionar un tipo de turno.',
             'type.in' => 'El tipo de turno seleccionado no es válido.',

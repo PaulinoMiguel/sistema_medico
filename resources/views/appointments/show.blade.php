@@ -18,16 +18,7 @@
             'cancelled'=>'Cancelado',
             'no_show'=>'No asistio',
         ];
-        $types = [
-            'first_visit'=>'Primera vez',
-            'follow_up'=>'Control',
-            'pre_operative'=>'Pre-quirúrgico',
-            'post_operative'=>'Post-quirúrgico',
-            'urodynamic_study'=>'Urodinamia',
-            'procedure'=>'Procedimiento',
-            'emergency'=>'Urgencia',
-            'surgical'=>'Cirugia',
-        ];
+        $types = \App\Models\Appointment::TYPES;
 
         $_ = null; // actions handled inline below
     @endphp

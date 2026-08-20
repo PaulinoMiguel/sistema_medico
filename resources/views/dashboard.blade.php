@@ -87,19 +87,7 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 text-sm text-gray-500">
-                                @php
-                                    $types = [
-                                        'first_visit' => 'Primera vez',
-                                        'follow_up' => 'Control',
-                                        'pre_operative' => 'Pre-quirúrgico',
-                                        'post_operative' => 'Post-quirúrgico',
-                                        'urodynamic_study' => 'Urodinamia',
-                                        'procedure' => 'Procedimiento',
-                                        'emergency' => 'Urgencia',
-                                        'surgical' => 'Cirugia',
-                                    ];
-                                @endphp
-                                {{ $types[$appointment->type] ?? $appointment->type }}
+                                {{ $appointment->type_label }}
                             </td>
                             <td class="px-6 py-4">
                                 @php

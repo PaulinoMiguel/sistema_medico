@@ -503,6 +503,10 @@ class ConsultationController extends Controller
             'urodynamic_study' => 'urodynamic',
             'procedure' => 'procedure',
             'emergency' => 'emergency',
+            'flowmetry' => 'flowmetry',
+            // Un turno de "Resultado" es una visita de revision: la consulta
+            // se abre como control, que es el formato que le corresponde.
+            'result' => 'follow_up',
             default => 'follow_up',
         };
     }
