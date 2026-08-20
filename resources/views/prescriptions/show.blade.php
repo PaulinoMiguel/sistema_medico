@@ -53,10 +53,12 @@
                         <div>
                             <h4 class="font-semibold text-gray-800">{{ $index + 1 }}. {{ $item->medication_name }}</h4>
                             <div class="mt-2 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                @if($item->dosage)
                                 <div>
                                     <span class="text-gray-500">Dosis:</span>
                                     <span class="text-gray-800">{{ $item->dosage }}</span>
                                 </div>
+                                @endif
                                 @if($item->frequency)
                                 <div>
                                     <span class="text-gray-500">Frecuencia:</span>

@@ -92,6 +92,14 @@
         $frequencyOptions = ['Cada 24 horas', 'Cada 12 horas', 'Cada 8 horas', 'Libre'];
     @endphp
 
+    {{-- Una sola lista para todas las filas de medicamentos. Va fuera de la
+         plantilla que se clona, porque un id no puede repetirse en la pagina. --}}
+    <datalist id="frecuencias-sugeridas">
+        @foreach($frequencyOptions as $option)
+            <option value="{{ $option }}"></option>
+        @endforeach
+    </datalist>
+
     <template id="medication-template">
         <div class="p-6 medication-row">
             <div class="flex justify-between items-center mb-4">
@@ -122,20 +130,18 @@
                            placeholder="Ej: Tamsulosina">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Dosis *</label>
-                    <input type="text" data-name="dosage" required
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Dosis</label>
+                    <input type="text" data-name="dosage"
                            class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"
                            placeholder="Ej: 0.4mg">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Frecuencia</label>
-                    <select data-name="frequency"
-                            class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
-                        <option value="">— Sin especificar —</option>
-                        @foreach($frequencyOptions as $option)
-                            <option value="{{ $option }}">{{ $option }}</option>
-                        @endforeach
-                    </select>
+                    {{-- Campo libre con sugerencias: se elige una de la lista, se
+                         escribe cualquier otra pauta, o se deja vacio. --}}
+                    <input type="text" data-name="frequency" list="frecuencias-sugeridas" autocomplete="off"
+                           class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"
+                           placeholder="Elige o escribe">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Duración</label>

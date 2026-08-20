@@ -102,7 +102,7 @@
                     @php
                         $routeLabels = ['oral'=>'Oral','sublingual'=>'Sublingual','topical'=>'Tópica','intramuscular'=>'Intramuscular','intravenous'=>'Intravenosa','rectal'=>'Rectal','ophthalmic'=>'Oftálmica','otic'=>'Ótica','nasal'=>'Nasal','inhaled'=>'Inhalada'];
                     @endphp
-                    <span><strong>Dosis:</strong> {{ $item->dosage }}</span>
+                    @if($item->dosage)<span><strong>Dosis:</strong> {{ $item->dosage }}</span>@endif
                     @if($item->frequency)<span><strong>Frecuencia:</strong> {{ $item->frequency }}</span>@endif
                     <span><strong>Vía:</strong> {{ $routeLabels[$item->route] ?? $item->route }}</span>
                     @if($item->duration)<span><strong>Duración:</strong> {{ $item->duration }}</span>@endif

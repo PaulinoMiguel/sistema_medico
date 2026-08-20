@@ -59,7 +59,8 @@ class PrescriptionController extends Controller
             'notes' => 'nullable|string',
             'items' => 'required|array|min:1',
             'items.*.medication_name' => 'required|string|max:255',
-            'items.*.dosage' => 'required|string|max:255',
+            // En la receta solo el nombre del medicamento es obligatorio.
+            'items.*.dosage' => 'nullable|string|max:255',
             'items.*.frequency' => 'nullable|string|max:255',
             'items.*.duration' => 'nullable|string|max:255',
             'items.*.route' => 'required|string|max:50',
@@ -130,7 +131,8 @@ class PrescriptionController extends Controller
             'status' => 'nullable|in:active,expired,cancelled',
             'items' => 'required|array|min:1',
             'items.*.medication_name' => 'required|string|max:255',
-            'items.*.dosage' => 'required|string|max:255',
+            // En la receta solo el nombre del medicamento es obligatorio.
+            'items.*.dosage' => 'nullable|string|max:255',
             'items.*.frequency' => 'nullable|string|max:255',
             'items.*.duration' => 'nullable|string|max:255',
             'items.*.route' => 'required|string|max:50',
