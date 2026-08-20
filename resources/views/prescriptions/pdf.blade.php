@@ -11,14 +11,18 @@
            izquierda con float y no con flexbox, que DomPDF no soporta. El
            .clearfix del partial cierra el float para que el borde inferior
            no se dibuje por encima del logo. */
-        /* El texto se centra respecto a la hoja completa y el logo se ancla a
-           su izquierda. Por eso el logo va posicionado y fuera del flujo: si
-           ocupara espacio, correria el texto hacia la derecha y dejaria de
-           estar centrado en la pagina. El min-height reserva su altura para
-           que no invada el bloque del paciente. */
-        .header { position: relative; min-height: 84px; text-align: center; border-bottom: 2px solid #2563eb; padding-bottom: 15px; margin-bottom: 20px; }
-        .header .logo { position: absolute; left: 0; top: 0; max-width: 130px; max-height: 80px; }
-        .header .info { text-align: center; }
+        /* Cabecera en tabla (partials/print-doctor-header en modo PDF): DomPDF
+           no soporta flexbox, y la tabla permite centrar el logo verticalmente
+           contra el texto. Las celdas laterales miden igual, asi la del centro
+           queda simetrica y su eje coincide con el de la hoja. */
+        .header { width: 100%; border-collapse: collapse; border-bottom: 2px solid #2563eb; margin-bottom: 20px; }
+        .header td { padding: 0 0 15px; }
+        .header .logo-cell, .header .spacer-cell { width: 140px; }
+        .header .logo-cell { vertical-align: middle; }
+        .header .info-cell { vertical-align: middle; text-align: center; }
+        /* Con los dos maximos el logo entra sin deformarse tanto si es apaisado
+           (lo limita el ancho) como si es alto o cuadrado (lo limita el alto). */
+        .header .logo { max-width: 130px; max-height: 80px; }
         .doctor-name { font-size: 16px; font-weight: bold; color: #1e3a5f; margin: 0 0 2px; }
         .doctor-info { font-size: 11px; color: #444; margin: 2px 0; }
         .extra-header { font-size: 11px; color: #555; font-style: italic; margin: 2px 0; }

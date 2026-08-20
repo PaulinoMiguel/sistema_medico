@@ -30,23 +30,32 @@
             : asset('storage/' . $doctor->print_logo_path);
     }
 @endphp
-<div class="header">
-    @if($logoSrc)
-        <img src="{{ $logoSrc }}" alt="Logo" class="logo">
-    @endif
-    <div class="info">
-        <p class="doctor-name">{{ $doctor->name }}</p>
-        @if($doctor->professional_license)
-            <p class="doctor-info">Exequatur: {{ $doctor->professional_license }}</p>
+@if($pdfMode ?? false)
+    {{-- DomPDF no soporta flexbox. Se usa una tabla, que ademas permite
+         centrar el logo verticalmente contra el texto con vertical-align.
+         La tercera celda esta vacia a proposito: iguala el ancho de la del
+         logo para que la del texto quede simetrica y su centro coincida con
+         el centro de la hoja. --}}
+    <table class="header">
+        <tr>
+            <td class="logo-cell">
+                @if($logoSrc)
+                    <img src="{{ $logoSrc }}" alt="Logo" class="logo">
+                @endif
+            </td>
+            <td class="info-cell">
+                @include('partials.print-doctor-header-info')
+            </td>
+            <td class="spacer-cell"></td>
+        </tr>
+    </table>
+@else
+    <div class="header">
+        @if($logoSrc)
+            <img src="{{ $logoSrc }}" alt="Logo" class="logo">
         @endif
-        @if($doctor->print_extra_header)
-            <p class="extra-header">{!! nl2br(e($doctor->print_extra_header)) !!}</p>
-        @endif
-        @if($doctor->phone)
-            <p class="doctor-info">{{ $doctor->phone }}</p>
-        @endif
-        @if($locationLine)
-            <p class="clinic-info">{{ $locationLine }}</p>
-        @endif
+        <div class="info">
+            @include('partials.print-doctor-header-info')
+        </div>
     </div>
-</div>
+@endif
