@@ -11,18 +11,18 @@
            izquierda con float y no con flexbox, que DomPDF no soporta. El
            .clearfix del partial cierra el float para que el borde inferior
            no se dibuje por encima del logo. */
-        .header { border-bottom: 2px solid #2563eb; padding-bottom: 15px; margin-bottom: 20px; }
-        .header .logo { float: left; max-width: 130px; max-height: 80px; margin-right: 14px; }
-        /* El texto va centrado en su propia columna, a la derecha del logo.
-           Se usa margin-left y no solo el flujo del float: si una linea
-           quedara mas abajo que el logo se centraria respecto a toda la
-           pagina y saldria desalineada de las de arriba. */
-        .header .info { margin-left: 150px; text-align: center; }
+        /* El texto se centra respecto a la hoja completa y el logo se ancla a
+           su izquierda. Por eso el logo va posicionado y fuera del flujo: si
+           ocupara espacio, correria el texto hacia la derecha y dejaria de
+           estar centrado en la pagina. El min-height reserva su altura para
+           que no invada el bloque del paciente. */
+        .header { position: relative; min-height: 84px; text-align: center; border-bottom: 2px solid #2563eb; padding-bottom: 15px; margin-bottom: 20px; }
+        .header .logo { position: absolute; left: 0; top: 0; max-width: 130px; max-height: 80px; }
+        .header .info { text-align: center; }
         .doctor-name { font-size: 16px; font-weight: bold; color: #1e3a5f; margin: 0 0 2px; }
         .doctor-info { font-size: 11px; color: #444; margin: 2px 0; }
         .extra-header { font-size: 11px; color: #555; font-style: italic; margin: 2px 0; }
         .clinic-info { font-size: 11px; color: #555; margin-top: 4px; }
-        .header .clearfix { clear: both; font-size: 0; line-height: 0; }
 
         .patient-info { margin-bottom: 20px; padding: 12px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; }
         .patient-info table { width: 100%; }
