@@ -100,7 +100,9 @@ class PaymentController extends Controller
             'patient_id' => 'required|exists:patients,id',
             'service_id' => 'nullable|exists:services,id',
             'appointment_id' => 'nullable|exists:appointments,id',
-            'amount' => 'required|numeric|min:0.01',
+            // Se admite 0: todos los turnos se cobran, aunque sea de forma
+            // simbolica, para que no quede ninguno pendiente de cierre.
+            'amount' => 'required|numeric|min:0',
             'concept' => 'required|string|max:255',
             'notes' => 'nullable|string|max:500',
         ]);
@@ -171,7 +173,9 @@ class PaymentController extends Controller
 
         $validated = $request->validate([
             'service_id' => 'nullable|exists:services,id',
-            'amount' => 'required|numeric|min:0.01',
+            // Se admite 0: todos los turnos se cobran, aunque sea de forma
+            // simbolica, para que no quede ninguno pendiente de cierre.
+            'amount' => 'required|numeric|min:0',
             'concept' => 'required|string|max:255',
             'notes' => 'nullable|string|max:500',
         ]);

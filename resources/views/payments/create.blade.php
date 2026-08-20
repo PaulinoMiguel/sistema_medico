@@ -97,7 +97,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Monto *</label>
                     <div class="relative">
                         <span class="absolute left-3 top-2 text-gray-500">$</span>
-                        <input type="number" name="amount" id="amount_input" value="{{ old('amount') }}" required step="0.01" min="0.01"
+                        <input type="number" name="amount" id="amount_input" value="{{ old('amount') }}" required step="0.01" min="0"
                                class="w-full pl-7 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                                placeholder="0.00">
                     </div>
