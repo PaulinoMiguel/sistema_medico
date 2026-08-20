@@ -16,10 +16,15 @@
             <p class="text-xs text-gray-500 uppercase">Cobros</p>
             <p class="text-lg font-mono font-bold text-green-700">${{ number_format($cashRegister->total_collected, 2) }}</p>
             <p class="text-xs text-gray-400">{{ $cashRegister->payments->count() }} cobro(s)</p>
+            <p class="text-xs text-gray-500 mt-1">
+                Efectivo ${{ number_format($cashRegister->total_cash, 2) }}<br>
+                Transferencia ${{ number_format($cashRegister->total_transfer, 2) }}
+            </p>
         </div>
         <div class="bg-white rounded-lg shadow p-4">
-            <p class="text-xs text-gray-500 uppercase">Total esperado</p>
-            <p class="text-lg font-mono font-bold text-gray-800">${{ number_format($cashRegister->opening_amount + $cashRegister->total_collected, 2) }}</p>
+            <p class="text-xs text-gray-500 uppercase">Esperado en caja</p>
+            <p class="text-lg font-mono font-bold text-gray-800">${{ number_format($cashRegister->expected_amount ?? $cashRegister->expected_cash, 2) }}</p>
+            <p class="text-xs text-gray-400">Apertura + efectivo</p>
         </div>
         <div class="bg-white rounded-lg shadow p-4">
             <p class="text-xs text-gray-500 uppercase">Monto contado</p>
@@ -82,6 +87,7 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Médico</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Concepto</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cobro por</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Forma</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Monto</th>
                     </tr>
                 </thead>
@@ -94,13 +100,18 @@
                         <td class="px-6 py-4 text-sm text-gray-500">{{ $payment->doctor?->name ?? '-' }}</td>
                         <td class="px-6 py-4 text-sm text-gray-500">{{ $payment->concept }}</td>
                         <td class="px-6 py-4 text-sm text-gray-500">{{ $payment->receivedBy->name }}</td>
+                        <td class="px-6 py-4 text-sm">
+                            <span class="px-2 py-0.5 rounded text-xs {{ $payment->isTransfer() ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-600' }}">
+                                {{ $payment->method_label }}
+                            </span>
+                        </td>
                         <td class="px-6 py-4 text-sm text-right font-mono font-semibold text-gray-900 payment-amount" data-amount="{{ $payment->amount }}">${{ number_format($payment->amount, 2) }}</td>
                     </tr>
                     @endforeach
                 </tbody>
                 <tfoot class="bg-gray-50">
                     <tr>
-                        <td colspan="6" class="px-6 py-3 text-sm font-bold text-gray-800 text-right" id="total-label">Total cobrado:</td>
+                        <td colspan="7" class="px-6 py-3 text-sm font-bold text-gray-800 text-right" id="total-label">Total cobrado:</td>
                         <td class="px-6 py-3 text-right font-mono font-bold text-lg text-green-700" id="total-amount">${{ number_format($cashRegister->total_collected, 2) }}</td>
                     </tr>
                 </tfoot>

@@ -24,12 +24,21 @@
                             <p class="text-lg font-mono font-bold text-green-800 dark:text-green-300">${{ number_format($openRegister->opening_amount, 2) }}</p>
                         </div>
                         <div>
-                            <p class="text-xs text-green-600 dark:text-green-400">Cobros del día</p>
-                            <p class="text-lg font-mono font-bold text-green-800 dark:text-green-300">${{ number_format($openRegister->total_collected, 2) }}</p>
+                            <p class="text-xs text-green-600 dark:text-green-400">Total efectivo</p>
+                            <p class="text-lg font-mono font-bold text-green-800 dark:text-green-300">${{ number_format($openRegister->total_cash, 2) }}</p>
                         </div>
                         <div>
-                            <p class="text-xs text-green-600 dark:text-green-400">Total esperado</p>
-                            <p class="text-lg font-mono font-bold text-green-800 dark:text-green-300">${{ number_format($openRegister->opening_amount + $openRegister->total_collected, 2) }}</p>
+                            <p class="text-xs text-green-600 dark:text-green-400">Total transferencia</p>
+                            <p class="text-lg font-mono font-bold text-green-800 dark:text-green-300">${{ number_format($openRegister->total_transfer, 2) }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-green-600 dark:text-green-400">Total cobrado</p>
+                            <p class="text-lg font-mono font-bold text-green-800 dark:text-green-300">${{ number_format($openRegister->total_collected, 2) }}</p>
+                        </div>
+                        <div class="border-l border-green-300 pl-6">
+                            {{-- Solo el efectivo: las transferencias no entran a la gaveta. --}}
+                            <p class="text-xs text-green-600 dark:text-green-400">Esperado en caja</p>
+                            <p class="text-lg font-mono font-bold text-green-800 dark:text-green-300">${{ number_format($openRegister->expected_cash, 2) }}</p>
                         </div>
                     </div>
                 </div>
@@ -75,6 +84,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Médico</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Concepto</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Cobro por</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Forma</th>
                             <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Monto</th>
                         </tr>
                     </thead>
@@ -87,13 +97,18 @@
                             <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{{ $payment->doctor?->name ?? '-' }}</td>
                             <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{{ $payment->concept }}</td>
                             <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{{ $payment->receivedBy->name }}</td>
+                            <td class="px-6 py-4 text-sm">
+                                <span class="px-2 py-0.5 rounded text-xs {{ $payment->isTransfer() ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-600' }}">
+                                    {{ $payment->method_label }}
+                                </span>
+                            </td>
                             <td class="px-6 py-4 text-sm text-right font-mono font-semibold text-gray-900 dark:text-gray-100 payment-amount" data-amount="{{ $payment->amount }}">${{ number_format($payment->amount, 2) }}</td>
                         </tr>
                         @endforeach
                     </tbody>
                     <tfoot class="bg-gray-50 dark:bg-gray-700">
                         <tr>
-                            <td colspan="6" class="px-6 py-3 text-sm font-bold text-gray-800 dark:text-gray-200 text-right" id="total-label">Total cobrado:</td>
+                            <td colspan="7" class="px-6 py-3 text-sm font-bold text-gray-800 dark:text-gray-200 text-right" id="total-label">Total cobrado:</td>
                             <td class="px-6 py-3 text-right font-mono font-bold text-lg text-green-700 dark:text-green-400" id="total-amount">${{ number_format($openRegister->total_collected, 2) }}</td>
                         </tr>
                     </tfoot>
@@ -133,7 +148,15 @@
             <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">Cerrar Caja</h3>
                 <p class="text-sm text-gray-500 mb-4">
-                    Total esperado en caja: <strong class="text-gray-800">${{ number_format($openRegister->opening_amount + $openRegister->total_collected, 2) }}</strong>
+                    Total esperado en caja: <strong class="text-gray-800">${{ number_format($openRegister->expected_cash, 2) }}</strong>
+                    <br>
+                    <span class="text-xs">
+                        Apertura ${{ number_format($openRegister->opening_amount, 2) }}
+                        + efectivo ${{ number_format($openRegister->total_cash, 2) }}.
+                        @if($openRegister->total_transfer > 0)
+                            No incluye ${{ number_format($openRegister->total_transfer, 2) }} en transferencias.
+                        @endif
+                    </span>
                 </p>
                 <form method="POST" action="{{ route('cash-registers.close', $openRegister) }}">
                     @csrf

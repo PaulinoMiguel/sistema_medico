@@ -11,6 +11,12 @@ class Payment extends Model
 {
     use HasFactory;
 
+    /** Formas de pago admitidas, con su etiqueta para la interfaz. */
+    public const METHODS = [
+        'cash' => 'Efectivo',
+        'transfer' => 'Transferencia',
+    ];
+
     protected $guarded = ['id'];
 
     protected function casts(): array
@@ -72,5 +78,15 @@ class Payment extends Model
     public function isDoctorDirect(): bool
     {
         return $this->channel === 'doctor_direct';
+    }
+
+    public function isTransfer(): bool
+    {
+        return $this->payment_method === 'transfer';
+    }
+
+    public function getMethodLabelAttribute(): string
+    {
+        return self::METHODS[$this->payment_method] ?? 'Efectivo';
     }
 }

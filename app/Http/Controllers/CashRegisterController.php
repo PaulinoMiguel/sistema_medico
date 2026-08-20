@@ -76,8 +76,9 @@ class CashRegisterController extends Controller
             'closing_notes' => 'nullable|string|max:500',
         ]);
 
-        $totalCollected = $cashRegister->total_collected;
-        $expectedAmount = $cashRegister->opening_amount + $totalCollected;
+        // Se cuadra contra el efectivo, no contra el total cobrado: las
+        // transferencias se cobran pero no dejan dinero en la gaveta.
+        $expectedAmount = $cashRegister->expected_cash;
 
         $cashRegister->update([
             'closing_amount' => $validated['closing_amount'],

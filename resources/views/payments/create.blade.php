@@ -94,6 +94,21 @@
 
                 {{-- Amount --}}
                 <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Forma de pago *</label>
+                    <div class="flex gap-2">
+                        @foreach(\App\Models\Payment::METHODS as $value => $label)
+                            <label class="flex-1 flex items-center justify-center gap-2 px-3 py-2 border border-gray-300 rounded-md cursor-pointer text-sm has-[:checked]:bg-blue-50 has-[:checked]:border-blue-500 has-[:checked]:font-medium">
+                                <input type="radio" name="payment_method" value="{{ $value }}"
+                                       @checked(old('payment_method', 'cash') === $value)
+                                       class="text-blue-600 border-gray-300">
+                                {{ $label }}
+                            </label>
+                        @endforeach
+                    </div>
+                    @error('payment_method') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Monto *</label>
                     <div class="relative">
                         <span class="absolute left-3 top-2 text-gray-500">$</span>

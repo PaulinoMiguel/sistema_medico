@@ -53,4 +53,25 @@ class CashRegister extends Model
     {
         return (float) $this->payments()->sum('amount');
     }
+
+    /** Cobrado en efectivo: lo unico que deberia estar fisicamente en la gaveta. */
+    public function getTotalCashAttribute(): float
+    {
+        return (float) $this->payments()->where('payment_method', 'cash')->sum('amount');
+    }
+
+    public function getTotalTransferAttribute(): float
+    {
+        return (float) $this->payments()->where('payment_method', 'transfer')->sum('amount');
+    }
+
+    /**
+     * Lo que debe haber en la gaveta al cerrar: apertura mas el efectivo.
+     * Las transferencias se cobran pero no pasan por la caja, asi que
+     * incluirlas aqui produciria un faltante falso en cada cierre.
+     */
+    public function getExpectedCashAttribute(): float
+    {
+        return (float) $this->opening_amount + $this->total_cash;
+    }
 }

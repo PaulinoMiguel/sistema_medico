@@ -104,6 +104,7 @@ class PaymentController extends Controller
             // simbolica, para que no quede ninguno pendiente de cierre.
             'amount' => 'required|numeric|min:0',
             'concept' => 'required|string|max:255',
+            'payment_method' => 'required|in:cash,transfer',
             'notes' => 'nullable|string|max:500',
         ]);
 
@@ -177,6 +178,7 @@ class PaymentController extends Controller
             // simbolica, para que no quede ninguno pendiente de cierre.
             'amount' => 'required|numeric|min:0',
             'concept' => 'required|string|max:255',
+            'payment_method' => 'required|in:cash,transfer',
             'notes' => 'nullable|string|max:500',
         ]);
 
@@ -194,6 +196,7 @@ class PaymentController extends Controller
             'clinic_id' => $clinicId,
             'doctor_id' => $appointment->doctor_id,
             'channel' => 'cash_register',
+            'payment_method' => $validated['payment_method'],
             'received_by' => $user->id,
             'cash_register_id' => $cashRegisterId,
             'receipt_number' => $this->generateReceiptNumber($clinicId),
