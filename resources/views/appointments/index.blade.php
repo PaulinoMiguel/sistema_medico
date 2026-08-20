@@ -92,16 +92,21 @@
                 @foreach($days as $key => $day)
                     <div class="border-r last:border-r-0 p-2 {{ $day['isToday'] ? 'bg-blue-50/30 dark:bg-blue-900/20' : '' }}">
                         @foreach($day['appointments'] as $apt)
+                            @php
+                                // El nombre completo no siempre cabe en la columna, asi
+                                // que va tambien en el tooltip junto al estado de cobro.
+                                $nombrePaciente = $apt->patient?->full_name ?? 'Paciente sin acceso';
+                            @endphp
                             <a href="{{ route('appointments.show', $apt) }}"
                                class="block mb-1.5 p-2 rounded text-xs {{ $statusColors[$apt->status] ?? 'bg-gray-100' }} {{ $apt->is_paid ? 'border-l-4 border-emerald-600' : '' }} hover:opacity-80 transition"
-                               @if($apt->is_paid) title="Ya fue cobrado" @endif>
+                               title="{{ $nombrePaciente }}{{ $apt->is_paid ? ' — Ya fue cobrado' : '' }}">
                                 <div class="flex items-center justify-between gap-1">
                                     <span class="font-semibold">{{ $apt->scheduled_at->format('H:i') }}</span>
                                     @if($apt->is_paid)
                                         <svg class="w-3.5 h-3.5 text-emerald-700 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
                                     @endif
                                 </div>
-                                <div class="truncate font-medium">{{ $apt->patient?->last_name ?? 'Sin acceso' }}</div>
+                                <div class="truncate font-medium">{{ $nombrePaciente }}</div>
                                 <div class="truncate text-[10px] opacity-75">{{ $typeLabels[$apt->type] ?? $apt->type }}</div>
                             </a>
                         @endforeach
@@ -141,11 +146,12 @@
                         </div>
 
                         @foreach($day['appointments']->take(3) as $apt)
+                            @php $nombrePaciente = $apt->patient?->full_name ?? 'Paciente sin acceso'; @endphp
                             <a href="{{ route('appointments.show', $apt) }}"
                                class="block mb-1 px-1.5 py-0.5 rounded text-[11px] truncate {{ $statusColors[$apt->status] ?? 'bg-gray-100' }} {{ $apt->is_paid ? 'border-l-4 border-emerald-600' : '' }} hover:opacity-80"
-                               @if($apt->is_paid) title="Ya fue cobrado" @endif>
+                               title="{{ $nombrePaciente }}{{ $apt->is_paid ? ' — Ya fue cobrado' : '' }}">
                                 <span class="font-semibold">{{ $apt->scheduled_at->format('H:i') }}</span>
-                                {{ $apt->patient?->last_name ?? 'Sin acceso' }}
+                                {{ $nombrePaciente }}
                                 @if($apt->is_paid)<span class="text-emerald-700 font-bold">&check;</span>@endif
                             </a>
                         @endforeach
