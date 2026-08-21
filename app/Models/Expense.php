@@ -50,4 +50,20 @@ class Expense extends Model
     {
         return $query->whereNull('owner_doctor_id');
     }
+
+    public function cashRegister(): BelongsTo
+    {
+        return $this->belongsTo(CashRegister::class);
+    }
+
+    /** Gasto menor: el dinero salio de la gaveta de una caja concreta. */
+    public function isPetty(): bool
+    {
+        return $this->cash_register_id !== null;
+    }
+
+    public function getReceiptUrlAttribute(): ?string
+    {
+        return $this->receipt_path ? asset('storage/' . $this->receipt_path) : null;
+    }
 }

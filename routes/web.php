@@ -202,6 +202,11 @@ Route::middleware('auth')->group(function () {
             Route::middleware('permission:cash-register.close')->group(function () {
                 Route::post('/cash-registers/{cashRegister}/close', [CashRegisterController::class, 'close'])->name('cash-registers.close');
             });
+            // Gasto menor: sale del efectivo de la caja abierta. Permiso propio
+            // y estrecho, para no darle a la secretaria el modulo de gastos.
+            Route::middleware('permission:expenses.petty-create')->group(function () {
+                Route::post('/cash-registers/petty-expense', [CashRegisterController::class, 'storePettyExpense'])->name('cash-registers.petty-expense');
+            });
         });
 
         // Consultations — read separated from write

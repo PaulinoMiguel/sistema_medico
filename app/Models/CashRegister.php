@@ -65,13 +65,36 @@ class CashRegister extends Model
         return (float) $this->payments()->where('payment_method', 'transfer')->sum('amount');
     }
 
+    /** Gastos menores pagados con dinero de esta caja. */
+    public function pettyExpenses(): HasMany
+    {
+        return $this->hasMany(Expense::class)->orderBy('id');
+    }
+
+    public function getTotalPettyExpensesAttribute(): float
+    {
+        return (float) $this->pettyExpenses()->sum('amount');
+    }
+
     /**
-     * Lo que debe haber en la gaveta al cerrar: apertura mas el efectivo.
+     * Lo que debe haber en la gaveta al cerrar: apertura, mas el efectivo
+     * cobrado, menos lo que se saco para gastos menores.
+     *
      * Las transferencias se cobran pero no pasan por la caja, asi que
-     * incluirlas aqui produciria un faltante falso en cada cierre.
+     * incluirlas produciria un faltante falso en cada cierre. Los gastos
+     * menores son el caso inverso: ese dinero ya salio de la gaveta.
      */
     public function getExpectedCashAttribute(): float
     {
-        return (float) $this->opening_amount + $this->total_cash;
+        return (float) $this->opening_amount + $this->total_cash - $this->total_petty_expenses;
+    }
+
+    /**
+     * Efectivo que hay ahora mismo en la gaveta. Es el tope de un gasto
+     * menor: no se puede sacar mas de lo que hay.
+     */
+    public function getAvailableCashAttribute(): float
+    {
+        return $this->expected_cash;
     }
 }

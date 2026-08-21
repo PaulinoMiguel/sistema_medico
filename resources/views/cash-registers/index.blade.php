@@ -37,8 +37,16 @@
                             <p class="text-xs font-semibold text-green-700 dark:text-green-300">Total cobrado</p>
                             <p class="text-xl font-mono font-bold text-green-900 dark:text-green-200">${{ number_format($openRegister->total_collected, 2) }}</p>
                         </div>
+                        @if($openRegister->total_petty_expenses > 0)
+                            <div>
+                                <p class="text-xs text-red-600 dark:text-red-400">Gastos menores</p>
+                                <p class="text-lg font-mono text-red-700 dark:text-red-400">−${{ number_format($openRegister->total_petty_expenses, 2) }}</p>
+                            </div>
+                        @endif
                         <div class="border-l border-green-300 pl-6">
-                            {{-- Solo el efectivo: las transferencias no entran a la gaveta. --}}
+                            {{-- Solo el efectivo, y descontando lo que salio de la
+                                 gaveta: las transferencias nunca entraron a la caja
+                                 y los gastos menores ya salieron de ella. --}}
                             <p class="text-xs text-green-600 dark:text-green-400">Esperado en caja</p>
                             <p class="text-lg font-mono font-bold text-green-800 dark:text-green-300">${{ number_format($openRegister->expected_cash, 2) }}</p>
                         </div>
@@ -138,6 +146,124 @@
             @endif
         </div>
 
+        {{-- Gastos menores: dinero que sale de la gaveta durante el dia --}}
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden mb-6">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Gastos menores</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                        Dinero que sale de la caja: comida, material gastable, mandados.
+                    </p>
+                </div>
+                @can('expenses.petty-create')
+                    <button type="button" onclick="document.getElementById('petty-modal').classList.remove('hidden')"
+                            class="bg-red-600 text-white px-3 py-1.5 rounded-md hover:bg-red-700 text-sm font-medium">
+                        + Registrar gasto
+                    </button>
+                @endcan
+            </div>
+
+            @if($openRegister->pettyExpenses->isEmpty())
+                <div class="p-8 text-center text-gray-500 dark:text-gray-400">
+                    No se han registrado gastos en esta caja.
+                </div>
+            @else
+                <table class="w-full">
+                    <thead class="bg-gray-50 dark:bg-gray-700">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Hora</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Concepto</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Registrado por</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Recibo</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Monto</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                        @foreach($openRegister->pettyExpenses as $gasto)
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{{ $gasto->created_at->format('H:i') }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
+                                    {{ $gasto->concept }}
+                                    @if($gasto->notes)
+                                        <span class="block text-xs text-gray-500">{{ $gasto->notes }}</span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{{ $gasto->registeredBy->name }}</td>
+                                <td class="px-6 py-4 text-center">
+                                    @if($gasto->receipt_url)
+                                        <a href="{{ $gasto->receipt_url }}" target="_blank" class="text-blue-600 hover:underline text-sm">Ver</a>
+                                    @else
+                                        <span class="text-gray-300">—</span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 text-sm text-right font-mono font-semibold text-red-700 dark:text-red-400">−${{ number_format($gasto->amount, 2) }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                    <tfoot class="bg-gray-50 dark:bg-gray-700">
+                        <tr>
+                            <td colspan="4" class="px-6 py-3 text-sm font-bold text-gray-800 dark:text-gray-200 text-right">Total gastos:</td>
+                            <td class="px-6 py-3 text-right font-mono font-bold text-lg text-red-700 dark:text-red-400">−${{ number_format($openRegister->total_petty_expenses, 2) }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            @endif
+        </div>
+
+        @can('expenses.petty-create')
+        {{-- Formulario de gasto menor --}}
+        {{-- Si la validacion rechazo el gasto, el modal se abre solo para que
+             no se pierda lo escrito ni el mensaje de error. --}}
+        <div id="petty-modal" class="{{ $errors->hasAny(['concept', 'amount', 'receipt']) ? '' : 'hidden' }} fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+                <h3 class="text-lg font-semibold text-gray-800 mb-1">Registrar gasto menor</h3>
+                <p class="text-sm text-gray-500 mb-4">
+                    Efectivo disponible en caja:
+                    <strong class="text-gray-800 font-mono">${{ number_format($openRegister->available_cash, 2) }}</strong>
+                </p>
+                <form method="POST" action="{{ route('cash-registers.petty-expense') }}" enctype="multipart/form-data" class="space-y-4">
+                    @csrf
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">En qué se gastó *</label>
+                        <input type="text" name="concept" required maxlength="255" value="{{ old('concept') }}"
+                               placeholder="Ej: Almuerzo del personal"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        @error('concept') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Monto *</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-2 text-gray-500">$</span>
+                            <input type="number" name="amount" required step="0.01" min="0.01"
+                                   max="{{ $openRegister->available_cash }}" value="{{ old('amount') }}"
+                                   class="w-full pl-7 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="0.00">
+                        </div>
+                        @error('amount') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Recibo (opcional)</label>
+                        <input type="file" name="receipt" accept="image/*"
+                               class="block w-full text-sm border border-gray-300 rounded-md file:bg-blue-50 file:border-0 file:px-4 file:py-2 file:text-sm file:font-medium file:text-blue-700">
+                        @error('receipt') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nota (opcional)</label>
+                        <input type="text" name="notes" maxlength="500" value="{{ old('notes') }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div class="flex justify-end gap-3 pt-2">
+                        <button type="button" onclick="document.getElementById('petty-modal').classList.add('hidden')"
+                                class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">Cancelar</button>
+                        <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 font-medium">
+                            Registrar gasto
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        @endcan
+
         <script>
             const money = n => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -180,7 +306,10 @@
                     <br>
                     <span class="text-xs">
                         Apertura ${{ number_format($openRegister->opening_amount, 2) }}
-                        + efectivo ${{ number_format($openRegister->total_cash, 2) }}.
+                        + efectivo ${{ number_format($openRegister->total_cash, 2) }}
+                        @if($openRegister->total_petty_expenses > 0)
+                            − gastos ${{ number_format($openRegister->total_petty_expenses, 2) }}
+                        @endif.
                         @if($openRegister->total_transfer > 0)
                             No incluye ${{ number_format($openRegister->total_transfer, 2) }} en transferencias.
                         @endif

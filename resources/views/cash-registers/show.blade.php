@@ -27,13 +27,19 @@
                     <span>Total cobrado</span>
                     <span>${{ number_format($cashRegister->total_collected, 2) }}</span>
                 </div>
+                @if($cashRegister->total_petty_expenses > 0)
+                    <div class="flex justify-between gap-3 text-red-700">
+                        <span>Gastos menores</span>
+                        <span>−${{ number_format($cashRegister->total_petty_expenses, 2) }}</span>
+                    </div>
+                @endif
             </div>
             <p class="text-xs text-gray-400 mt-1">{{ $cashRegister->payments->count() }} cobro(s)</p>
         </div>
         <div class="bg-white rounded-lg shadow p-4">
             <p class="text-xs text-gray-500 uppercase">Esperado en caja</p>
             <p class="text-lg font-mono font-bold text-gray-800">${{ number_format($cashRegister->expected_amount ?? $cashRegister->expected_cash, 2) }}</p>
-            <p class="text-xs text-gray-400">Apertura + efectivo</p>
+            <p class="text-xs text-gray-400">Apertura + efectivo − gastos</p>
         </div>
         <div class="bg-white rounded-lg shadow p-4">
             <p class="text-xs text-gray-500 uppercase">Monto contado</p>
