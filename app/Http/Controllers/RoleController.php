@@ -74,7 +74,12 @@ class RoleController extends Controller
         'expenses.update' => 'Editar gastos',
         'expenses.delete' => 'Eliminar gastos',
         'expenses.view-summary' => 'Ver resumen financiero',
+        'expenses.view-my-summary' => 'Ver mi resumen financiero',
+        'expenses.view-shared-pool' => 'Ver gastos compartidos',
+        'expenses.manage-split' => 'Configurar reparto de gastos',
+        'expenses.petty-create' => 'Registrar gasto menor de caja',
         'expense-categories.manage' => 'Gestionar categorías de gasto',
+        'insurers.manage' => 'Gestionar aseguradoras y procedimientos',
 
         'clinics.view' => 'Ver clínicas',
         'clinics.manage' => 'Gestionar clínicas',

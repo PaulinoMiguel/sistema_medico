@@ -13,11 +13,19 @@ use Spatie\Permission\PermissionRegistrar;
  * gaveta y dejarlo asentado, pero sigue sin ver cuanto gasta el consultorio,
  * que es el aislamiento que el proyecto ya tenia por diseno.
  *
+ * Solo para secretarias, no para doctores: la caja la maneja la secretaria,
+ * y es el doctor quien despues recibe conforme. Si el doctor pudiera
+ * registrar gastos, terminaria aprobando movimientos suyos y se perderia la
+ * separacion que le da sentido a esa aprobacion.
+ *
+ * En un consultorio sin secretaria, donde el propio doctor lleva la caja, el
+ * permiso se le puede conceder desde Administracion > Roles y permisos.
+ *
  * Aditivo e idempotente.
  */
 return new class extends Migration
 {
-    private const ROLES = ['doctor_admin', 'doctor_associate', 'secretary_limited', 'secretary_full'];
+    private const ROLES = ['secretary_limited', 'secretary_full'];
 
     public function up(): void
     {
