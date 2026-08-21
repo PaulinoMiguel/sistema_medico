@@ -169,9 +169,15 @@
             {{-- Cobro rápido: la secretaria registra el cobro desde aquí, sin ir a
                  Caja, una vez que la doctora guardó la consulta. --}}
             @can('payments.create')
-            {{-- Sin filtro por rol: lo normal es que cobre la secretaria, pero
-                 el día que no hay secretaria cobra la doctora. --}}
-            @if($appointment->consultation && !in_array($appointment->status, ['cancelled', 'no_show']))
+            @php
+                // Lo normal es que cobre la secretaria, pero el día que no hay
+                // secretaria cobra la doctora. Eso sí, solo en su propia caja:
+                // si la abierta es de otra persona, no se ofrece el cobro.
+                $cajaAbierta = \App\Models\CashRegister::where('clinic_id', session('active_clinic_id'))
+                    ->where('status', 'open')->first();
+                $puedeCobrarAqui = ! $cajaAbierta || $cajaAbierta->isOperatedBy(auth()->user());
+            @endphp
+            @if($puedeCobrarAqui && $appointment->consultation && !in_array($appointment->status, ['cancelled', 'no_show']))
             <div class="bg-white rounded-lg shadow p-6 mt-6">
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">Cobro</h3>
                 @if($appointment->is_paid)

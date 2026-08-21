@@ -232,13 +232,9 @@ class PaymentController extends Controller
      */
     private function assertCanUseCashRegister($user, int $clinicId): void
     {
-        if (! $user->isDoctor()) {
-            return;
-        }
-
         $caja = CashRegister::where('clinic_id', $clinicId)->where('status', 'open')->first();
 
-        if ($caja && (int) $caja->opened_by !== (int) $user->id) {
+        if ($caja && ! $caja->isOperatedBy($user)) {
             abort(403, 'Esta caja la abrió ' . ($caja->openedBy->name ?? 'otra persona')
                 . '. Para cobrar por caja abre la tuya, o registra el cobro en "Mis cobros".');
         }

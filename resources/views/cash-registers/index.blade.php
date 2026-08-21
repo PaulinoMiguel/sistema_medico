@@ -74,11 +74,19 @@
                         </select>
                     @endif
                 </div>
-                @can('payments.create')
+                {{-- Solo si ademas puede operar esta caja: un doctor no cobra en
+                     la caja de la secretaria, y mostrarle el boton solo lo
+                     llevaria a un error. --}}
+                @if(auth()->user()->can('payments.create') && $openRegister->isOperatedBy(auth()->user()))
                     <a href="{{ route('payments.create') }}" class="bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 text-sm font-medium">
                         + Registrar cobro
                     </a>
-                @endcan
+                @elseif(auth()->user()->can('payments.create'))
+                    <span class="text-xs text-gray-500 dark:text-gray-400 text-right max-w-xs">
+                        Esta caja la abrió {{ $openRegister->openedBy->name }}.
+                        Para cobrar por caja, abre la tuya.
+                    </span>
+                @endif
             </div>
             @if($allPayments->isEmpty())
                 <div class="p-8 text-center text-gray-500 dark:text-gray-400">

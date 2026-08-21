@@ -49,6 +49,23 @@ class CashRegister extends Model
         return $this->status === 'open';
     }
 
+    /**
+     * Si este usuario puede mover dinero en esta caja.
+     *
+     * El personal de caja comparte la gaveta, que es para lo que existe. Un
+     * doctor, en cambio, solo opera la caja que abrio el mismo: cobrar en la
+     * de la secretaria metería dinero en una gaveta que el no maneja y le
+     * descuadraria el cierre a ella.
+     */
+    public function isOperatedBy(?User $user): bool
+    {
+        if (! $user) {
+            return false;
+        }
+
+        return ! $user->isDoctor() || (int) $this->opened_by === (int) $user->id;
+    }
+
     public function getTotalCollectedAttribute(): float
     {
         return (float) $this->payments()->sum('amount');
