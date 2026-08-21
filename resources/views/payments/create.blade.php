@@ -203,6 +203,17 @@
                 }
             });
 
+            // Y al reves: si se cambia el paciente a mano, el turno elegido deja
+            // de corresponder, asi que se suelta. Sin esto se podia guardar el
+            // cobro de un paciente contra el turno de otro.
+            patientSelect.addEventListener('change', function () {
+                const apt = appointmentSelect.options[appointmentSelect.selectedIndex];
+                if (apt && apt.value && apt.dataset.patientId !== this.value) {
+                    appointmentSelect.value = '';
+                    appointmentIdInput.value = '';
+                }
+            });
+
             // Apply on load if appointment is pre-selected
             if (appointmentSelect.value) {
                 appointmentSelect.dispatchEvent(new Event('change'));

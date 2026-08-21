@@ -56,11 +56,12 @@ class PaymentController extends Controller
         $channel = $request->query('channel', 'cash_register');
         $user = $request->user();
 
-        // "Mis cobros" sigue siendo exclusivo de los doctores. El canal de caja,
-        // en cambio, ya no se le niega al doctor: si lleva la caja porque no hay
-        // secretaria, tiene que poder cobrar por ella.
+        // "Mis cobros" sigue siendo exclusivo de los doctores. El canal de caja
+        // se le permite al doctor solo si la caja abierta es suya.
         if ($channel === 'doctor_direct') {
             abort_unless($user->isDoctor(), 403);
+        } else {
+            $this->assertCanUseCashRegister($user, $clinicId);
         }
 
         $patients = Patient::whereHas('clinics', function ($q) use ($clinicId) {
@@ -93,6 +94,8 @@ class PaymentController extends Controller
 
         if ($channel === 'doctor_direct') {
             abort_unless($user->isDoctor(), 403);
+        } else {
+            $this->assertCanUseCashRegister($user, $clinicId);
         }
 
         $validated = $request->validate([
@@ -106,6 +109,8 @@ class PaymentController extends Controller
             'payment_method' => 'required|in:cash,transfer',
             'notes' => 'nullable|string|max:500',
         ]);
+
+        $this->assertAppointmentMatchesPatient($validated);
 
         if ($channel === 'doctor_direct') {
             // Doctor personal payment — no cash register, doctor owns it
@@ -168,6 +173,8 @@ class PaymentController extends Controller
 
         $clinicId = session('active_clinic_id');
 
+        $this->assertCanUseCashRegister($user, $clinicId);
+
         if ($appointment->is_paid) {
             return redirect()->route('appointments.show', $appointment)
                 ->with('info', 'Este turno ya fue cobrado.');
@@ -213,6 +220,52 @@ class PaymentController extends Controller
      * Determine which doctor owns this payment based on available context.
      * Returns null if no doctor can be resolved.
      */
+    /**
+     * La caja es de quien la abrio.
+     *
+     * Un doctor no cobra en la caja de la secretaria: ese dinero entraria a
+     * una gaveta que el no maneja y le descuadraria el cierre a ella. Si
+     * quiere cobrar por caja, abre la suya; si no, tiene "Mis cobros".
+     *
+     * Entre personal de caja no aplica: comparten la misma gaveta, que es
+     * justamente para lo que existe.
+     */
+    private function assertCanUseCashRegister($user, int $clinicId): void
+    {
+        if (! $user->isDoctor()) {
+            return;
+        }
+
+        $caja = CashRegister::where('clinic_id', $clinicId)->where('status', 'open')->first();
+
+        if ($caja && (int) $caja->opened_by !== (int) $user->id) {
+            abort(403, 'Esta caja la abrió ' . ($caja->openedBy->name ?? 'otra persona')
+                . '. Para cobrar por caja abre la tuya, o registra el cobro en "Mis cobros".');
+        }
+    }
+
+    /**
+     * Si el cobro viene de un turno, el paciente tiene que ser el del turno.
+     * El formulario rellena el paciente al elegir turno, pero nada impedia
+     * cambiarlo despues y guardar el cobro de un paciente contra el turno de
+     * otro.
+     */
+    private function assertAppointmentMatchesPatient(array $validated): void
+    {
+        if (empty($validated['appointment_id'])) {
+            return;
+        }
+
+        $appointment = Appointment::withoutGlobalScopes()->find($validated['appointment_id']);
+
+        if ($appointment && (int) $appointment->patient_id !== (int) $validated['patient_id']) {
+            throw ValidationException::withMessages([
+                'patient_id' => 'El paciente seleccionado no es el del turno elegido. '
+                    . 'Corrige el paciente o quita el turno.',
+            ]);
+        }
+    }
+
     private function resolveDoctorId(array $validated): ?int
     {
         if (!empty($validated['appointment_id'])) {
