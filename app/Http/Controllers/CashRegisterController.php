@@ -29,10 +29,14 @@ class CashRegisterController extends Controller
         return view('cash-registers.index', compact('registers', 'openRegister'));
     }
 
+    /**
+     * Quien puede abrir la caja lo decide el permiso cash-register.open, que
+     * ya filtra la ruta. Antes habia ademas un bloqueo por rol que impedia
+     * abrirla a los doctores aunque tuvieran el permiso: el dia que la
+     * secretaria falta, el consultorio se quedaba sin caja.
+     */
     public function open(Request $request)
     {
-        abort_if($request->user()->isDoctor(), 403, 'Solo el personal de caja puede abrir la caja.');
-
         $clinicId = session('active_clinic_id');
 
         // Check if there's already an open register
@@ -139,7 +143,9 @@ class CashRegisterController extends Controller
 
     public function close(Request $request, CashRegister $cashRegister)
     {
-        abort_if($request->user()->isDoctor(), 403, 'Solo el personal de caja puede cerrar la caja.');
+        // Cerrar lo gobierna el permiso cash-register.close, no el rol: si la
+        // doctora abrio la caja porque no habia secretaria, tiene que poder
+        // cerrarla ella misma.
         abort_if($cashRegister->clinic_id != session('active_clinic_id'), 403);
         abort_if(! $cashRegister->isOpen(), 400);
 

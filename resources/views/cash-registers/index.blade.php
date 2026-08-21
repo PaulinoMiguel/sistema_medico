@@ -74,11 +74,11 @@
                         </select>
                     @endif
                 </div>
-                @if(!auth()->user()->isDoctor() && auth()->user()->can('payments.create'))
+                @can('payments.create')
                     <a href="{{ route('payments.create') }}" class="bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 text-sm font-medium">
                         + Registrar cobro
                     </a>
-                @endif
+                @endcan
             </div>
             @if($allPayments->isEmpty())
                 <div class="p-8 text-center text-gray-500 dark:text-gray-400">
@@ -287,15 +287,16 @@
             }
         </script>
 
-        {{-- Close button — only for staff, not doctors --}}
-        @if(!auth()->user()->isDoctor() && auth()->user()->can('cash-register.close'))
+        {{-- Lo gobierna el permiso: quien lleva la caja la cierra, sea la
+             secretaria o la doctora el día que no hay secretaria. --}}
+        @can('cash-register.close')
         <div class="flex justify-end mb-6">
             <button onclick="document.getElementById('close-modal').classList.remove('hidden')"
                     class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm font-medium">
                 Cerrar caja
             </button>
         </div>
-        @endif
+        @endcan
 
         {{-- Close Modal --}}
         <div id="close-modal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -345,22 +346,22 @@
             <div class="flex items-center justify-between">
                 <div>
                     <h3 class="text-lg font-semibold text-yellow-800">Caja cerrada</h3>
-                    @if(auth()->user()->isDoctor())
-                        <p class="text-sm text-yellow-700">No hay caja abierta en este momento.</p>
-                    @else
+                    @can('cash-register.open')
                         <p class="text-sm text-yellow-700">Abre la caja para comenzar a registrar cobros del día.</p>
-                    @endif
+                    @else
+                        <p class="text-sm text-yellow-700">No hay caja abierta en este momento.</p>
+                    @endcan
                 </div>
-                @if(!auth()->user()->isDoctor() && auth()->user()->can('cash-register.open'))
+                @can('cash-register.open')
                 <button onclick="document.getElementById('open-modal').classList.remove('hidden')"
                         class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm font-medium">
                     Abrir caja
                 </button>
-                @endif
+                @endcan
             </div>
         </div>
 
-        @if(!auth()->user()->isDoctor())
+        @can('cash-register.open')
         {{-- Open Modal --}}
         <div id="open-modal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
@@ -383,7 +384,7 @@
                 </form>
             </div>
         </div>
-        @endif
+        @endcan
     @endif
 
     {{-- History --}}

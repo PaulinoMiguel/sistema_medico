@@ -56,10 +56,11 @@ class PaymentController extends Controller
         $channel = $request->query('channel', 'cash_register');
         $user = $request->user();
 
+        // "Mis cobros" sigue siendo exclusivo de los doctores. El canal de caja,
+        // en cambio, ya no se le niega al doctor: si lleva la caja porque no hay
+        // secretaria, tiene que poder cobrar por ella.
         if ($channel === 'doctor_direct') {
             abort_unless($user->isDoctor(), 403);
-        } else {
-            abort_if($user->isDoctor(), 403, 'Los cobros de caja son exclusivos del personal.');
         }
 
         $patients = Patient::whereHas('clinics', function ($q) use ($clinicId) {
@@ -92,8 +93,6 @@ class PaymentController extends Controller
 
         if ($channel === 'doctor_direct') {
             abort_unless($user->isDoctor(), 403);
-        } else {
-            abort_if($user->isDoctor(), 403, 'Los cobros de caja son exclusivos del personal.');
         }
 
         $validated = $request->validate([
@@ -157,13 +156,15 @@ class PaymentController extends Controller
 
     /**
      * Cobro rápido desde la pantalla del turno: el paciente, turno y doctor ya
-     * se conocen, así que la secretaria solo ingresa servicio/concepto/monto y
-     * vuelve al turno (sin pasar por Caja). Canal cash_register (personal).
+     * se conocen, así que solo se ingresa servicio/concepto/monto y se vuelve
+     * al turno (sin pasar por Caja). Canal cash_register.
+     *
+     * Lo normal es que lo use la secretaria, pero no se le niega al doctor:
+     * el día que no hay secretaria es él quien cobra.
      */
     public function storeForAppointment(Request $request, Appointment $appointment)
     {
         $user = $request->user();
-        abort_if($user->isDoctor(), 403, 'Los cobros de caja son exclusivos del personal.');
 
         $clinicId = session('active_clinic_id');
 
