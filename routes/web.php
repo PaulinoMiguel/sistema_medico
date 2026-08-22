@@ -198,6 +198,8 @@ Route::middleware('auth')->group(function () {
             Route::middleware('permission:cash-register.view')->group(function () {
                 Route::get('/cash-registers', [CashRegisterController::class, 'index'])->name('cash-registers.index');
                 Route::get('/cash-registers/{cashRegister}', [CashRegisterController::class, 'show'])->name('cash-registers.show');
+                // Acta de entrega: la imprimen tanto quien entrega como quien recibe.
+                Route::get('/cash-registers/{cashRegister}/acta', [CashRegisterController::class, 'acta'])->name('cash-registers.acta');
             });
             Route::middleware('permission:cash-register.open')->group(function () {
                 Route::post('/cash-registers/open', [CashRegisterController::class, 'open'])->name('cash-registers.open');

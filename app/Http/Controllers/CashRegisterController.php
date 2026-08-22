@@ -287,6 +287,36 @@ class CashRegisterController extends Controller
     }
 
     /**
+     * Acta de entrega, imprimible cuantas veces haga falta.
+     *
+     * Solo de cajas ya recibidas: es el comprobante de una entrega que ocurrio,
+     * no un borrador. Y como la caja aprobada ya no admite cambios, el acta
+     * sale siempre identica.
+     */
+    public function acta(CashRegister $cashRegister)
+    {
+        abort_if($cashRegister->clinic_id != session('active_clinic_id'), 403);
+        abort_unless($cashRegister->isApproved() && $cashRegister->approved_at, 404,
+            'Esta caja todavia no ha sido recibida, asi que no tiene acta.');
+
+        $cashRegister->load(['clinic', 'openedBy', 'closedBy', 'approvedBy',
+            'payments.patient', 'pettyExpenses.registeredBy']);
+
+        // Las firmas se resuelven a ruta de disco si existe, para que el
+        // documento tambien sirva si algun dia se genera como PDF.
+        $firma = function (?string $ruta) {
+            if (! $ruta) {
+                return null;
+            }
+            $local = public_path('storage/' . $ruta);
+
+            return is_file($local) ? asset('storage/' . $ruta) : null;
+        };
+
+        return view('cash-registers.acta', compact('cashRegister', 'firma'));
+    }
+
+    /**
      * Un PIN de pocos digitos se adivina probando, asi que se limita el numero
      * de intentos por doctor y por equipo.
      */

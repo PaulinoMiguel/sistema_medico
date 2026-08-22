@@ -73,16 +73,25 @@
     @elseif($cashRegister->approved_at)
         <div class="bg-green-50 border border-green-300 rounded-lg p-4 mb-6">
             <p class="text-sm font-semibold text-green-900">Recibido conforme</p>
-            <p class="text-sm text-green-800 mt-1">
-                Recibida por {{ $cashRegister->approvedBy->name ?? '—' }}
-                el {{ $cashRegister->approved_at->format('d/m/Y H:i') }}.
-                @if($cashRegister->closed_by === $cashRegister->approved_by)
-                    Llevó y cerró la caja la misma persona.
-                @endif
-            </p>
-            @if($cashRegister->approval_notes)
-                <p class="text-sm text-green-800 mt-2"><strong>Nota:</strong> {{ $cashRegister->approval_notes }}</p>
-            @endif
+            <div class="flex items-start justify-between gap-4 flex-wrap">
+                <div>
+                    <p class="text-sm text-green-800 mt-1">
+                        Recibida por {{ $cashRegister->approvedBy->name ?? '—' }}
+                        el {{ $cashRegister->approved_at->format('d/m/Y H:i') }}.
+                        @if($cashRegister->closed_by === $cashRegister->approved_by)
+                            Llevó y cerró la caja la misma persona.
+                        @endif
+                    </p>
+                    @if($cashRegister->approval_notes)
+                        <p class="text-sm text-green-800 mt-2"><strong>Nota:</strong> {{ $cashRegister->approval_notes }}</p>
+                    @endif
+                </div>
+                <a href="{{ route('cash-registers.acta', $cashRegister) }}" target="_blank"
+                   class="inline-flex items-center gap-1 text-sm px-3 py-1.5 bg-gray-800 text-white rounded-md hover:bg-gray-900 whitespace-nowrap">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                    Imprimir acta
+                </a>
+            </div>
         </div>
     @endif
 
