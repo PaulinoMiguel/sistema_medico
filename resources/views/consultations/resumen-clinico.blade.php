@@ -158,7 +158,14 @@
     </div>
 
     <script>
-        window.addEventListener('load', () => setTimeout(() => window.print(), 300));
+        // Se abre el dialogo de impresion al llegar desde el enlace, pero no al
+        // recargar: si ya hay uno abierto, volver a llamarlo deja la pestana
+        // bloqueada y ni F5 la recupera. El boton de arriba siempre funciona.
+        (function () {
+            const nav = performance.getEntriesByType('navigation')[0];
+            if (nav && nav.type === 'reload') { return; }
+            window.addEventListener('load', () => setTimeout(() => window.print(), 300));
+        })();
     </script>
 </body>
 </html>
