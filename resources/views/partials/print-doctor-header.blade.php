@@ -22,19 +22,23 @@
 
     // DomPDF resuelve mejor una ruta del disco que una URL: pedirle la imagen
     // por HTTP al propio servidor puede colgarse cuando corre en un solo hilo.
-    $resolverLogo = function (?string $ruta) use ($pdfMode) {
+    // Se resuelve antes de la funcion: solo la receta recibe $pdfMode, y
+    // "use" exige que la variable exista aunque dentro se compruebe.
+    $modoPdf = $pdfMode ?? false;
+
+    $resolverLogo = function (?string $ruta) use ($modoPdf) {
         if (! $ruta) {
             return null;
         }
         $local = public_path('storage/' . $ruta);
 
-        return (($pdfMode ?? false) && is_file($local)) ? $local : asset('storage/' . $ruta);
+        return ($modoPdf && is_file($local)) ? $local : asset('storage/' . $ruta);
     };
 
     $logoSrc = $resolverLogo($doctor->print_logo_path);
     $logoRightSrc = $resolverLogo($doctor->print_logo_right_path);
 @endphp
-@if($pdfMode ?? false)
+@if($modoPdf)
     {{-- DomPDF no soporta flexbox. Se usa una tabla, que ademas permite
          centrar el logo verticalmente contra el texto con vertical-align.
          La tercera celda esta vacia a proposito: iguala el ancho de la del
