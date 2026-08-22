@@ -117,6 +117,67 @@ class ProfileController extends Controller
     }
 
     /**
+     * PIN de autorizacion: el doctor lo teclea en la pantalla de la secretaria
+     * para recibir la caja. Va aparte de la contrasena porque se escribe
+     * delante de ella todos los dias; si fuera la de acceso, terminaria
+     * sabiendola y con ella entraria a todo el sistema.
+     */
+    public function updateAuthorizationPin(Request $request)
+    {
+        $user = $request->user();
+
+        abort_unless($user->isDoctor(), 403, 'Solo los doctores usan PIN de autorización.');
+
+        $validated = $request->validate([
+            'current_password' => 'required|current_password',
+            'authorization_pin' => 'required|digits_between:4,8|confirmed',
+        ], [
+            'current_password.required' => 'Confirma tu contraseña para cambiar el PIN.',
+            'current_password.current_password' => 'La contraseña no es correcta.',
+            'authorization_pin.required' => 'Escribe el PIN.',
+            'authorization_pin.digits_between' => 'El PIN debe tener entre 4 y 8 dígitos.',
+            'authorization_pin.confirmed' => 'Los dos PIN no coinciden.',
+        ]);
+
+        $user->update(['authorization_pin' => $validated['authorization_pin']]);
+
+        return redirect()->route('profile.print')
+            ->with('success', 'PIN de autorización actualizado.');
+    }
+
+    /** Firma escaneada, para el acta de entrega de caja. */
+    public function updateSignature(Request $request)
+    {
+        $request->validate([
+            'signature' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
+        ]);
+
+        $user = $request->user();
+
+        if ($user->digital_signature_path) {
+            Storage::disk('public')->delete($user->digital_signature_path);
+        }
+
+        $user->update([
+            'digital_signature_path' => $request->file('signature')->store('signatures', 'public'),
+        ]);
+
+        return redirect()->route('profile.print')->with('success', 'Firma actualizada.');
+    }
+
+    public function deleteSignature(Request $request)
+    {
+        $user = $request->user();
+
+        if ($user->digital_signature_path) {
+            Storage::disk('public')->delete($user->digital_signature_path);
+            $user->update(['digital_signature_path' => null]);
+        }
+
+        return redirect()->route('profile.print')->with('success', 'Firma eliminada.');
+    }
+
+    /**
      * La cabecera impresa admite dos logos: el del doctor a la izquierda y
      * el del hospital o centro a la derecha. Ambos se suben igual, asi que
      * el lado llega por la ruta y aqui se traduce a su columna.

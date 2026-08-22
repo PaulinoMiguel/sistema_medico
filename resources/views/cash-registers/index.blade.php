@@ -6,6 +6,124 @@
         </div>
     </div>
 
+    {{-- Cajas contadas que esperan que el doctor reciba el dinero. Se muestran
+         arriba porque es lo que hay que resolver, y no impiden abrir la del dia. --}}
+    @foreach($pendingRegisters as $pendiente)
+        @php
+            $diferencia = $pendiente->difference;
+            $soyDoctor = auth()->user()->isDoctor();
+        @endphp
+        <div class="bg-amber-50 border border-amber-300 rounded-lg p-6 mb-6">
+            <div class="flex items-start justify-between gap-6 flex-wrap">
+                <div>
+                    <h3 class="text-lg font-semibold text-amber-900">Caja pendiente de recibir</h3>
+                    <p class="text-sm text-amber-800 mt-1">
+                        Cerrada por {{ $pendiente->closedBy->name ?? '—' }}
+                        el {{ $pendiente->closed_at?->format('d/m/Y H:i') }}.
+                        Falta que el doctor reciba el dinero.
+                    </p>
+                    <div class="flex gap-6 mt-3 text-sm">
+                        <div>
+                            <p class="text-xs text-amber-700">Esperado</p>
+                            <p class="font-mono font-bold text-amber-900">${{ number_format($pendiente->expected_amount, 2) }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-amber-700">Contado</p>
+                            <p class="font-mono font-bold text-amber-900">${{ number_format($pendiente->closing_amount, 2) }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-amber-700">Diferencia</p>
+                            <p class="font-mono font-bold {{ $diferencia == 0 ? 'text-green-700' : 'text-red-700' }}">
+                                {{ $diferencia > 0 ? '+' : '' }}${{ number_format($diferencia, 2) }}
+                            </p>
+                        </div>
+                    </div>
+                    @if($diferencia != 0)
+                        <p class="mt-2 text-sm text-red-700">
+                            El conteo no cuadra. Revisa antes de recibir, o devuelve la caja para recontar.
+                        </p>
+                    @endif
+                </div>
+                <div class="flex gap-2">
+                    <a href="{{ route('cash-registers.show', $pendiente) }}"
+                       class="px-3 py-2 border border-amber-400 text-amber-800 rounded-md hover:bg-amber-100 text-sm">
+                        Ver detalle
+                    </a>
+                    <button type="button" onclick="document.getElementById('aprobar-{{ $pendiente->id }}').classList.remove('hidden')"
+                            class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm font-medium">
+                        Recibido conforme
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        {{-- Formulario de recepcion. Si lo abre el propio doctor no se le pide
+             PIN: ya esta autenticado como el. Si lo abre la secretaria, el
+             doctor teclea su PIN aqui mismo. --}}
+        <div id="aprobar-{{ $pendiente->id }}" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+                <h3 class="text-lg font-semibold text-gray-800 mb-1">Recibido conforme</h3>
+                <p class="text-sm text-gray-500 mb-4">
+                    Se recibe ${{ number_format($pendiente->closing_amount, 2) }} en efectivo.
+                </p>
+                <form method="POST" action="{{ route('cash-registers.approve', $pendiente) }}" class="space-y-4">
+                    @csrf
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Doctor que recibe *</label>
+                        <select name="doctor_id" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            @foreach($clinicDoctors as $doc)
+                                <option value="{{ $doc->id }}" @selected($soyDoctor && $doc->id === auth()->id())>{{ $doc->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    @unless($soyDoctor)
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">PIN de autorización *</label>
+                            <input type="password" name="pin" required inputmode="numeric" autocomplete="off"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="••••">
+                            <p class="mt-1 text-xs text-gray-500">Lo teclea el doctor. No es su contraseña de acceso.</p>
+                        </div>
+                    @endunless
+                    @error('pin') <p class="text-sm text-red-600">{{ $message }}</p> @enderror
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Nota {{ $diferencia != 0 ? '*' : '(opcional)' }}
+                        </label>
+                        <input type="text" name="approval_notes" maxlength="500"
+                               value="{{ old('approval_notes') }}"
+                               placeholder="{{ $diferencia != 0 ? 'Explica la diferencia' : 'Observaciones' }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div class="flex justify-end gap-3 pt-2">
+                        <button type="button" onclick="document.getElementById('aprobar-{{ $pendiente->id }}').classList.add('hidden')"
+                                class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">Cancelar</button>
+                        <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 font-medium">
+                            Confirmar recepción
+                        </button>
+                    </div>
+                </form>
+
+                @if($soyDoctor)
+                    <form method="POST" action="{{ route('cash-registers.reject', $pendiente) }}" class="mt-4 pt-4 border-t">
+                        @csrf
+                        <label class="block text-sm font-medium text-gray-700 mb-1">¿No cuadra? Devolver para recontar</label>
+                        <div class="flex gap-2">
+                            <input type="text" name="approval_notes" maxlength="500" required
+                                   placeholder="Motivo de la devolución"
+                                   class="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm">
+                            <button type="submit" onclick="return confirm('La caja volverá a estar abierta y se borrará el conteo. Continuar?')"
+                                    class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm font-medium whitespace-nowrap">
+                                Devolver
+                            </button>
+                        </div>
+                    </form>
+                @endif
+            </div>
+        </div>
+    @endforeach
+
     {{-- Open/Close Register Card --}}
     @if($openRegister)
         <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-6 mb-6">

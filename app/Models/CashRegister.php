@@ -21,6 +21,7 @@ class CashRegister extends Model
             'expected_amount' => 'decimal:2',
             'opened_at' => 'datetime',
             'closed_at' => 'datetime',
+            'approved_at' => 'datetime',
         ];
     }
 
@@ -47,6 +48,33 @@ class CashRegister extends Model
     public function isOpen(): bool
     {
         return $this->status === 'open';
+    }
+
+    /** Contada y cerrada, pero el dinero todavia no se entrego al doctor. */
+    public function isPendingApproval(): bool
+    {
+        return $this->status === 'pending_approval';
+    }
+
+    /** Cerrada y recibida conforme: a partir de aqui no se toca. */
+    public function isApproved(): bool
+    {
+        return $this->status === 'closed';
+    }
+
+    public function approvedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    /** Diferencia entre lo contado y lo que debia haber. */
+    public function getDifferenceAttribute(): ?float
+    {
+        if ($this->closing_amount === null || $this->expected_amount === null) {
+            return null;
+        }
+
+        return (float) $this->closing_amount - (float) $this->expected_amount;
     }
 
     /**

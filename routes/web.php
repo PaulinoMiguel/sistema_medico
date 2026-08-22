@@ -64,6 +64,9 @@ Route::middleware('auth')->group(function () {
     // {side}: left = logo del doctor, right = logo del hospital o centro
     Route::post('/profile/print/logo/{side}', [ProfileController::class, 'updatePrintLogo'])->name('profile.print.logo');
     Route::delete('/profile/print/logo/{side}', [ProfileController::class, 'deletePrintLogo'])->name('profile.print.logo.delete');
+    Route::post('/profile/signature', [ProfileController::class, 'updateSignature'])->name('profile.signature');
+    Route::delete('/profile/signature', [ProfileController::class, 'deleteSignature'])->name('profile.signature.delete');
+    Route::put('/profile/authorization-pin', [ProfileController::class, 'updateAuthorizationPin'])->name('profile.authorization-pin');
 
     // Clinics are now managed exclusively from the super admin panel.
     // Doctors only see a read-only list of their assigned clinics.
@@ -206,6 +209,14 @@ Route::middleware('auth')->group(function () {
             // y estrecho, para no darle a la secretaria el modulo de gastos.
             Route::middleware('permission:expenses.petty-create')->group(function () {
                 Route::post('/cash-registers/petty-expense', [CashRegisterController::class, 'storePettyExpense'])->name('cash-registers.petty-expense');
+            });
+            // "Recibido conforme". Va con cash-register.view y no con un permiso
+            // propio porque la aprobacion puede ocurrir en la pantalla de la
+            // secretaria: quien controla no es el permiso sino el PIN del doctor,
+            // que se verifica dentro. Devolver la caja si exige ser doctor.
+            Route::middleware('permission:cash-register.view')->group(function () {
+                Route::post('/cash-registers/{cashRegister}/approve', [CashRegisterController::class, 'approve'])->name('cash-registers.approve');
+                Route::post('/cash-registers/{cashRegister}/reject', [CashRegisterController::class, 'reject'])->name('cash-registers.reject');
             });
         });
 

@@ -61,6 +61,90 @@
         </div>
         @error('print_logo') <p class="mb-6 text-sm text-red-600">{{ $message }}</p> @enderror
 
+        {{-- Firma: se imprime en el acta de entrega de caja --}}
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h3 class="font-semibold text-gray-800">Firma</h3>
+            <p class="text-xs text-gray-500 mt-1 mb-3">
+                Se imprime en el acta de entrega de caja. Sube una foto o escaneo de tu firma,
+                preferiblemente con fondo blanco.
+            </p>
+            <div class="flex items-start gap-6">
+                <div class="w-48 h-24 flex-shrink-0 border border-gray-300 rounded-md flex items-center justify-center bg-gray-50 overflow-hidden">
+                    @if($user->digital_signature_path)
+                        <img src="{{ asset('storage/' . $user->digital_signature_path) }}" alt="Firma" class="max-w-full max-h-full">
+                    @else
+                        <span class="text-xs text-gray-400">Sin firma</span>
+                    @endif
+                </div>
+                <div class="flex-1">
+                    <form method="POST" action="{{ route('profile.signature') }}" enctype="multipart/form-data" class="space-y-3">
+                        @csrf
+                        <input type="file" name="signature" accept="image/*" required
+                               class="block w-full text-sm border border-gray-300 rounded-md file:bg-blue-50 file:border-0 file:px-4 file:py-2 file:text-sm file:font-medium file:text-blue-700">
+                        @error('signature') <p class="text-sm text-red-600">{{ $message }}</p> @enderror
+                        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium">
+                            Guardar firma
+                        </button>
+                    </form>
+                    @if($user->digital_signature_path)
+                        <form method="POST" action="{{ route('profile.signature.delete') }}" class="mt-2">
+                            @csrf @method('DELETE')
+                            <button type="submit" onclick="return confirm('Eliminar la firma?')" class="text-sm text-red-600 hover:underline">
+                                Eliminar firma
+                            </button>
+                        </form>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+        {{-- PIN de autorizacion: solo doctores --}}
+        @if($user->isDoctor())
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h3 class="font-semibold text-gray-800">PIN de autorización</h3>
+            <p class="text-xs text-gray-500 mt-1 mb-1">
+                Lo usas para recibir la caja en la pantalla de la secretaria, sin tener que
+                iniciar sesión con tu cuenta.
+            </p>
+            <p class="text-xs text-gray-500 mb-4">
+                <strong>No es tu contraseña de acceso.</strong> Es un código aparte precisamente
+                para que puedas teclearlo delante de otra persona: si alguien lo ve, lo único que
+                puede hacer es recibir una caja, no entrar al sistema.
+                @if($user->hasAuthorizationPin())
+                    <span class="text-green-700">Ya tienes un PIN configurado.</span>
+                @else
+                    <span class="text-amber-700">Todavía no has configurado tu PIN.</span>
+                @endif
+            </p>
+            <form method="POST" action="{{ route('profile.authorization-pin') }}" class="space-y-3 max-w-md">
+                @csrf @method('PUT')
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tu contraseña actual *</label>
+                    <input type="password" name="current_password" required autocomplete="current-password"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    @error('current_password') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">PIN nuevo *</label>
+                        <input type="password" name="authorization_pin" required inputmode="numeric" autocomplete="off"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="4 a 8 dígitos">
+                        @error('authorization_pin') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Repetir PIN *</label>
+                        <input type="password" name="authorization_pin_confirmation" required inputmode="numeric" autocomplete="off"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                </div>
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium">
+                    Guardar PIN
+                </button>
+            </form>
+        </div>
+        @endif
+
         {{-- Datos textuales --}}
         <form method="POST" action="{{ route('profile.print.update') }}" class="bg-white rounded-lg shadow p-6 space-y-4">
             @csrf @method('PUT')

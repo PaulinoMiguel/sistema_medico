@@ -15,14 +15,21 @@ class User extends Authenticatable
 
     protected $guarded = ['id'];
 
-    protected $hidden = ['password', 'remember_token'];
+    protected $hidden = ['password', 'remember_token', 'authorization_pin'];
 
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            // Se cifra igual que la contrasena: nunca se guarda en claro.
+            'authorization_pin' => 'hashed',
         ];
+    }
+
+    public function hasAuthorizationPin(): bool
+    {
+        return ! empty($this->authorization_pin);
     }
 
     public function isActive(): bool
