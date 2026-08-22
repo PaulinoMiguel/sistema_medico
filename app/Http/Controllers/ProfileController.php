@@ -27,6 +27,13 @@ class ProfileController extends Controller
             'bio' => 'nullable|string|max:1000',
         ]);
 
+        // Especialidad y exequatur son del ejercicio medico. El formulario no
+        // se los muestra a las secretarias, pero se descartan aqui tambien:
+        // esconder un campo no impide que alguien lo envie a mano.
+        if (! $user->isDoctor()) {
+            unset($validated['specialty'], $validated['professional_license']);
+        }
+
         $user->update($validated);
 
         return redirect()->route('profile.edit')
