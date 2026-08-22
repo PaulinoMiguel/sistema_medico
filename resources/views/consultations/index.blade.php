@@ -1,9 +1,11 @@
 <x-layouts.tenant :title="'Consultas'">
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-bold text-gray-800">Consultas</h2>
-        <a href="{{ route('consultations.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm font-medium">
-            + Nueva consulta
-        </a>
+        @can('consultations.create')
+            <a href="{{ route('consultations.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm font-medium">
+                + Nueva consulta
+            </a>
+        @endcan
     </div>
 
     <div class="bg-white rounded-lg shadow mb-6 p-4">
