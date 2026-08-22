@@ -344,6 +344,27 @@
                 </div>
             @endif
 
+            {{-- El layout solo pintaba los mensajes de exito, asi que los de
+                 error, aviso e informacion se generaban y no los veia nadie:
+                 el usuario volvia a la pantalla anterior sin saber por que. --}}
+            @if(session('error'))
+                <div class="mb-4 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 rounded-md">
+                    {{ session('error') }}
+                </div>
+            @endif
+
+            @if(session('warning'))
+                <div class="mb-4 p-4 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 rounded-md">
+                    {{ session('warning') }}
+                </div>
+            @endif
+
+            @if(session('info'))
+                <div class="mb-4 p-4 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 rounded-md">
+                    {{ session('info') }}
+                </div>
+            @endif
+
             @if($errors->any())
                 <div class="mb-4 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 rounded-md">
                     <ul class="list-disc list-inside">

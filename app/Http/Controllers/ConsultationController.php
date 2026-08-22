@@ -438,7 +438,10 @@ class ConsultationController extends Controller
     public function clinicalSummaryPrint(Consultation $consultation)
     {
         if (empty($consultation->clinical_summary)) {
-            return redirect()->route('consultations.edit', $consultation)
+            // A la vista de lectura y no al formulario de edicion: quien solo
+            // puede ver consultas no entra ahi, y recibiria un 403 en vez del
+            // aviso que este mensaje pretende darle.
+            return redirect()->route('consultations.show', $consultation)
                 ->with('error', 'Esta consulta aún no tiene Resumen clínico guardado para imprimir.');
         }
 
@@ -464,7 +467,9 @@ class ConsultationController extends Controller
         }
 
         if (empty($selected)) {
-            return redirect()->route('consultations.edit', $consultation)
+            // A la vista de lectura, por lo mismo: la secretaria tambien
+            // imprime ordenes y no puede entrar al formulario de edicion.
+            return redirect()->route('consultations.show', $consultation)
                 ->with('error', 'Selecciona al menos una orden para imprimir.');
         }
 
