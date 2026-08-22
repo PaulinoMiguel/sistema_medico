@@ -459,6 +459,43 @@
                                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                                   placeholder="Observaciones del cierre (opcional)"></textarea>
                     </div>
+
+                    {{-- Entrega en el acto. Si la doctora esta presente cuando se
+                         cuenta, firma aqui mismo y la caja queda cerrada y
+                         recibida de una vez, sin el paso aparte. --}}
+                    @unless(auth()->user()->isDoctor())
+                        @if($clinicDoctors->isNotEmpty())
+                        <div class="mb-4 border border-gray-200 rounded-lg p-3 bg-gray-50">
+                            <label class="flex items-center gap-2 text-sm font-medium text-gray-700">
+                                <input type="checkbox" id="entregar-ahora" class="rounded border-gray-300 text-blue-600"
+                                       onchange="document.getElementById('campos-entrega').classList.toggle('hidden', !this.checked)">
+                                El doctor está presente y recibe el dinero ahora
+                            </label>
+                            <div id="campos-entrega" class="hidden mt-3 space-y-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">Doctor que recibe</label>
+                                    <select name="doctor_id"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
+                                        @foreach($clinicDoctors as $doc)
+                                            <option value="{{ $doc->id }}">{{ $doc->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">PIN de autorización</label>
+                                    <input type="password" name="pin" inputmode="numeric" autocomplete="off"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" placeholder="••••">
+                                    <p class="mt-1 text-xs text-gray-500">Lo teclea el doctor.</p>
+                                </div>
+                                @error('pin') <p class="text-sm text-red-600">{{ $message }}</p> @enderror
+                            </div>
+                            <p class="mt-2 text-xs text-gray-500">
+                                Si no está, deja esto sin marcar: la caja quedará pendiente y podrá recibirla después.
+                            </p>
+                        </div>
+                        @endif
+                    @endunless
+
                     <div class="flex justify-end gap-3">
                         <button type="button" onclick="document.getElementById('close-modal').classList.add('hidden')"
                                 class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">Cancelar</button>

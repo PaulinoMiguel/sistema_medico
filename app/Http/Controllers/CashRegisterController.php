@@ -178,6 +178,11 @@ class CashRegisterController extends Controller
         $validated = $request->validate([
             'closing_amount' => 'required|numeric|min:0',
             'closing_notes' => 'nullable|string|max:500',
+            // Entrega en el acto: si el doctor esta presente cuando se cuenta,
+            // teclea aqui su PIN y la caja queda cerrada y recibida de una vez,
+            // en vez de obligar a dos pasos seguidos en la misma pantalla.
+            'doctor_id' => 'nullable|exists:users,id',
+            'pin' => 'nullable|string',
         ]);
 
         // Se cuadra contra el efectivo, no contra el total cobrado: las
@@ -190,6 +195,16 @@ class CashRegisterController extends Controller
         // hay a quien entregarle el dinero, asi que queda recibida en el acto.
         // Pedirle un PIN a quien acaba de contar seria un tramite vacio.
         $seAutoAprueba = $user->isDoctor();
+        $recibe = $seAutoAprueba ? $user : null;
+
+        if (! $seAutoAprueba && ! empty($validated['doctor_id'])) {
+            $recibe = $this->resolveDoctorParaRecibir(
+                $validated['doctor_id'],
+                $cashRegister->clinic_id,
+                $validated['pin'] ?? '',
+            );
+            $seAutoAprueba = true;
+        }
 
         $cashRegister->update([
             'closing_amount' => $validated['closing_amount'],
@@ -197,15 +212,35 @@ class CashRegisterController extends Controller
             'closing_notes' => $validated['closing_notes'] ?? null,
             'closed_by' => $user->id,
             'closed_at' => now(),
-            'status' => $seAutoAprueba ? 'closed' : 'pending_approval',
-            'approved_by' => $seAutoAprueba ? $user->id : null,
-            'approved_at' => $seAutoAprueba ? now() : null,
+            'status' => $recibe ? 'closed' : 'pending_approval',
+            'approved_by' => $recibe?->id,
+            'approved_at' => $recibe ? now() : null,
         ]);
 
         return redirect()->route('cash-registers.show', $cashRegister)
-            ->with('success', $seAutoAprueba
-                ? 'Caja cerrada y recibida.'
+            ->with('success', $recibe
+                ? 'Caja cerrada y recibida por ' . $recibe->name . '.'
                 : 'Caja cerrada. Queda pendiente de que el doctor reciba conforme.');
+    }
+
+    /**
+     * Valida que ese doctor pueda recibir esta caja y que el PIN sea suyo.
+     * Lo usan el cierre con entrega en el acto y el "recibido conforme".
+     */
+    private function resolveDoctorParaRecibir(int $doctorId, int $clinicId, string $pin): User
+    {
+        $doctor = User::find($doctorId);
+
+        abort_unless($doctor && $doctor->isDoctor(), 403, 'Solo un doctor puede recibir la caja.');
+        abort_unless(
+            $doctor->clinics()->where('clinics.id', $clinicId)->exists(),
+            403,
+            'Ese doctor no atiende en esta clínica.',
+        );
+
+        $this->verifyAuthorizationPin($doctor, $pin);
+
+        return $doctor;
     }
 
     /**
@@ -228,18 +263,15 @@ class CashRegisterController extends Controller
             'approval_notes' => 'nullable|string|max:500',
         ]);
 
-        $doctor = User::find($validated['doctor_id']);
-        abort_unless($doctor && $doctor->isDoctor(), 403, 'Solo un doctor puede recibir la caja.');
-
-        // El doctor tiene que atender en esta clinica.
-        abort_unless(
-            $doctor->clinics()->where('clinics.id', $cashRegister->clinic_id)->exists(),
-            403,
-            'Ese doctor no atiende en esta clinica.',
-        );
-
-        if ($user->id !== $doctor->id) {
-            $this->verifyAuthorizationPin($doctor, $validated['pin'] ?? '');
+        // Desde su propia sesion no hace falta PIN: ya esta autenticado como el.
+        if ((int) $validated['doctor_id'] === $user->id && $user->isDoctor()) {
+            $doctor = $user;
+        } else {
+            $doctor = $this->resolveDoctorParaRecibir(
+                $validated['doctor_id'],
+                $cashRegister->clinic_id,
+                $validated['pin'] ?? '',
+            );
         }
 
         $cashRegister->update([
