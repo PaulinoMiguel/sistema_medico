@@ -259,10 +259,31 @@
                                 ->filter()->implode(', ');
                             $inputClass ='w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500';
                         @endphp
-                        <details class="border border-gray-200 rounded-md" {{ !empty($cs) ? 'open' : '' }}>
-                            <summary class="cursor-pointer px-4 py-3 text-sm font-medium text-gray-700 bg-gray-50 rounded-md flex items-center justify-between">
-                                <span>Resumen clínico (referencia / interconsulta)</span>
-                                <svg class="chevron w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                        {{-- Estilos en linea y no clases de Tailwind: las clases
+                             nuevas no entran al CSS compilado hasta recompilar, y
+                             este bloque debe verse bien apenas se despliega. --}}
+                        <style>
+                            details.resumen-plegable > summary { list-style: none; }
+                            details.resumen-plegable > summary::-webkit-details-marker { display: none; }
+                            details.resumen-plegable > summary:hover { background-color: #dbeafe; }
+                            details.resumen-plegable .chevron { transition: transform .15s ease; }
+                            details.resumen-plegable[open] .chevron { transform: rotate(180deg); }
+                            details.resumen-plegable[open] .pista-abrir { display: none; }
+                        </style>
+                        <details class="resumen-plegable rounded-md" style="border:2px solid #93c5fd;" {{ !empty($cs) ? 'open' : '' }}>
+                            <summary class="cursor-pointer px-4 py-3 flex items-center justify-between gap-3" style="background-color:#eff6ff;">
+                                <span class="flex items-center gap-2 text-sm font-semibold" style="color:#1d4ed8;">
+                                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                    Resumen clínico (referencia / interconsulta)
+                                </span>
+                                <span class="flex items-center gap-2 text-xs whitespace-nowrap" style="color:#1d4ed8;">
+                                    @if(!empty($cs))
+                                        <span class="px-2 py-0.5 rounded-full" style="background-color:#bfdbfe;">Con datos</span>
+                                    @else
+                                        <span class="pista-abrir">Clic para llenarlo</span>
+                                    @endif
+                                    <svg class="chevron w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                                </span>
                             </summary>
                             <div class="p-4 space-y-4"
                                  x-data="{
