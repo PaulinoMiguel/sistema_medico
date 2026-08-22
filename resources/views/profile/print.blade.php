@@ -1,8 +1,21 @@
 <x-layouts.tenant title="Mi perfil de impresión">
     <div class="max-w-3xl mx-auto">
+        @php
+            // La papelería (logos, cabecera, consultorio) es del doctor: es su
+            // membrete el que sale en recetas y órdenes. La secretaria solo
+            // necesita su firma, que va en el acta de entrega de caja.
+            $esDoctor = $user->isDoctor();
+        @endphp
+
         <div class="mb-6">
-            <h2 class="text-2xl font-bold text-gray-800">Mi perfil de impresión</h2>
-            <p class="text-gray-500 text-sm mt-1">Estos datos se muestran en las cabeceras de ordenes diagnosticas, recetas y demas documentos impresos. Cada doctor configura los suyos.</p>
+            <h2 class="text-2xl font-bold text-gray-800">{{ $esDoctor ? 'Mi perfil de impresión' : 'Mi firma' }}</h2>
+            <p class="text-gray-500 text-sm mt-1">
+                @if($esDoctor)
+                    Estos datos se muestran en las cabeceras de órdenes diagnósticas, recetas y demás documentos impresos. Cada doctor configura los suyos.
+                @else
+                    Tu firma se imprime en el acta de entrega de caja, junto a la de quien recibe el dinero.
+                @endif
+            </p>
         </div>
 
         @if(session('success'))
@@ -21,6 +34,7 @@
             ];
         @endphp
 
+        @if($esDoctor)
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             @foreach($logos as $lado => $logo)
                 <div class="bg-white rounded-lg shadow p-6">
@@ -60,6 +74,7 @@
             @endforeach
         </div>
         @error('print_logo') <p class="mb-6 text-sm text-red-600">{{ $message }}</p> @enderror
+        @endif
 
         {{-- Firma: se imprime en el acta de entrega de caja --}}
         <div class="bg-white rounded-lg shadow p-6 mb-6">
@@ -146,6 +161,7 @@
         @endif
 
         {{-- Datos textuales --}}
+        @if($esDoctor)
         <form method="POST" action="{{ route('profile.print.update') }}" class="bg-white rounded-lg shadow p-6 space-y-4">
             @csrf @method('PUT')
             <h3 class="font-semibold text-gray-800">Datos para cabecera</h3>
@@ -208,5 +224,6 @@
                 </button>
             </div>
         </form>
+        @endif
     </div>
 </x-layouts.tenant>

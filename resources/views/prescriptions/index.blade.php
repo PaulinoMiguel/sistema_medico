@@ -56,7 +56,9 @@
                         </td>
                         <td class="px-6 py-4 text-right space-x-2">
                             <a href="{{ route('prescriptions.show', $prescription) }}" class="text-blue-600 hover:underline text-sm">Ver</a>
-                            <a href="{{ route('prescriptions.edit', $prescription) }}" class="text-gray-600 hover:underline text-sm">Editar</a>
+                            @can('prescriptions.create')
+                                <a href="{{ route('prescriptions.edit', $prescription) }}" class="text-gray-600 hover:underline text-sm">Editar</a>
+                            @endcan
                             <a href="{{ route('prescriptions.pdf', $prescription) }}" target="_blank" class="text-green-600 hover:underline text-sm">PDF</a>
                         </td>
                     </tr>

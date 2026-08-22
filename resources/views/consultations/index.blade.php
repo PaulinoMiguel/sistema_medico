@@ -52,7 +52,13 @@
                             @if($c->status === 'signed')
                                 <a href="{{ route('consultations.show', $c) }}" class="text-blue-600 hover:underline">Ver</a>
                             @else
-                                <a href="{{ route('consultations.edit', $c) }}" class="text-blue-600 hover:underline">Continuar</a>
+                                {{-- Quien no puede editar consultas igual puede abrirla en
+                                     lectura, en vez de quedarse sin ningun enlace. --}}
+                                @can('consultations.create')
+                                    <a href="{{ route('consultations.edit', $c) }}" class="text-blue-600 hover:underline">Continuar</a>
+                                @else
+                                    <a href="{{ route('consultations.show', $c) }}" class="text-blue-600 hover:underline">Ver</a>
+                                @endcan
                             @endif
                         </td>
                     </tr>

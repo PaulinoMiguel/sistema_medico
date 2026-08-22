@@ -47,7 +47,11 @@
                                 <a href="{{ route('consultations.edit', $c) }}" class="text-blue-600 hover:underline ml-3">Editar</a>
                                 @endcan
                             @else
-                                <a href="{{ route('consultations.edit', $c) }}" class="text-blue-600 hover:underline">Continuar</a>
+                                @can('consultations.create')
+                                    <a href="{{ route('consultations.edit', $c) }}" class="text-blue-600 hover:underline">Continuar</a>
+                                @else
+                                    <a href="{{ route('consultations.show', $c) }}" class="text-blue-600 hover:underline">Ver</a>
+                                @endcan
                             @endif
                         </td>
                     </tr>

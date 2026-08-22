@@ -2,7 +2,9 @@
     <div class="mb-6 flex justify-between items-center">
         <a href="{{ route('patients.prescriptions', $prescription->patient_id) }}" class="text-blue-600 hover:underline text-sm">&larr; Volver al expediente</a>
         <div class="space-x-2">
-            <a href="{{ route('prescriptions.edit', $prescription) }}" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-md text-sm hover:bg-gray-200">Editar</a>
+            @can('prescriptions.create')
+                <a href="{{ route('prescriptions.edit', $prescription) }}" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-md text-sm hover:bg-gray-200">Editar</a>
+            @endcan
             <a href="{{ route('prescriptions.pdf', $prescription) }}" target="_blank" class="bg-green-600 text-white px-4 py-2 rounded-md text-sm hover:bg-green-700">Imprimir PDF</a>
         </div>
     </div>

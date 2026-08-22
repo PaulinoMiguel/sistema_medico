@@ -76,6 +76,10 @@ class ProfileController extends Controller
 
     public function updatePrintProfile(Request $request)
     {
+        // La papeleria impresa es del doctor: es su membrete el que sale en
+        // recetas y ordenes. La secretaria solo administra su firma.
+        abort_unless($request->user()->isDoctor(), 403);
+
         $validated = $request->validate([
             'print_address' => 'nullable|string|max:255',
             'print_website' => 'nullable|string|max:255',
@@ -191,6 +195,8 @@ class ProfileController extends Controller
 
     public function updatePrintLogo(Request $request, string $side = 'left')
     {
+        abort_unless($request->user()->isDoctor(), 403);
+
         $request->validate([
             'print_logo' => 'required|image|mimes:jpg,jpeg,png,webp,svg|max:2048',
         ]);
@@ -211,6 +217,8 @@ class ProfileController extends Controller
 
     public function deletePrintLogo(Request $request, string $side = 'left')
     {
+        abort_unless($request->user()->isDoctor(), 403);
+
         $columna = $this->printLogoColumn($side);
         $user = $request->user();
 

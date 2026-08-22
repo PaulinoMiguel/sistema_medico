@@ -38,12 +38,14 @@
                 Editar
             </a>
             @endcan
+            @can('prescriptions.create')
             <form action="{{ route('prescriptions.from-consultation', $consultation) }}" method="POST">
                 @csrf
                 <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700">
                     + Receta
                 </button>
             </form>
+            @endcan
             @if(!empty($consultation->clinical_summary))
             <a href="{{ route('consultations.resumen-clinico', $consultation) }}" target="_blank"
                class="border border-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50">
