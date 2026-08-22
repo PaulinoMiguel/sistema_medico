@@ -130,4 +130,13 @@
         </div>
     </div>
     @endif
+
+    {{-- Ordenes para imprimir, tambien desde la vista de lectura.
+         Estaban solo dentro del formulario de edicion, al que la secretaria no
+         entra, asi que no podia imprimirlas aunque el permiso se lo permitiera.
+         Son plantillas fijas: elegirlas no compone nada clinico, el nombre ya
+         dice que estudio es. --}}
+    <div class="mt-6">
+        @include('consultations.partials.print-orders-panel')
+    </div>
 </x-layouts.tenant>
